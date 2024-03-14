@@ -49,10 +49,39 @@ namespace tegneRobot {
     //% block="Run steppers | nx %nx| ny %ny| timePerStepX %timePerStepX| timePerStepY %timePerStepY" icon="\uf204" blockGap=8
     
     export function runSteppers(nx: number, ny: number, timePerStepX: number, timePerStepY:number): void {
-        let dirX = "CCW";
-        let dirY = "CCW";
-        let pauseX = Math.round(timePerStepX / 2);  // Divide by 2 because step signal is 2 x delayMicroseconds.
-        let pauseY = Math.round(timePerStepY / 2);
+        let dirX = "CCW"
+        let dirY = "CCW"
+        let pauseX = Math.round(timePerStepX / 2)  // Divide by 2 because step signal is 2 x delayMicroseconds.
+        let pauseY = Math.round(timePerStepY / 2)
+        let dirXpin = 1
+        let dirYpin = 2
+        if (nx > 0) {
+            digitalWrite(dirXpin, true) // Set the spinning direction clockwise (x- and y-axis are wired opposite at the moment).
+            dirX = "CW"
+        }
+        else if (nx < 0) {
+            digitalWrite(dirXpin, false) // CCW
+            dirX = "CCW"
+        }
+        else {
+            dirX = "STILL"
+        }
+        if (ny > 0) {
+            digitalWrite(dirYpin, false) // Set the spinning direction counter clockwise
+            dirY = "CCW"
+        }
+        else if (ny < 0) {
+            digitalWrite(dirYpin, true) // CCW
+            dirY = "CW"
+        }
+        else {
+            dirY = "STILL"
+        }
+        // Takes absolute values of both nsteps and pauseTime.
+        nx = Math.abs(nx)
+        ny = Math.abs(ny)
+        pauseX = Math.abs(pauseX)
+        pauseY = Math.abs(pauseY)
     }
 
     /**
@@ -65,6 +94,11 @@ namespace tegneRobot {
         for (let i = 0; i < 10; i++) {
             runSteppers(42,96,3000,1500);
         }
+    }
+
+    function digitalWrite(ioPin:number, state: boolean) {
+        // Set IO HIGH or LOW using I2C.
+        console.log(state)
     }
 
 
