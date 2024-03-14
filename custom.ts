@@ -86,8 +86,8 @@ namespace tegneRobot {
         let isRunning: boolean = true;
         let sigX: boolean = true;
         let sigY: boolean = true;
-        let txLast: number = Date.now() * 1000; // time in microseconds.
-        let tyLast: number = Date.now() * 1000;
+        let txLast: number = micros() * 1000; // time in microseconds.
+        let tyLast: number = micros() * 1000;
         let delta_tx: number = 0;
         let delta_ty: number = 0;
 
@@ -112,7 +112,7 @@ namespace tegneRobot {
 
     function micros() {
         // Get time ellapsed since app start in microseconds.
-        return 1000
+        return input.runningTimeMicros()
     }
 
 
