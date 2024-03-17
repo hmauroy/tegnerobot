@@ -1,12 +1,15 @@
-let x = 80
-let y = 60
-let radius = 30
-for (let index = 0; index < 3; index++) {
-    tegneRobot.circle(
-    x,
-    y,
-    radius,
+i2crr.setI2CPins(DigitalPin.P2, DigitalPin.P1)
+while (true) {
+    pins.i2cWriteNumber(
+    24,
+    3,
+    NumberFormat.Int8LE,
     false
     )
-    radius += 10
+    pins.i2cWriteNumber(
+    24,
+    1,
+    NumberFormat.Int8LE,
+    false
+    )
 }

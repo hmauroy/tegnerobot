@@ -124,6 +124,18 @@ namespace tegneRobot {
         return input.runningTimeMicros()
     }
 
+    let PCA_REG_SLAVEADR = 24
+
+    export function readPCA(num: number) {
+        pins.i2cWriteNumber(
+            PCA_REG_SLAVEADR,
+            num,
+            NumberFormat.UInt8BE,
+            true
+        )
+        return pins.i2cReadNumber(PCA_REG_SLAVEADR, NumberFormat.UInt8BE, false)
+    }
+
 
 
 
