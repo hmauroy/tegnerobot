@@ -5,7 +5,8 @@
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "ContinuousServo": "github:tinkertanker/pxt-continuous-servo#v0.0.6"
+        "ContinuousServo": "github:tinkertanker/pxt-continuous-servo#v0.0.6",
+        "microbit-pxt-i2cpins": "github:bsiever/microbit-pxt-i2cpins#v0.0.7"
     },
     "files": [
         "main.blocks",
