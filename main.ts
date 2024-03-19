@@ -17,11 +17,20 @@ NumberFormat.UInt8BE,
 false
 )
 basic.forever(function () {
-    basic.pause(100)
     // 0b00000100); // Decimal 4. Set IO2 high and IO5 low, all other pins unchanged, (io7 io6 io5 io4 io3 io2 io1 io0)
+    // Turn IO2 LED on, and IO5 LED off
     pins.i2cWriteNumber(
     24,
     4,
+    NumberFormat.UInt8BE,
+    false
+    )
+    basic.pause(500)
+    // Turn IO2 LED off, and IO5 LED on.
+    // 0b00100000
+    pins.i2cWriteNumber(
+    24,
+    32,
     NumberFormat.UInt8BE,
     false
     )
