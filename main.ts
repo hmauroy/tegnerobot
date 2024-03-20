@@ -1,9 +1,4 @@
-/**
- * will store time when LED turned ON
- */
-/**
- * will store last time LED was updated.
- */
+// will store last time LED was updated.
 function configureOutput () {
     pins.i2cWriteNumber(
     PCA9557_ADDR,
@@ -15,6 +10,22 @@ function configureOutput () {
     pins.i2cWriteNumber(
     PCA9557_ADDR,
     219,
+    NumberFormat.UInt8BE,
+    true
+    )
+}
+function turnOffLEDs () {
+    flipTime = input.runningTimeMicros()
+    pins.i2cWriteNumber(
+    PCA9557_ADDR,
+    OUTPUT_REGISTER,
+    NumberFormat.UInt8BE,
+    false
+    )
+    // Decimal 32. Set IO2 low and IO5 high, all other pins unchanged, (io7 io6 io5 io4 io3 io2 io1 io0)
+    pins.i2cWriteNumber(
+    PCA9557_ADDR,
+    32,
     NumberFormat.UInt8BE,
     true
     )
@@ -43,9 +54,9 @@ let flipTime = 0
 let OUTPUT_REGISTER = 0
 let CONFIGURATION_MODE = 0
 let PCA9557_ADDR = 0
-i2crr.setI2CPins(DigitalPin.P2, DigitalPin.P1)
 // Measuring delay of transmissions.
 let delayTime = 0
+i2crr.setI2CPins(DigitalPin.P2, DigitalPin.P1)
 // Address of PCA9557 chip
 PCA9557_ADDR = 24
 // Configuration register: which mode is pins operated at?
@@ -67,7 +78,8 @@ basic.forever(function () {
         // Flip led states
         led1_state = !(led1_state)
         led2_state = !(led2_state)
-        // turnOffLEDs(); // Turn off LEDs connected to IO2 and IO5
+        // Turn off LEDs connected to IO2 and IO5
+        turnOffLEDs()
         if (led1_state) {
         	
         } else {
