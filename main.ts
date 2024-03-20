@@ -46,8 +46,8 @@ function turnOnLEDs () {
 let OUTPUT_REGISTER = 0
 let CONFIGURATION_MODE = 0
 let PCA9577_ADDR = 0
-let led2_state = false
 i2crr.setI2CPins(DigitalPin.P2, DigitalPin.P1)
+let led2_state = false
 // Address of PCA9577 chip
 PCA9577_ADDR = 24
 // Configuration register: which mode is pins operated at?
