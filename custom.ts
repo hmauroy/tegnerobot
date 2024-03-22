@@ -131,8 +131,9 @@ namespace tegneRobot {
     let INPUT_REGISTER = 0
     
 
-    // Set registers: first write config byte, then sequential write PIN CONFIG..
-    function setreg(): void {
+    // Set registers: first write config byte, then sequential write PIN CONFIG.
+    //% block
+    export function setreg(): void {
         let buf = pins.createBuffer(2);
         buf[0] = 3;
         buf[1] = PIN_CONFIGURATION;
@@ -140,8 +141,9 @@ namespace tegneRobot {
     }
 
     // Read register. Write config byte, then read register
-    function getreg(reg: number): number {
-        pins.i2cWriteNumber(PCA9557_ADDR, reg, NumberFormat.UInt8BE);
+    //% block
+    export function getreg(): number {
+        pins.i2cWriteNumber(PCA9557_ADDR, OUTPUT_REGISTER, NumberFormat.UInt8BE);
         return pins.i2cReadNumber(PCA9557_ADDR, NumberFormat.UInt8BE);
     }
 
