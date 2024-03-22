@@ -56,6 +56,7 @@ let CONFIGURATION_MODE = 0
 let PCA9557_ADDR = 0
 // Measuring delay of transmissions.
 let delayTime = 0
+basic.showIcon(IconNames.Heart)
 i2crr.setI2CPins(DigitalPin.P2, DigitalPin.P1)
 // Address of PCA9557 chip
 PCA9557_ADDR = 24
@@ -63,13 +64,11 @@ PCA9557_ADDR = 24
 CONFIGURATION_MODE = 3
 OUTPUT_REGISTER = 1
 // constants won't change:
-// interval at which to blink (milliseconds)
+// interval at which to blink alternatingly (milliseconds)
 let interval = 500
 let led1_state = true
-// On start
-serial.writeLine("Starting sending I2C")
 configureOutput()
-// Loop
+// Loop: Alternates IO2 and IO5 on and off.
 basic.forever(function () {
     currentMillis = input.runningTime()
     if (currentMillis - previousMillis >= interval) {
@@ -79,9 +78,8 @@ basic.forever(function () {
         led1_state = !(led1_state)
         led2_state = !(led2_state)
         // Turn off LEDs connected to IO2 and IO5
-        turnOffLEDs()
-        if (led1_state) {
-        	
+        if (led1_state == true) {
+            turnOffLEDs()
         } else {
             // Record the time when LED turns ON
             ledOnTime = input.runningTime()
