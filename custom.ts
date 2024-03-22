@@ -124,16 +124,25 @@ namespace tegneRobot {
         return input.runningTimeMicros()
     }
 
-    let PCA_REG_SLAVEADR = 24
+    let PCA9557_ADDR = 24
+    let CONFIGURATION_MODE = 3
+    let PIN_CONFIGURATION = 219
+    let OUTPUT_REGISTER = 1
+    let INPUT_REGISTER = 0
+    
 
-    export function readPCA(num: number) {
-        pins.i2cWriteNumber(
-            PCA_REG_SLAVEADR,
-            num,
-            NumberFormat.UInt8BE,
-            true
-        )
-        return pins.i2cReadNumber(PCA_REG_SLAVEADR, NumberFormat.UInt8BE, false)
+    // Set registers: first write config byte, then sequential write PIN CONFIG..
+    function setreg(): void {
+        let buf = pins.createBuffer(2);
+        buf[0] = 3;
+        buf[1] = PIN_CONFIGURATION;
+        pins.i2cWriteBuffer(PCA9557_ADDR, buf);
+    }
+
+    // Read register. Write config byte, then read register
+    function getreg(reg: number): number {
+        pins.i2cWriteNumber(PCA9557_ADDR, reg, NumberFormat.UInt8BE);
+        return pins.i2cReadNumber(PCA9557_ADDR, NumberFormat.UInt8BE);
     }
 
 
