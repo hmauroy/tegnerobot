@@ -165,6 +165,18 @@ namespace tegneRobot {
         pins.i2cWriteBuffer(PCA9557_ADDR, buf);
     }
 
+    
+    //% block
+    export function pauseMicroseconds(microseconds: number) {
+        let startTime = input.runningTimeMicros();
+        let endTime = startTime + microseconds;
+
+        while (input.runningTimeMicros() < endTime) {
+            // Wait until desired time has passed
+        }
+    }
+
+
 
 
 
