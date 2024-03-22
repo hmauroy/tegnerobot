@@ -4,7 +4,7 @@ function configureOutput () {
     PCA9557_ADDR,
     CONFIGURATION_MODE,
     NumberFormat.UInt8BE,
-    false
+    true
     )
     // Decimal 219. Set IO2 and IO5 as outputs, all other pins as inputs. 0=output, 1=input
     pins.i2cWriteNumber(
@@ -20,7 +20,7 @@ function turnOffLEDs () {
     PCA9557_ADDR,
     OUTPUT_REGISTER,
     NumberFormat.UInt8BE,
-    false
+    true
     )
     // Decimal 32. Set IO2 low and IO5 high, all other pins unchanged, (io7 io6 io5 io4 io3 io2 io1 io0)
     pins.i2cWriteNumber(
@@ -36,7 +36,7 @@ function turnOnLEDs () {
     PCA9557_ADDR,
     OUTPUT_REGISTER,
     NumberFormat.UInt8BE,
-    false
+    true
     )
     // Decimal 4. Set IO2 high and IO5 low, all other pins unchanged, (io7 io6 io5 io4 io3 io2 io1 io0)
     pins.i2cWriteNumber(
