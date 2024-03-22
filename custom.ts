@@ -143,8 +143,26 @@ namespace tegneRobot {
     // Read register. Write config byte, then read register
     //% block
     export function getreg(): number {
-        pins.i2cWriteNumber(PCA9557_ADDR, OUTPUT_REGISTER, NumberFormat.UInt8BE);
+        pins.i2cWriteNumber(PCA9557_ADDR, INPUT_REGISTER, NumberFormat.UInt8BE);
         return pins.i2cReadNumber(PCA9557_ADDR, NumberFormat.UInt8BE);
+    }
+
+    // Write to register. Write config byte, then sequential write PIN CONFIG. IO5 LOW IO2 HIGH
+    //% block
+    export function ledON(): void {
+        let buf = pins.createBuffer(2);
+        buf[0] = OUTPUT_REGISTER;
+        buf[1] = 4;
+        pins.i2cWriteBuffer(PCA9557_ADDR, buf);
+    }
+
+    // Read register. Write config byte, then sequential write PIN CONFIG. IO5 HIGH IO2 LOW
+    //% block
+    export function ledOff(): void {
+        let buf = pins.createBuffer(2);
+        buf[0] = OUTPUT_REGISTER;
+        buf[1] = 32;
+        pins.i2cWriteBuffer(PCA9557_ADDR, buf);
     }
 
 
