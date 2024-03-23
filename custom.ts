@@ -129,15 +129,15 @@ namespace tegneRobot {
     let PIN_CONFIGURATION = 219
     let OUTPUT_REGISTER = 1
     let INPUT_REGISTER = 0
+    let pca_buffer = pins.createBuffer(2);
     
 
     // Set registers: first write config byte, then sequential write PIN CONFIG.
     //% block
     export function setreg(): void {
-        let buf = pins.createBuffer(2);
-        buf[0] = 3;
-        buf[1] = PIN_CONFIGURATION;
-        pins.i2cWriteBuffer(PCA9557_ADDR, buf);
+        pca_buffer[0] = 3;
+        pca_buffer[1] = PIN_CONFIGURATION;
+        pins.i2cWriteBuffer(PCA9557_ADDR, pca_buffer);
     }
 
     // Read register. Write config byte, then read register
@@ -150,19 +150,17 @@ namespace tegneRobot {
     // Write to register. Write config byte, then sequential write PIN CONFIG. IO5 LOW IO2 HIGH
     //% block
     export function ledON(): void {
-        let buf = pins.createBuffer(2);
-        buf[0] = OUTPUT_REGISTER;
-        buf[1] = 4;
-        pins.i2cWriteBuffer(PCA9557_ADDR, buf);
+        pca_buffer[0] = OUTPUT_REGISTER;
+        pca_buffer[1] = 4;
+        pins.i2cWriteBuffer(PCA9557_ADDR, pca_buffer);
     }
 
     // Read register. Write config byte, then sequential write PIN CONFIG. IO5 HIGH IO2 LOW
     //% block
     export function ledOff(): void {
-        let buf = pins.createBuffer(2);
-        buf[0] = OUTPUT_REGISTER;
-        buf[1] = 32;
-        pins.i2cWriteBuffer(PCA9557_ADDR, buf);
+        pca_buffer[0] = OUTPUT_REGISTER;
+        pca_buffer[1] = 32;
+        pins.i2cWriteBuffer(PCA9557_ADDR, pca_buffer);
     }
 
     
