@@ -3,9 +3,5 @@ let pca_register = 492
 tegneRobot.setreg()
 pca_register = tegneRobot.getreg()
 basic.showNumber(pca_register)
-basic.forever(function () {
-    tegneRobot.ledON()
-    tegneRobot.pauseMicroseconds(500000)
-    tegneRobot.ledOff()
-    tegneRobot.pauseMicroseconds(500000)
-})
+pins.analogWritePin(AnalogPin.P0, 1023)
+pins.analogSetPeriod(AnalogPin.P0, 500)
