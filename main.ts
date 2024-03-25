@@ -5,7 +5,10 @@ pca_register = tegneRobot.getreg()
 basic.showNumber(pca_register)
 while (true) {
     tegneRobot.ledON()
-    control.waitMicros(500000)
+    control.waitMicros(6000)
     tegneRobot.ledOff()
-    control.waitMicros(500000)
+    control.waitMicros(6000)
 }
+basic.forever(function () {
+	
+})
