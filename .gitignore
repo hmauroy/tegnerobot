@@ -11,4 +11,4 @@ _site
 .header.json
 .simstate.json
 
-.DS_Store
+**/.DS_Store
