@@ -14,7 +14,9 @@
         "README.md",
         "custom.ts",
         "main.py",
-        "bresenham.js"
+        "bresenham.js",
+        "bresenham.css",
+        "bresenham.html"
     ],
     "testFiles": [
         "test.ts"
