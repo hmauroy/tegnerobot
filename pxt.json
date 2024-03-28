@@ -13,7 +13,8 @@
         "main.ts",
         "README.md",
         "custom.ts",
-        "main.py"
+        "main.py",
+        "bresenham.ts"
     ],
     "testFiles": [
         "test.ts"
@@ -25,5 +26,5 @@
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "tsprj"
 }
