@@ -79,7 +79,7 @@ function generateTable(rows, cols) {
     let table = document.createElement("table");
 
     // Set the width and height of the cells
-    let cellSize = "5px";
+    let cellSize = "20px";
 
     // Loop through each row
     for (let i = 0; i < rows; i++) {
@@ -126,10 +126,11 @@ function changeCellColor(x, y) {
 
 // Example usage:
 // Generate a 5x5 table
-let rows = 200;
-let cols = 200;
+let rows = 20;
+let cols = 20;
 generateTable(rows, cols);
 
-line_bresenham(5, 3, 150, 145);
-line_bresenham(40, 39, 15, 145);
-line_bresenham(3, 175, 120, 175);
+line_bresenham(0, 11, 10, 15);
+line_bresenham(19, 3, 15, 11);
+line_bresenham(3, 17, 12, 17);
+line_bresenham(0, 0, 19, 19);
