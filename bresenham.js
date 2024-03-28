@@ -6,6 +6,12 @@ https://www.baeldung.com/cs/bresenhams-line-algorithm
 Coordinate system:
 UPPER LEFT (0,0)
 
+Author of this file:
+Henrik Mauroy
+hmauroy@gmail.com
+
+Mar 2024
+
 */
 
 function line_bresenham(x0, y0, x1, y1) {
