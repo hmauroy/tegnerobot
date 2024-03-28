@@ -175,7 +175,6 @@ namespace tegneRobot {
     }
 
     function line_bresenham(x0:number, y0:number, x1:number, y1:number) {
-        console.log(x0, y0, x1, y1);
 
         let dx = Math.abs(x1 - x0);
         let dy = -Math.abs(y1 - y0);
