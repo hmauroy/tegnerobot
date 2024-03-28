@@ -13,7 +13,8 @@
         "main.ts",
         "README.md",
         "custom.ts",
-        "main.py"
+        "main.py",
+        "bresenham.js"
     ],
     "testFiles": [
         "test.ts"
