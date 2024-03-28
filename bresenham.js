@@ -9,7 +9,6 @@ UPPER LEFT (0,0)
 */
 
 function line_bresenham(x0, y0, x1, y1) {
-    let output = document.getElementById("coordinates");
     console.log(x0, y0, x1, y1);
 
     let dx = Math.abs(x1 - x0);
