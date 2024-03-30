@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cubic Bézier Curve Drawing with Bresenham's Algorithm</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+    <script>
+        function factorial(n) {
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) {
+                result *= i;
+            }
+            return result;
+        }
+
+        function binomialCoefficient(n, k) {
+            return factorial(n) / (factorial(k) * factorial(n - k));
+        }
+
+        function bernsteinPolynomial(n, i, t) {
+            return binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
+        }
+
+        function drawLine(x0, y0, x1, y1) {
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
+
+            let dx = Math.abs(x1 - x0);
+            let dy = Math.abs(y1 - y0);
+            let sx = (x0 < x1) ? 1 : -1;
+            let sy = (y0 < y1) ? 1 : -1;
+            let err = dx - dy;
+
+            while (true) {
+                ctx.fillRect(x0, y0, 1, 1); // Draw pixel at (x0, y0)
+                if (x0 === x1 && y0 === y1) break;
+                let e2 = 2 * err;
+                if (e2 > -dy) {
+                    err -= dy;
+                    x0 += sx;
+                }
+                if (e2 < dx) {
+                    err += dx;
+                    y0 += sy;
+                }
+            }
+        }
+
+        function drawCubicBezierCurve(points) {
+            // Get the canvas element
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
+
+            // Number of segments to draw
+            const segments = 10;
+
+            // Draw the cubic Bézier curve
+            for (let j = 0; j < segments; j++) {
+                let t0 = j / segments;
+                let t1 = (j + 1) / segments;
+                let x0 = 0;
+                let y0 = 0;
+                let x1 = 0;
+                let y1 = 0;
+                for (let i = 0; i < points.length; i++) {
+                    let bernstein0 = bernsteinPolynomial(points.length - 1, i, t0);
+                    let bernstein1 = bernsteinPolynomial(points.length - 1, i, t1);
+                    x0 += points[i][0] * bernstein0;
+                    y0 += points[i][1] * bernstein0;
+                    x1 += points[i][0] * bernstein1;
+                    y1 += points[i][1] * bernstein1;
+                }
+                drawLine(Math.round(x0), Math.round(y0), Math.round(x1), Math.round(y1));
+            }
+        }
+
+        // Example usage:
+        // Define control points (start, control1, control2, end)
+        const controlPoints = [
+            [50, 200],     // Start point
+            [150, 50],    // First control point
+            [250, 250],  // Second control point
+            [350, 200]    // End point
+        ];
+
+        // Call the function to draw cubic Bézier curve
+        drawCubicBezierCurve(controlPoints);
+    </script>
+</body>
+
+</html>

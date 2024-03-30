@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ellipse Drawing</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+    <script>
+        function drawEllipse(centerX, centerY, radiusX, radiusY) {
+            let x = 0;
+            let y = radiusY;
+            let dx = 0;
+            let dy = 2 * radiusX * radiusX * y;
+
+            // Get the canvas element
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
+
+            // Initial point in the first region
+            let d1 = radiusY * radiusY - (radiusX * radiusX * radiusY) + (0.25 * radiusX * radiusX);
+            let d2 = radiusY * radiusY * (x + 1) * (x + 1) + radiusX * radiusX * (y - 0.5) * (y - 0.5) - radiusX * radiusX * radiusY * radiusY;
+
+            // Region 1
+            while (dx < dy) {
+                // Draw points in all eight octants
+                ctx.fillRect(centerX + x, centerY + y, 1, 1); // Octant 1
+                ctx.fillRect(centerX - x, centerY + y, 1, 1); // Octant 2
+                ctx.fillRect(centerX + x, centerY - y, 1, 1); // Octant 8
+                ctx.fillRect(centerX - x, centerY - y, 1, 1); // Octant 7
+
+                // Check if the point is within the boundary
+                if (d1 < 0) {
+                    x++;
+                    dx += 2 * radiusY * radiusY;
+                    d1 += dx + radiusY * radiusY;
+                } else {
+                    x++;
+                    y--;
+                    dx += 2 * radiusY * radiusY;
+                    dy -= 2 * radiusX * radiusX;
+                    d1 += dx - dy + radiusY * radiusY;
+                }
+            }
+
+            // Region 2
+            while (y >= 0) {
+                // Draw points in all eight octants
+                ctx.fillRect(centerX + x, centerY + y, 1, 1); // Octant 3
+                ctx.fillRect(centerX - x, centerY + y, 1, 1); // Octant 4
+                ctx.fillRect(centerX + x, centerY - y, 1, 1); // Octant 6
+                ctx.fillRect(centerX - x, centerY - y, 1, 1); // Octant 5
+
+                // Check if the point is within the boundary
+                if (d2 > 0) {
+                    y--;
+                    dy -= 2 * radiusX * radiusX;
+                    d2 += radiusX * radiusX - dy;
+                } else {
+                    x++;
+                    y--;
+                    dx += 2 * radiusY * radiusY;
+                    dy -= 2 * radiusX * radiusX;
+                    d2 += dx - dy + radiusX * radiusX;
+                }
+            }
+        }
+
+        // Example usage:
+        const centerX = 200;
+        const centerY = 200;
+        const radiusX = 150;
+        const radiusY = 100;
+
+        // Call the function to draw ellipse
+        drawEllipse(centerX, centerY, radiusX, radiusY);
+    </script>
+</body>
+
+</html>

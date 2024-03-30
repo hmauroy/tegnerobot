@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bresenham's Circle Algorithm</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+    <script>
+        function drawCircle(centerX, centerY, radius) {
+            let x = 0;
+            let y = radius;
+            let d = 3 - 2 * radius;
+
+            // Get the canvas element
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
+
+            while (x <= y) {
+                // Draw the eight symmetric points
+                ctx.fillRect(centerX + x, centerY + y, 1, 1); // Octant 1
+                ctx.fillRect(centerX - x, centerY + y, 1, 1); // Octant 2
+                ctx.fillRect(centerX + x, centerY - y, 1, 1); // Octant 8
+                ctx.fillRect(centerX - x, centerY - y, 1, 1); // Octant 7
+                ctx.fillRect(centerX + y, centerY + x, 1, 1); // Octant 3
+                ctx.fillRect(centerX - y, centerY + x, 1, 1); // Octant 4
+                ctx.fillRect(centerX + y, centerY - x, 1, 1); // Octant 6
+                ctx.fillRect(centerX - y, centerY - x, 1, 1); // Octant 5
+
+                // Update coordinates based on Bresenham's algorithm
+                x++;
+                if (d > 0) {
+                    y--;
+                    d = d + 4 * (x - y) + 10;
+                } else {
+                    d = d + 4 * x + 6;
+                }
+            }
+        }
+
+        // Example usage:
+        const centerX = 160;
+        const centerY = 160;
+        const radius = 145;
+        drawCircle(centerX, centerY, radius);
+    </script>
+</body>
+
+</html>
