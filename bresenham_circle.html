@@ -46,11 +46,47 @@
             }
         }
 
+        function drawHalfCircle(centerX, centerY, radius) {
+            let x = 0;
+            let y = radius;
+            let d = 3 - 2 * radius;
+
+            // Get the canvas element
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
+
+            while (x <= y) {
+                // Draw the eight symmetric points
+                ctx.fillRect(centerX + x, centerY + y, 1, 1); // Octant 1
+                ctx.fillRect(centerX - x, centerY + y, 1, 1); // Octant 2
+
+                // Update coordinates based on Bresenham's algorithm
+                x++;
+                if (d > 0) {
+                    y--;
+                    d = d + 4 * (x - y) + 10;
+                } else {
+                    d = d + 4 * x + 6;
+                }
+            }
+        }
+
         // Example usage:
         const centerX = 160;
         const centerY = 160;
         const radius = 145;
         drawCircle(centerX, centerY, radius);
+        drawCircle(centerX-60, centerY-30, radius/15);
+        drawCircle(centerX+60, centerY-30, radius/15);
+        drawCircle(centerX-60, centerY-30, radius/25);
+        drawCircle(centerX+60, centerY-30, radius/25);
+        // Draw mouth as half circle where only some octants are filled.
+        drawHalfCircle(centerX, centerY-30, radius/2);
+        // Draw pupils
+        for (let i=2; i<=200; i+=5) {
+            drawCircle(centerX-60, centerY-30, radius/(25+i));
+            drawCircle(centerX+60, centerY-30, radius/(25+i));
+        }
     </script>
 </body>
 

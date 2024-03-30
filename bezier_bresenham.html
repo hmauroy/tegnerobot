@@ -13,7 +13,7 @@
 </head>
 
 <body>
-    <canvas id="myCanvas" width="400" height="400"></canvas>
+    <canvas id="myCanvas" width="8000" height="8000"></canvas>
     <script>
         function factorial(n) {
             if (n === 0 || n === 1) return 1;
@@ -32,9 +32,20 @@
             return binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
         }
 
+        function drawControlPoints(points,size) {
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
+            for (let i = 0; i < points.length; i++) {
+                console.log(points[i]);
+                ctx.fillStyle = "magenta";
+                ctx.fillRect(points[i][0]-(size/2), points[i][1]-(size/2), size,size);
+            }
+        }
+
         function drawLine(x0, y0, x1, y1) {
             let canvas = document.getElementById("myCanvas");
             let ctx = canvas.getContext("2d");
+            ctx.fillStyle = "blue";
 
             let dx = Math.abs(x1 - x0);
             let dy = Math.abs(y1 - y0);
@@ -63,7 +74,7 @@
             let ctx = canvas.getContext("2d");
 
             // Number of segments to draw
-            const segments = 10;
+            const segments = 100;
 
             // Draw the cubic Bézier curve
             for (let j = 0; j < segments; j++) {
@@ -88,11 +99,15 @@
         // Example usage:
         // Define control points (start, control1, control2, end)
         const controlPoints = [
-            [50, 200],     // Start point
-            [150, 50],    // First control point
-            [250, 250],  // Second control point
-            [350, 200]    // End point
+            [500, 2000],     // Start point
+            [1500, 500],    // First control point
+            [2500, 2500],  // Second control point
+            [3500, 2000]    // End point
         ];
+
+        drawControlPoints(controlPoints,50);
+
+
 
         // Call the function to draw cubic Bézier curve
         drawCubicBezierCurve(controlPoints);

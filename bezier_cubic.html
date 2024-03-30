@@ -32,13 +32,24 @@
             return binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
         }
 
+        function drawControlPoints(points) {
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
+            for (let i = 0; i < points.length; i++) {
+                console.log(points[i]);
+                ctx.fillStyle = "magenta";
+                ctx.fillRect(points[i][0]-7.5, points[i][1]-7.5, 15,15);
+            }
+        }
+
         function drawCubicBezierCurve(points) {
             // Get the canvas element
             let canvas = document.getElementById("myCanvas");
             let ctx = canvas.getContext("2d");
+            ctx.fillStyle = "blue";
 
             // Number of segments to draw
-            const segments = 100;
+            const segments = 7;
 
             // Move to the starting point
             ctx.moveTo(points[0][0], points[0][1]);
@@ -58,7 +69,7 @@
 
             // Set line style and draw
             ctx.lineWidth = 2;
-            ctx.strokeStyle = "black";
+            ctx.strokeStyle = "blue";
             ctx.stroke();
         }
 
@@ -70,6 +81,8 @@
             [250, 250],  // Second control point
             [350, 200]    // End point
         ];
+
+        drawControlPoints(controlPoints);
 
         // Call the function to draw cubic Bézier curve
         drawCubicBezierCurve(controlPoints);

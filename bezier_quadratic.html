@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bézier Curve Drawing</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+    <script>
+        function drawBezierCurve(points) {
+            // Get the canvas element
+            let canvas = document.getElementById("myCanvas");
+            let ctx = canvas.getContext("2d");
+
+            // Set the start point
+            ctx.moveTo(points[0][0], points[0][1]);
+
+            // Draw the Bézier curve
+            ctx.quadraticCurveTo(points[1][0], points[1][1], points[2][0], points[2][1]);
+
+            // Set line style and draw
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "black";
+            ctx.stroke();
+        }
+
+        // Example usage:
+        // Define control points (start, control, end)
+        const controlPoints = [
+            [50, 200],   // Start point
+            [200, 50],  // Control point
+            [350, 200]  // End point
+        ];
+
+        // Call the function to draw Bézier curve
+        drawBezierCurve(controlPoints);
+    </script>
+</body>
+
+</html>
