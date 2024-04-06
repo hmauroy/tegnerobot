@@ -34,7 +34,7 @@ namespace tegneRobot {
     //% block="circle|centerX %x|centerY %y|radius %r|liftPen %lift" icon="\uf1db" blockGap=8
     //% x.min=0 x.max=16 y.min=0 y.max=12 r.min=0 r.max=8
     //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 
-    export function circle(x: number, y: number, r: number, lift = false): void {
+    export function circle(centerX: number, centerY: number, r: number, lift = false): void {
         let isDrawing = false;
     }
 

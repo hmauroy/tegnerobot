@@ -1,13 +1,14 @@
-i2crr.setI2CPins(DigitalPin.P2, DigitalPin.P1)
-let pca_register = 492
-tegneRobot.setreg()
-pca_register = tegneRobot.getreg()
-basic.showNumber(pca_register)
-while (true) {
-    tegneRobot.ledON()
-    control.waitMicros(6000)
-    tegneRobot.ledOff()
-    control.waitMicros(6000)
+let x = 50
+let y = 50
+let radius = 10
+for (let index = 0; index < 3; index++) {
+    tegneRobot.circle(
+    x,
+    y,
+    radius,
+    false
+    )
+    radius += 10
 }
 basic.forever(function () {
 	
