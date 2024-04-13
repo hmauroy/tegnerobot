@@ -73,13 +73,15 @@ transform = (0, 1, 1, 1)
 
 # Example usage
 path_data = "c 16 1 1 4 3 16 15 11"
+path_data = "c 10 2 8 10 2 2 4 7"
 cubic_curve = CubicBezier(transform=transform)
 cubic_curve.parse(path_data)
 points = cubic_curve.generate_points()
 x, y = zip(*points)
 plt.scatter(x, y, color="red")
 plt.plot(x,y,color="blue")
-plt.xlim(0, 17)
-plt.ylim(0, 17)
+#plt.xlim(0, 17)
+#plt.ylim(0, 17)
 plt.gca().invert_yaxis()
+plt.axis('equal')
 plt.show()
