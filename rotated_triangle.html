@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Rotation</title>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="400" height="400" style="border:1px solid black;"></canvas>
+
+    <script>
+        // Define the triangle vertices
+        var triangle = [
+            { x: 100, y: 100 },
+            { x: 200, y: 100 },
+            { x: 150, y: 200 }
+        ];
+
+        // Function to calculate the center point of the triangle
+        function calculateCenter(triangle) {
+            var centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
+            var centerY = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
+            return { x: centerX, y: centerY };
+        }
+
+        // Function to rotate a point around the origin
+        function rotateZ(point, angleRad) {
+            var cosTheta = Math.cos(angleRad);
+            var sinTheta = Math.sin(angleRad);
+            return {
+                x: point.x * cosTheta - point.y * sinTheta,
+                y: point.x * sinTheta + point.y * cosTheta
+            };
+        }
+
+        // Function to draw a rotated triangle
+        function drawRotatedTriangle(ctx, triangle, angleRad) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            // Calculate center point of the triangle
+            var center = calculateCenter(triangle);
+
+            // Translate the triangle so that its center coincides with the origin
+            var translatedTriangle = triangle.map(function (vertex) {
+                return { x: vertex.x - center.x, y: vertex.y - center.y };
+            });
+
+            // Rotate each vertex of the translated triangle
+            var rotatedTriangle = translatedTriangle.map(function (vertex) {
+                var rotated = rotateZ(vertex, angleRad);
+                return { x: rotated.x, y: rotated.y };
+            });
+
+            // Translate the rotated triangle back to its original position
+            rotatedTriangle = rotatedTriangle.map(function (vertex) {
+                return { x: vertex.x + center.x, y: vertex.y + center.y };
+            });
+
+            // Draw the rotated triangle
+            ctx.beginPath();
+            ctx.moveTo(rotatedTriangle[0].x, rotatedTriangle[0].y);
+            ctx.lineTo(rotatedTriangle[1].x, rotatedTriangle[1].y);
+            ctx.lineTo(rotatedTriangle[2].x, rotatedTriangle[2].y);
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        // Get canvas element and context
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Initial angle in degrees
+        var angleDegrees = 45;
+
+        // Initial angle in radians
+        var angleRad = angleDegrees * Math.PI / 180;
+
+        // Draw the initial rotated triangle
+        drawRotatedTriangle(ctx, triangle, angleRad);
+    </script>
+</body>
+
+</html>
