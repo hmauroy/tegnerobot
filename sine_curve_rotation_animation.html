@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sine Curve Rotation Animation</title>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="600" height="400" style="border:1px solid black;"></canvas>
+
+    <script>
+        // Get canvas element and context
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Function to calculate points along the sine curve
+        function calculateSineCurvePoints() {
+            var points = [];
+            for (var x = 20; x <= 80; x += 0.5) {
+                var y = 200 - 30 * Math.sin(0.5 * x); // Calculate y-coordinate
+                points.push({ x: x * 6, y: y }); // Scale x by 6 for better visualization
+            }
+            return points;
+        }
+
+        // Function to calculate the center point of the curve
+        function calculateCenterPoint(points) {
+            var sumX = points.reduce((acc, point) => acc + point.x, 0);
+            var sumY = points.reduce((acc, point) => acc + point.y, 0);
+            var centerX = sumX / points.length;
+            var centerY = sumY / points.length;
+            return { x: centerX, y: centerY };
+        }
+
+        // Function to rotate a point around the z-axis
+        function rotateZ(point, center, angleRad) {
+            var cosTheta = Math.cos(angleRad);
+            var sinTheta = Math.sin(angleRad);
+            var translatedX = point.x - center.x;
+            var translatedY = point.y - center.y;
+            return {
+                x: translatedX * cosTheta - translatedY * sinTheta + center.x,
+                y: translatedX * sinTheta + translatedY * cosTheta + center.y
+            };
+        }
+
+        // Function to animate the rotation
+        function animate() {
+            var angleDegrees = 0;
+            var sineCurvePoints = calculateSineCurvePoints();
+            var center = calculateCenterPoint(sineCurvePoints);
+
+            function draw() {
+                // Clear canvas
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+                // Calculate rotation angle in radians
+                var angleRad = angleDegrees * Math.PI / 180;
+
+                // Draw rectangles at rotated points
+                sineCurvePoints.forEach(function (point) {
+                    var rotatedPoint = rotateZ(point, center, angleRad);
+                    ctx.fillRect(rotatedPoint.x, rotatedPoint.y, 5, 5); // Draw a rectangle at the rotated point
+                });
+
+                // Increment angle for next frame
+                angleDegrees += 1;
+
+                // Request next frame
+                requestAnimationFrame(draw);
+            }
+
+            // Start animation
+            draw();
+        }
+
+        // Start the animation
+        animate();
+    </script>
+</body>
+
+</html>
