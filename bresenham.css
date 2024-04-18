@@ -1,7 +1,43 @@
 table, th, td {
-    border: solid black 1px;
+    border: solid #b1f5bc 1px;
     border-collapse: collapse;
+    background-color: rgb(40, 40, 40);
 }
 td {
     box-sizing: border-box;
+}
+body {
+    background-color: rgb(40, 40, 40);
+}
+
+.pixel {
+    background-color: #b6ffc2; /* almost white */
+    /* Bright green color */
+    box-shadow: 0 0 3px #cffce5,
+        0 0 10px #00ff66,
+        0 0 20px #00ff66,
+        0 0 30px #00ff66,
+        /* Wider and more diffused glow */
+}
+.crt-font {
+    /*
+    Kule retro-fonts og effekter her: https: //retrocomputing.stackexchange.com/questions/12835/exactly-what-color-was-the-text-on-monochrome-terminals-with-green-on-black-and
+    */
+    font-family: "Glass TTY VT220";
+    font-size: 30px;
+    color: #f0fff8; /* almost white */
+    text-shadow: 0 0 3px #80ffc0, 0 0 10px #00ff66, 0 0 20px #00ff66, 0 0 30px #00ff66;
+}
+.table-glow {
+    border-collapse: separate;
+    /* Ensures clean border effects */
+    border-spacing: 0;
+    /* Removes spacing between cells */
+    box-shadow: 0 0 15px #00ff66;
+    /* Creates the glow effect */
+}
+.table-glow td, .table-glow th {
+    /* Sets the cell background color */
+    box-shadow: 0 0 8px #00ff66;
+    /* Applies a glow effect around each cell */
 }

@@ -83,6 +83,7 @@ function line_bresenham(x0, y0, x1, y1) {
 function generateTable(rows, cols) {
     // Create a table element
     let table = document.createElement("table");
+    table.className = "table-glow";
 
     // Set the width and height of the cells
     let cellSize = "20px";
@@ -100,7 +101,6 @@ function generateTable(rows, cols) {
             // Set the cell's size and background color
             cell.style.width = cellSize;
             cell.style.height = cellSize;
-            cell.style.backgroundColor = "white";
 
             // Append the cell to the row
             row.appendChild(cell);
@@ -124,7 +124,7 @@ function changeCellColor(x, y) {
     // Check if the index is within the range of cells
     if (index >= 0 && index < cells.length) {
         // Change the background color of the cell at the calculated index to red
-        cells[index].style.backgroundColor = "red";
+        cells[index].className = "pixel"
     } else {
         console.log("Cell coordinates out of range.");
     }
@@ -136,7 +136,7 @@ let rows = 20;
 let cols = 20;
 generateTable(rows, cols);
 
-line_bresenham(0, 11, 10, 15);
-line_bresenham(19, 3, 15, 11);
-line_bresenham(3, 17, 12, 17);
-line_bresenham(0, 0, 19, 19);
+line_bresenham(0, 5, 15, 11);
+//line_bresenham(19, 3, 15, 11);
+//line_bresenham(3, 17, 12, 17);
+//line_bresenham(0, 0, 19, 19);
