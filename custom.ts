@@ -80,7 +80,7 @@ namespace tegneRobot {
 
     //% help=setPinStates/draw weight=77
     //% block="setPinStates|pin8 %pin8|pin9 %pin9|pin15 %pin15|pin16 %pin16" icon="\uf1db" blockGap=8
-    export function setPinStates(pin8: DigitalPin, pin9: DigitalPin, pin15: DigitalPin, pin16: DigitalPin): void {
+    export function setPinStates(pin8: number, pin9: number, pin15: number, pin16: number): void {
         pinStates.pin8 = pin8;
         pinStates.pin9 = pin9;
         pinStates.pin15 = pin15;
