@@ -101,6 +101,16 @@ namespace tegneRobot {
         servos.P0.setAngle(90);
     }
 
+    function liftPen() {
+        //% Lifts the pen by moving the servo "upwards"
+        servos.P0.setAngle(150);
+    }
+
+    function lowerPen() {
+        //% Lowers the pen by moving the servo to middle position.
+        servos.P0.setAngle(90);
+    }
+
     function micros() {
         // Get time ellapsed since app start in microseconds.
         return input.runningTimeMicros()
@@ -144,6 +154,82 @@ namespace tegneRobot {
         pca_buffer[1] = 32;
         pins.i2cWriteBuffer(PCA9557_ADDR, pca_buffer);
     }
+
+    
+    //% block
+    export function pauseMicroseconds(microseconds: number) {
+        let startTime = input.runningTimeMicros();
+        let endTime = startTime + microseconds;
+
+        while (input.runningTimeMicros() < endTime) {
+            // Wait until desired time has passed
+        }
+    }
+
+    function line_bresenham(x0:number, y0:number, x1:number, y1:number) {
+
+        let dx = Math.abs(x1 - x0);
+        let dy = -Math.abs(y1 - y0);
+        let sx = 0;
+        let sy = 0;
+
+        if (x0 < x1) {
+            sx = 1;
+        } else {
+            sx = -1;
+        }
+
+        if (y0 < y1) {
+            sy = 1;
+        } else {
+            sy = -1;
+        }
+
+        let e = dx + dy;
+        let e2 = 2 * e;
+
+        let isDrawing = true;
+        let teller = 0;
+        while (isDrawing) {
+            teller += 1;
+            if (teller >= 10000) {
+                isDrawing = false;
+            }
+            //console.log(x0, y0);
+            //let p = document.createElement("p");
+            //p.innerHTML = x0 + "," + y0;
+            //output.appendChild(p);
+            // Run steppers one step: x, or y, or both.
+            //changeCellColor(x0, y0);
+            if (x0 === x1 && y0 === y1) {
+                isDrawing = false;
+                break;
+            }
+            // Update error
+            e2 = 2 * e;
+            if (e2 >= dy) {
+                // if reached target x
+                if (x0 === x1) {
+                    isDrawing = false;
+                    break;
+                }
+                // update y-error when x is changed
+                e = e + dy;
+                x0 = x0 + sx;
+            }
+            if (e2 <= dx) {
+                // if reached target y
+                if (y0 === y1) {
+                    isDrawing = false;
+                    break;
+                }
+                // update x-error when y is changed
+                e = e + dx;
+                y0 = y0 + sy;
+            }
+        }
+    }
+
 
 
 

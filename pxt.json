@@ -5,8 +5,8 @@
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "ContinuousServo": "github:tinkertanker/pxt-continuous-servo#v0.0.6",
-        "microbit-pxt-i2cpins": "github:bsiever/microbit-pxt-i2cpins#v0.0.7"
+        "microbit-pxt-i2cpins": "github:bsiever/microbit-pxt-i2cpins#v0.0.7",
+        "servo": "*"
     },
     "files": [
         "main.blocks",
@@ -22,11 +22,11 @@
         "test.ts"
     ],
     "targetVersions": {
-        "target": "6.0.25",
+        "target": "6.0.26",
         "targetId": "microbit"
     },
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "tsprj"
 }

@@ -1,15 +1,15 @@
-let x = 50
-let y = 50
-let radius = 10
-for (let index = 0; index < 3; index++) {
+let y = 0
+let x = 0
+let radius = 0.5
+for (let index = 0; index < 6; index++) {
     tegneRobot.circle(
     x,
     y,
     radius,
-    false
+    true
     )
-    radius += 10
+    x += 2
+    y += 3
+    radius += 0.5
 }
-basic.forever(function () {
-	
-})
+servos.P0.setAngle(150)
