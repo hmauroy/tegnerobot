@@ -1,5 +1,5 @@
 table, th, td {
-    border: solid #b1f5bc 1px;
+    border: solid #e39967 1px;
     border-collapse: collapse;
     background-color: rgb(40, 40, 40);
 }
@@ -11,34 +11,36 @@ body {
 }
 
 .pixel {
-    background-color: #b6ffc2; /* almost white */
+    background-color: #ffe9d9; /* almost white */
     /* Bright green color */
-    box-shadow: 0 0 3px #cffce5,
-        0 0 10px #00ff66,
-        0 0 20px #00ff66,
-        0 0 30px #00ff66,
+    box-shadow: 0 0 3px #e39967,
+        0 0 10px #e39967,
+        0 0 20px #e39967,
+        0 0 30px #e39967,
         /* Wider and more diffused glow */
 }
 .crt-font {
     /*
-    Kule retro-fonts og effekter her: https: //retrocomputing.stackexchange.com/questions/12835/exactly-what-color-was-the-text-on-monochrome-terminals-with-green-on-black-and
-    Fonten finnes her: https: //caglrc.cc/~svo/glasstty/
+    Kule retro-fonts og effekter her: https://retrocomputing.stackexchange.com/questions/12835/exactly-what-color-was-the-text-on-monochrome-terminals-with-green-on-black-and
+    Fonten finnes her: https://caglrc.cc/~svo/glasstty/
     */
     font-family: "Glass TTY VT220";
     font-size: 30px;
     color: #f0fff8; /* almost white */
-    text-shadow: 0 0 3px #80ffc0, 0 0 10px #00ff66, 0 0 20px #00ff66, 0 0 30px #00ff66;
+    text-shadow: 0 0 3px #e39967, 0 0 10px #e39967, 0 0 20px #e39967, 0 0 30px #e39967;
 }
 .table-glow {
     border-collapse: separate;
     /* Ensures clean border effects */
     border-spacing: 0;
     /* Removes spacing between cells */
-    box-shadow: 0 0 15px #00ff66;
+    box-shadow: 0 0 15px #ffc9a6;
     /* Creates the glow effect */
 }
 .table-glow td, .table-glow th {
     /* Sets the cell background color */
-    box-shadow: 0 0 8px #00ff66;
+    box-shadow: 0 0 8px #fdebdf;
     /* Applies a glow effect around each cell */
+    opacity: 0.8;
+        /* Adjust the opacity as needed */
 }

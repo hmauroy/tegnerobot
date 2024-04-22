@@ -132,11 +132,11 @@ function changeCellColor(x, y) {
 
 // Example usage:
 // Generate a 5x5 table
-let rows = 20;
-let cols = 20;
+let rows = 50;
+let cols = 50;
 generateTable(rows, cols);
 
-line_bresenham(0, 5, 15, 11);
+line_bresenham(0, 3, 37, 25);
 //line_bresenham(19, 3, 15, 11);
 //line_bresenham(3, 17, 12, 17);
 //line_bresenham(0, 0, 19, 19);
