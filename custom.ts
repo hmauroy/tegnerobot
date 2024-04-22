@@ -87,22 +87,12 @@ namespace tegneRobot {
         0;
     }
 
-    function liftPen() {
+    function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
         servos.P0.setAngle(150);
     }
 
-    function lowerPen() {
-        //% Lowers the pen by moving the servo to middle position.
-        servos.P0.setAngle(90);
-    }
-
-    function liftPen() {
-        //% Lifts the pen by moving the servo "upwards"
-        servos.P0.setAngle(150);
-    }
-
-    function lowerPen() {
+    function lowerPen(): void {
         //% Lowers the pen by moving the servo to middle position.
         servos.P0.setAngle(90);
     }
