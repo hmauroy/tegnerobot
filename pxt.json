@@ -16,6 +16,7 @@
         "main.py",
         "bresenham.js",
         "bresenham.css",
+        "bresenham_TVA.css",
         "bresenham.html"
     ],
     "testFiles": [
