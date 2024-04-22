@@ -1,15 +1,9 @@
-let x = 50
-let y = 50
-let radius = 10
-for (let index = 0; index < 3; index++) {
-    tegneRobot.circle(
-    x,
-    y,
-    radius,
-    false
-    )
-    radius += 10
+let x = 0
+let y = 0
+let radius = 0.5
+for (let i = 0; i < 6; i++) {
+    tegneRobot.circle(x, y, radius, true)
+    x += 2
+    y += 3
+    radius += 0.5
 }
-basic.forever(function () {
-	
-})

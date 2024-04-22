@@ -18,6 +18,14 @@ enum liftPen {
     false,
 }
 
+const pinStates = {
+    //% stepper pins: pin8=stepperX, pin15=stepperY, pin9=dirX, pin16=dirY
+    pin8: 0,
+    pin9: 0,
+    pin15: 0,
+    pin16: 0
+}
+
 /**
  * Custom blocks
  */
@@ -40,6 +48,19 @@ namespace tegneRobot {
 
     /**
      * TODO: describe your function here
+     * Logic calculates if x-stepper and y-stepper should run.
+     * If so, each function is called individually to update the positions
+     * of the drawing head.
+     * For each pulse the information about pin states should be 
+     * sent over I2C to the PCA9557 chip as one 8-bit number.
+     * This means that global variables about pin states are
+     * updated when turnStepperX() and turnStepperY() is called.
+     * function turnStepperX() {
+            machine.currentPosition.x += machine.direction.x * animation.stepSize;
+        }
+        function turnStepperY() {
+            machine.currentPosition.y += machine.direction.y * animation.stepSize;
+        }
      * @param nx: number of steps in x-axis, e.g. 42
      * @param ny: number of steps in y-axis, e.g. 42
      * @param timePerStepX: time in microseconds for one step in x-axis, e.g. 2000
@@ -48,7 +69,7 @@ namespace tegneRobot {
     //% help=runSteppers/draw weight=77
     //% block="Run steppers | nx %nx| ny %ny| timePerStepX %timePerStepX| timePerStepY %timePerStepY" icon="\uf204" blockGap=8
     
-    export function runSteppers(nx: number, ny: number, timePerStepX: number, timePerStepY:number): void {
+    export function stepSteppers(nx: number, ny: number, timePerStepX: number, timePerStepY:number): void {
         let dirX = "CCW"
         let dirY = "CCW"
         let pauseX = Math.round(timePerStepX / 2)  // Divide by 2 because step signal is 2 x delayMicroseconds.
@@ -101,7 +122,7 @@ namespace tegneRobot {
     //% block
     export function moveXY(x: number, y: number): void {
         for (let i = 0; i < 10; i++) {
-            runSteppers(42,96,3000,1500);
+            stepSteppers(42,96,3000,1500);
         }
     }
 
