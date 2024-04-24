@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Image Processing with OpenCV.js</title>
+    <script async src="https://docs.opencv.org/4.x/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script src="./potrace.js"></script>
+</head>
+
+<body>
+    <h2>Image Processing: Grayscale, Median Blur, and Adaptive Thresholding</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <canvas id="canvasOutput"></canvas>
+    <div id="output"></div>
+
+    <script type="text/javascript">
+        function onOpenCvReady() {
+            document.getElementById('imageInput').addEventListener('change', function () {
+                let imgElement = document.createElement('img');
+                imgElement.src = URL.createObjectURL(this.files[0]);
+
+                imgElement.onload = function () {
+                    let src = cv.imread(imgElement);
+                    let dst = new cv.Mat();
+                    let gray = new cv.Mat();
+                    let medianBlurred = new cv.Mat();
+                    let adaptiveThresh = new cv.Mat();
+
+                    // Convert image to grayscale
+                    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+                    console.log(src);
+
+                    let width = src.cols;
+                    let height = src.rows;
+
+
+                    let blur_factor = 1.0;
+                    //Calculates blur value which must be odd number larger than 3. OpenCV crashes if value is 1.
+                    let blur_value = parseInt(Math.round(blur_factor*width*0.01)); // blur value is around 1-2 % of image width
+                    if (blur_value % 2 == 0) {
+                        blur_value -= 1
+                    }
+
+                    // Apply median blur
+                    cv.medianBlur(gray, medianBlurred, blur_value); // The second parameter is the kernel size
+
+                    // Adaptive thresholding after median blur
+                    cv.adaptiveThreshold(medianBlurred, adaptiveThresh, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, blockSize=blur_value, C=2);
+
+                    cv.imshow('canvasOutput', adaptiveThresh);
+
+                    // Convert OpenCV image to canvas to extract image data for potrace
+                    let canvas2 = document.createElement('canvas');
+                    canvas2.width = thresholded.cols;
+                    canvas2.height = thresholded.rows;
+                    let ctx = canvas2.getContext('2d');
+                    let imgData = ctx.createImageData(canvas2.width, canvas2.height);
+                    adaptiveThresh.data.set(imgData.data);
+                    ctx.putImageData(imgData, 0, 0);
+
+                    // Use potrace to trace the processed image
+                    potrace.trace(canvas2.toDataURL(), function(svg) {
+                        document.getElementById('output').innerHTML = svg; // Display the SVG
+                    }, {
+                        turnPolicy: potrace.Potrace.TURNPOLICY_MAJORITY, 
+                        turdSize: 100, 
+                        alphaMax: 1, 
+                        optCurve: true, 
+                        optTolerance: 0.2, 
+                        threshold: potrace.Potrace.THRESHOLD_AUTO 
+                    });
+
+                    // Clean up memory
+                    src.delete();
+                    gray.delete();
+                    medianBlurred.delete();
+                    adaptiveThresh.delete();
+                };
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Convert Image to SVG with Potrace.js</title>
+    <script async src="https://docs.opencv.org/4.x/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <!-- Ensure your path to potrace.js is correct -->
+    <script src="potrace.js"></script>
+</head>
+
+<body>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="convertImage()">Convert to SVG</button>
+    <div id="output"></div>
+
+    <script>
+        function onOpenCvReady() {
+            document.getElementById('imageInput').addEventListener('change', function () {
+                let imgElement = document.createElement('img');
+                imgElement.src = URL.createObjectURL(this.files[0]);
+
+                imgElement.onload = function () {
+                    let src = cv.imread(imgElement);
+                    let gray = new cv.Mat();
+                    let medianBlurred = new cv.Mat();
+                    let thresholded = new cv.Mat();
+
+                    // Convert to grayscale
+                    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+                    let width = src.cols;
+                    let height = src.rows;
+
+
+                    let blur_factor = 0.65;
+                    //Calculates blur value which must be odd number larger than 3. OpenCV crashes if value is 1.
+                    let blur_value = parseInt(Math.round(blur_factor*width*0.01)); // blur value is around 1-2 % of image width
+                    if (blur_value % 2 == 0) {
+                        blur_value -= 1
+                    }
+
+                    // Apply median blur
+                    cv.medianBlur(gray, medianBlurred, blur_value); // The second parameter is the kernel size
+
+                    // Apply adaptive thresholding to create a binary image
+                    cv.adaptiveThreshold(medianBlurred, thresholded, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, blockSize = blur_value, C = 2);
+
+                    // Convert OpenCV image to a canvas to extract image data
+                    let canvas = document.createElement('canvas');
+                    canvas.width = thresholded.cols;
+                    canvas.height = thresholded.rows;
+                    let ctx = canvas.getContext('2d');
+                    let imgData = ctx.createImageData(canvas.width, canvas.height);
+
+                    // Convert OpenCV matrix to ImageData
+                    for (let i = 0, j = 0; i < thresholded.data.length; i++, j += 4) {
+                        imgData.data[j] = imgData.data[j + 1] = imgData.data[j + 2] = thresholded.data[i];
+                        imgData.data[j + 3] = 255; // Alpha channel
+                    }
+                    ctx.putImageData(imgData, 0, 0);
+
+                    // Clear previous SVG content
+                    document.getElementById('output').innerHTML = '';
+
+                    // Load image to Potrace
+                    Potrace.img.src = canvas.toDataURL();
+
+                    // Set parameters if needed
+                    Potrace.setParameter({
+                        turdsize: 8,
+                        optcurve: true,
+                        alphamax: 1,
+                        opttolerance: 0.2,
+                        turnpolicy: "minority"
+                    });
+
+                    // Process the image and then display the SVG
+                    Potrace.process(function () {
+                        var svg = Potrace.getSVG(1);
+                        document.getElementById('output').innerHTML = svg;
+                    });
+
+                    // Clean up OpenCV Mats
+                    src.delete();
+                    gray.delete();
+                    thresholded.delete();
+                };
+            });
+        }
+
+        function convertImage() {
+            document.getElementById('imageInput').dispatchEvent(new MouseEvent('click'));
+        }
+    </script>
+</body>
+
+</html>

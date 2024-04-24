@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gaussian Blur with OpenCV.js</title>
+    <script async src="https://docs.opencv.org/4.x/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+</head>
+
+<body>
+    <h2>Apply Gaussian Blur to an Image</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <canvas id="canvasOutput"></canvas>
+
+    <script type="text/javascript">
+        function onOpenCvReady() {
+            document.getElementById('imageInput').addEventListener('change', function () {
+                let imgElement = document.createElement('img');
+                imgElement.src = URL.createObjectURL(this.files[0]);
+
+                imgElement.onload = function () {
+                    let src = cv.imread(imgElement);
+                    let dst = new cv.Mat();
+                    let ksize = new cv.Size(15, 15); // Size of the kernel, adjust for different strengths of blurring
+
+                    
+
+                    // You can adjust the standard deviation in X and Y direction, sigmaX and sigmaY respectively
+                    // If only sigmaX is provided, sigmaY is taken as equal to sigmaX
+                    cv.GaussianBlur(src, dst, ksize, 0, 0, cv.BORDER_DEFAULT);
+
+                    cv.imshow('canvasOutput', dst);
+                    src.delete(); // Clean up memory
+                    dst.delete(); // Clean up memory
+                };
+            });
+        }
+    </script>
+</body>
+
+</html>
