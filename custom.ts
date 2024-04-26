@@ -19,9 +19,9 @@ enum penLifted {
 }
 
 const pinStates = {
-    //% stepper pins: pin8=stepperX, pin15=stepperY, pin9=dirX, pin16=dirY
-    pin8: 0,
-    pin9: 0,
+    //% stepper pins: pin13=stepperX, pin15=stepperY, pin14=dirX, pin16=dirY
+    pin13: 0,
+    pin14: 0,
     pin15: 0,
     pin16: 0
 }
@@ -71,8 +71,8 @@ namespace tegneRobot {
     //% block="Step steppers"  icon="\uf204" blockGap=8
     export function stepSteppers() {
         // Read from pinStates object and write using digitalWrite()
-        pins.digitalWritePin(DigitalPin.P8, pinStates.pin8);
-        pins.digitalWritePin(DigitalPin.P9, pinStates.pin9);
+        pins.digitalWritePin(DigitalPin.P13, pinStates.pin13);
+        pins.digitalWritePin(DigitalPin.P14, pinStates.pin14);
         pins.digitalWritePin(DigitalPin.P15, pinStates.pin15);
         pins.digitalWritePin(DigitalPin.P16, pinStates.pin16);
 
@@ -80,9 +80,9 @@ namespace tegneRobot {
 
     //% help=setPinStates/draw weight=77
     //% block="setPinStates|pin8 %pin8|pin9 %pin9|pin15 %pin15|pin16 %pin16" icon="\uf1db" blockGap=8
-    export function setPinStates(pin8: number, pin9: number, pin15: number, pin16: number): void {
-        pinStates.pin8 = pin8;
-        pinStates.pin9 = pin9;
+    export function setPinStates(pin13: number, pin14: number, pin15: number, pin16: number): void {
+        pinStates.pin13 = pin13;
+        pinStates.pin14 = pin14;
         pinStates.pin15 = pin15;
         pinStates.pin16 = pin16;
     }
