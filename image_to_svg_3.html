@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!--Example code from opencv tutorials: https://docs.opencv.org/4.x/d0/d84/tutorial_js_usage.html -->
+    <!--Written by Henrik Mauroy hmauroy@gmail.com April 2024.-->
+    <meta charset="utf-8">
+    <title>Image to svg</title>
+    <link rel="stylesheet" href="image2svg.css">
+    <script async src="opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+</head>
+
+<body>
+    <h2 class="crt-font">Image to svg</h2>
+    <div>
+        <div class="inputoutput">
+            <img id="imageSrc" src="lillebror_newborn512.png" alt="No Image" />
+            <div class="caption crt-font">Upload image <input type="file" id="fileInput" name="file" /></div>
+        </div>
+    </div>
+
+
+
+    <script type="text/javascript">
+        let imgElement = document.getElementById("imageSrc")
+        let inputElement = document.getElementById("fileInput");
+        inputElement.addEventListener("change", (e) => {
+            imgElement.src = URL.createObjectURL(e.target.files[0]);
+        }, false);
+    </script>
+</body>
+
+</html>

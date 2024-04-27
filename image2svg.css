@@ -1,0 +1,27 @@
+table, th, td {
+    border: solid #e39967 1px;
+    border-collapse: collapse;
+    background-color: rgb(40, 40, 40);
+}
+td {
+    box-sizing: border-box;
+}
+body {
+    background-color: rgb(40, 40, 40);
+    color: #fff3ea;
+}
+#imageSrc {
+    width: 30vw;
+
+}
+
+.crt-font {
+    /*
+    Kule retro-fonts og effekter her: https://retrocomputing.stackexchange.com/questions/12835/exactly-what-color-was-the-text-on-monochrome-terminals-with-green-on-black-and
+    Fonten finnes her: https://caglrc.cc/~svo/glasstty/
+    */
+    font-family: "Glass TTY VT220";
+    font-size: 30px;
+    color: #f0fff8; /* almost white */
+    text-shadow: 0 0 3px #e39967, 0 0 10px #e39967, 0 0 20px #e39967, 0 0 30px #e39967;
+}
