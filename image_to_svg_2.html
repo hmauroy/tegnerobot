@@ -40,6 +40,7 @@
                     if (blur_value % 2 == 0) {
                         blur_value -= 1
                     }
+                    console.log("Blur vale: " + blur_value);
 
                     // Apply median blur
                     cv.medianBlur(gray, medianBlurred, blur_value); // The second parameter is the kernel size
@@ -91,7 +92,7 @@
         }
 
         function convertImage() {
-            
+
         }
     </script>
 </body>

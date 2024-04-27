@@ -14,6 +14,25 @@ body {
     width: 30vw;
 
 }
+#imageContainer {
+    display: flex;
+    justify-content: space-around;
+}
+.inputoutput {
+    background-color: rgb(191, 191, 191);
+    width: 30vw;
+}
+#status {
+    font-size: 120%;
+}
+.controls {
+    width: 40vw;
+    display: flex;
+    flex-direction: column;
+}
+#btnUpdate {
+    width: 10vw;
+}
 
 .crt-font {
     /*
