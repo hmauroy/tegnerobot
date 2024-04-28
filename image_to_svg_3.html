@@ -65,11 +65,12 @@
         let svgOutput = document.getElementById("svgOutput");
         let src, gray, medianBlurred, thresholded;
         let moduleInitialized = false;
+        let firstRun = true;
+        let imgData;  // Set later when filters are applied.
         inputElement.addEventListener('change', (e) => {
             imgElement.src = URL.createObjectURL(e.target.files[0]);
         }, false);
         imgElement.onload = function () {
-            c("hei");
             if (moduleInitialized) {
                 // Create the matrices if deleted.
                 gray = new cv.Mat();
@@ -105,7 +106,7 @@
                 src = cv.imread(imgElement);
                 // 1) color to gray
                 cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-                opencv2image(gray);
+                applyFilters();
                 //gray.delete();
                 //medianBlurred.delete();
                 //thresholded.delete();
@@ -162,34 +163,31 @@
 
         function opencv2image(opencvData) {
             // Convert OpenCV matrix to ImageData
-            let imgData = ctx.createImageData(canvas.width, canvas.height);
+            imgData = ctx.createImageData(canvas.width, canvas.height);
             for (let i = 0, j = 0; i < opencvData.data.length; i++, j += 4) {
                 imgData.data[j] = imgData.data[j + 1] = imgData.data[j + 2] = opencvData.data[i];
                 imgData.data[j + 3] = 255; // Alpha channel
             }
             ctx.putImageData(imgData, 0, 0);
-            //gray.delete();
-            //medianBlurred.delete();
-            //thresholded.delete();
         }
 
         function createSvg() {
             applyFilters(); // Run filters if not run already.
+
             // 4) potrace, turd-size
             // Clear previous SVG content
             document.getElementById('svgOutput').innerHTML = '';
 
-            // Load image to Potrace 
-            canvas.toBlob(blob => {
-                const url = URL.createObjectURL(blob);
+            let url = canvas.toDataURL();
+            c(url);
+
+            // Load image to Potrace
+            if (firstRun === false) {
                 Potrace.img.src = url;
-
-                // Optionally, revoke the URL after it's no longer needed
-                //Potrace.img.onload = () => {
-                  //  URL.revokeObjectURL(url);
-                //};
-            }, 'image/png');
-
+            }
+            Potrace.img.src = url;
+            firstRun = false;
+            
 
             // Set parameters if needed
             Potrace.setParameter({
@@ -203,7 +201,7 @@
             // Process the image and then display the SVG
             Potrace.process(function () {
                 let svg = Potrace.getSVG(1);
-                //c(svg);
+                c(svg);
                 document.getElementById('svgOutput').innerHTML = svg;
             });
         }
