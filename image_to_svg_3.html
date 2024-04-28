@@ -61,7 +61,7 @@
         let imgElement = document.getElementById('imageSrc');
         let inputElement = document.getElementById('fileInput');
         let canvas = document.getElementById("canvasOutput");
-        let ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let ctx = canvas.getContext('2d', [{ willReadFrequently: true }]);
         let svgOutput = document.getElementById("svgOutput");
         let src, gray, medianBlurred, thresholded;
         let moduleInitialized = false;
@@ -180,7 +180,16 @@
             document.getElementById('svgOutput').innerHTML = '';
 
             // Load image to Potrace 
-            Potrace.img.src = canvas.toDataURL();
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                Potrace.img.src = url;
+
+                // Optionally, revoke the URL after it's no longer needed
+                //Potrace.img.onload = () => {
+                  //  URL.revokeObjectURL(url);
+                //};
+            }, 'image/png');
+
 
             // Set parameters if needed
             Potrace.setParameter({
@@ -194,7 +203,7 @@
             // Process the image and then display the SVG
             Potrace.process(function () {
                 let svg = Potrace.getSVG(1);
-                c(svg);
+                //c(svg);
                 document.getElementById('svgOutput').innerHTML = svg;
             });
         }
