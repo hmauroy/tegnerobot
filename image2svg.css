@@ -22,6 +22,9 @@ body {
     background-color: rgb(191, 191, 191);
     width: 30vw;
 }
+#svgOutput {
+    background-color: white;
+}
 #status {
     font-size: 120%;
 }

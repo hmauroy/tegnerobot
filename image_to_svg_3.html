@@ -9,6 +9,8 @@
     <meta name="author" content="Henrik Mauroy">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="image2svg.css">
+    <script src="potrace.js"></script>
+    <!-- potrace repo: https://github.com/kilobtye/potrace/blob/master/potrace.js-->
 </head>
 
 <body>
@@ -24,16 +26,17 @@
             <div class="caption">filter-output</div>
         </div>
         <div class="inputoutput">
-            <canvas id="canvasOutput2"></canvas>
+            <div id="svgOutput"></div>
             <div class="caption">svg-output</div>
         </div>
     </div>
     <div class="controls">
         <div><input type="file" id="fileInput" name="file" />  </div>
-        <div><input type="range" id="rngBlur" min="3" max="99" value="9" step="1" /><span id="txtBlur">9</span>  </div>
-        <div><input type="range" id="rngThresh" min="1" max="99" value="9" step="1" /><span id="txtThresh">9</span></div>
-        <div><input type="range" id="rngTurdsize" min="0" max="42" value="8" step="1" /><span id="txtTurd">8</span></div>
+        <div>Blur factor <input type="range" id="rngBlur" min="1" max="99" value="3" step="1" /><span id="txtBlur">9</span>  </div>
+        <div>Treshold factor <input type="range" id="rngThresh" min="2" max="99" value="2" step="1" /><span id="txtThresh">9</span></div>
+        <div>Turd size <input type="range" id="rngTurdsize" min="0" max="42" value="8" step="1" /><span id="txtTurd">8</span></div>
         <div><input type="button" id="btnUpdate" value="Update" /></div>
+        <div><input type="button" id="btnSVG" value="Create SVG" /></div>
     </div>
 
     <script type="text/javascript">
@@ -50,23 +53,41 @@
         document.getElementById("rngTurdsize").addEventListener("input", (e) => {
             updateSliders();
         });
+        document.getElementById("btnSVG").addEventListener("click", (e) => {
+            createSvg();
+        });
+        updateSliders();
         let width, height;
         let imgElement = document.getElementById('imageSrc');
         let inputElement = document.getElementById('fileInput');
         let canvas = document.getElementById("canvasOutput");
-        let ctx = canvas.getContext('2d');
-        let canvas2 = document.getElementById("canvasOutput2");
-        let ctx2 = canvas2.getContext('2d');
+        let ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let svgOutput = document.getElementById("svgOutput");
+        let src, gray, medianBlurred, thresholded;
+        let moduleInitialized = false;
         inputElement.addEventListener('change', (e) => {
             imgElement.src = URL.createObjectURL(e.target.files[0]);
         }, false);
         imgElement.onload = function () {
+            c("hei");
+            if (moduleInitialized) {
+                // Create the matrices if deleted.
+                gray = new cv.Mat();
+                medianBlurred = new cv.Mat();
+                thresholded = new cv.Mat();
+                src = cv.imread(imgElement);
+                // 1) color to gray
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+                c(gray.cols);
+                opencv2image(gray);
+            }
+            
             // Ensure the canvas size matches the image
             canvas.width = imgElement.width;
             canvas.height = imgElement.height;
 
             // Draw the image onto the canvas
-            ctx.drawImage(imgElement, 0, 0, imgElement.width, imgElement.height);
+            //ctx.drawImage(imgElement, 0, 0, imgElement.width, imgElement.height);
 
             //let mat = cv.imread(imgElement);
             //cv.imshow('canvasOutput', mat);
@@ -75,28 +96,38 @@
         var Module = {
             // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
             onRuntimeInitialized() {
+                moduleInitialized = true;
                 document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+                // Create the matrices first time running.
+                gray = new cv.Mat();
+                medianBlurred = new cv.Mat();
+                thresholded = new cv.Mat();
+                src = cv.imread(imgElement);
+                // 1) color to gray
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+                opencv2image(gray);
+                //gray.delete();
+                //medianBlurred.delete();
+                //thresholded.delete();
             }
         };
 
         // Functions to apply image trickery + convert to svg.
         function applyFilters() {
-            // 1) color to gray
-            // 2) median blur, adjusted with slider
             let blur_factor = document.getElementById("rngBlur").value;
             let threshold_factor = document.getElementById("rngThresh").value;
             let turd_factor = document.getElementById("rngTurdsize").value;
             c("Blur: " + blur_factor + ", Thresh: " + threshold_factor + ", TurdSize: " + turd_factor);
-            // 3) adaptive threshold, adjusted with slider
-            // 4) potrace, turd-size adjusted with slider
-            let blur_value = parseInt(Math.round(blur_factor*width*0.01)); // blur value is around 1-2 % of image width
+            width = gray.cols;
+            height = gray.rows;
+            let blur_value = parseInt(Math.round(blur_factor*width*0.002)); // blur value is around 1-2 % of image width
             if (blur_value % 2 == 0) {
                 blur_value -= 1
                 if (blur_value <= 3) {
                     blur_value = 3;
                 }
             }
-            let thresh_value = parseInt(Math.round(threshold_factor*width*0.01)); // blur value is around 1-2 % of image width
+            let thresh_value = parseInt(Math.round(threshold_factor*width*0.005)); // blur value is around 1-2 % of image width
             if (thresh_value % 2 == 0) {
                 thresh_value -= 1
                 if (thresh_value <= 0) {
@@ -108,6 +139,17 @@
             if (turd_value <= 1) {
                 turd_value = 1
             }
+            medianBlurred = new cv.Mat();
+            thresholded = new cv.Mat();
+            // 2) median blur, adjusted with slider
+            cv.medianBlur(gray, medianBlurred, blur_value); // The second parameter is the kernel size
+
+            // Apply adaptive thresholding to create a binary image
+            // 3) adaptive threshold
+            cv.adaptiveThreshold(medianBlurred, thresholded, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, blockSize = thresh_value, C = 2);
+
+            opencv2image(thresholded);
+
         }
         function updateSliders() {
             let blur_factor = document.getElementById("rngBlur").value;
@@ -118,11 +160,51 @@
             document.getElementById("txtTurd").innerHTML = turd_factor;
         }
 
+        function opencv2image(opencvData) {
+            // Convert OpenCV matrix to ImageData
+            let imgData = ctx.createImageData(canvas.width, canvas.height);
+            for (let i = 0, j = 0; i < opencvData.data.length; i++, j += 4) {
+                imgData.data[j] = imgData.data[j + 1] = imgData.data[j + 2] = opencvData.data[i];
+                imgData.data[j + 3] = 255; // Alpha channel
+            }
+            ctx.putImageData(imgData, 0, 0);
+            //gray.delete();
+            //medianBlurred.delete();
+            //thresholded.delete();
+        }
+
+        function createSvg() {
+            applyFilters(); // Run filters if not run already.
+            // 4) potrace, turd-size
+            // Clear previous SVG content
+            document.getElementById('svgOutput').innerHTML = '';
+
+            // Load image to Potrace 
+            Potrace.img.src = canvas.toDataURL();
+
+            // Set parameters if needed
+            Potrace.setParameter({
+                turdsize: 8,
+                optcurve: true,
+                alphamax: 1,
+                opttolerance: 0.2,
+                turnpolicy: "minority"
+            });
+
+            // Process the image and then display the SVG
+            Potrace.process(function () {
+                let svg = Potrace.getSVG(1);
+                c(svg);
+                document.getElementById('svgOutput').innerHTML = svg;
+            });
+        }
+
         function c(text) {
             console.log(text);
         }
     </script>
-    <script async src="https://docs.opencv.org/4.5.0/opencv.js" type="text/javascript"></script>
+    <script async src="opencv.js" type="text/javascript"></script>
+    <!--script async src="https://docs.opencv.org/4.5.0/opencv.js" type="text/javascript"></script-->
 </body>
 
 </html>
