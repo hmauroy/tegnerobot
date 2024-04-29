@@ -22,7 +22,7 @@
             <div class="caption">imageSrc </div>
         </div>
         <div class="inputoutput">
-            <div id="canvasWindow"></div>
+            <canvas id="canvas"></canvas>
             <div class="caption">filter-output</div>
         </div>
         <div class="inputoutput">
@@ -38,6 +38,7 @@
         <div><input type="button" id="btnUpdate" value="Update" /></div>
         <div><input type="button" id="btnSVG" value="Create SVG" /></div>
     </div>
+    <div id="svgTextOutput"></div>
 
     <script type="text/javascript">
         // Listeners
@@ -61,7 +62,7 @@
         let imgElement = document.getElementById('imageSrc');
         let inputElement = document.getElementById('fileInput');
         let canvasWindow = document.getElementById("canvasWindow");
-        let canvas; // Is set later in openc2image().
+        let canvas = document.getElementById("canvas");
         let svgOutput = document.getElementById("svgOutput");
         let src, gray, medianBlurred, thresholded;
         let moduleInitialized = false;
@@ -73,6 +74,8 @@
         }, false);
         imgElement.onload = function () {
             if (moduleInitialized) {
+                // Empty svg-window before doing anything else.
+                document.getElementById('svgOutput').innerHTML = '';
                 // Create the matrices if deleted.
                 gray = new cv.Mat();
                 medianBlurred = new cv.Mat();
@@ -106,6 +109,8 @@
 
         // Functions to apply image trickery + convert to svg.
         function applyFilters() {
+            // Empty svg-window before doing anything else.
+            document.getElementById('svgOutput').innerHTML = '';
             let blur_factor = document.getElementById("rngBlur").value;
             let threshold_factor = document.getElementById("rngThresh").value;
             let turd_factor = document.getElementById("rngTurdsize").value;
@@ -142,6 +147,7 @@
 
             opencv2image(thresholded);
 
+
         }
         function updateSliders() {
             let blur_factor = document.getElementById("rngBlur").value;
@@ -153,19 +159,9 @@
         }
 
         function opencv2image(opencvData) {
-            // Create a new canvas every time and delete any if they are present.
-            c(canvasWindow.childNodes[0]);
-            while (canvasWindow.childNodes.length > 0) {
-                canvasWindow.removeChild(canvasWindow.childNodes[0]);
-            }
-            c(canvasWindow.childNodes[0]);
-            canvas = document.createElement("canvas");
-            canvas.id="canvas" + teller;
-            teller += 1;
             // Ensure the canvas size matches the image
             canvas.width = imgElement.width;
             canvas.height = imgElement.height;
-            canvasWindow.append(canvas);
             let ctx = canvas.getContext('2d', [{ willReadFrequently: true }]);
             // Convert OpenCV matrix to ImageData
             imgData = ctx.createImageData(canvas.width, canvas.height);
@@ -184,12 +180,8 @@
             document.getElementById('svgOutput').innerHTML = '';
 
             let url = canvas.toDataURL();
-            c(url);
 
             // Load image to Potrace
-            if (firstRun === false) {
-                Potrace.img.src = url;
-            }
             Potrace.img.src = url;
             firstRun = false;
             
@@ -206,9 +198,112 @@
             // Process the image and then display the SVG
             Potrace.process(function () {
                 let svg = Potrace.getSVG(1);
-                c(svg);
-                document.getElementById('svgOutput').innerHTML = svg;
+                //c(svg);
+                document.getElementById("svgOutput").innerHTML = svg;
+                document.getElementById("svgTextOutput").innerText = svg;
+                svg = '<svg id="svg" version="1.1" width="327" height="245" xmlns="http://www.w3.org/2000/svg"><path d="M1.654 0.750 C 1.232 1.432,35.540 1.418,75.000 0.720 C 83.525 0.569,70.614 0.345,46.309 0.223 C 22.004 0.100,1.909 0.337,1.654 0.750 M91.725 3.250 C 90.899 5.038,89.888 7.603,89.480 8.951 C 89.072 10.299,85.515 14.799,81.576 18.951 C 74.278 26.644,63.000 42.557,63.000 45.161 C 63.000 45.953,62.592 47.028,62.093 47.550 C 60.343 49.384,54.155 69.563,53.522 75.500 C 53.051 79.923,53.254 82.003,54.298 83.414 C 55.371 84.866,55.492 86.314,54.797 89.407 C 54.004 92.940,54.151 93.704,55.898 95.118 C 57.007 96.017,57.698 96.968,57.433 97.233 C 57.168 97.498,57.628 98.276,58.455 98.963 C 59.579 99.896,59.701 100.691,58.936 102.119 C" stroke="none" fill="black" fill-rule="evenodd"/></svg>'
+                parseSvg(svg);
             });
+        }
+
+        function parseSvg(svg) {
+            let seq = "";
+            let char = "";
+            let subSeq = "";
+            let width = 100;
+            let height = 100;
+            let bezier = [];
+            let coordinates = [];
+            let lastCoordinate = [];
+            for (let i=0; i<120; i++) {
+                seq += svg[i];
+                if (svg[i] === ' '){
+                    seq = "";
+                }
+                if (seq === 'width="') {
+                    // Read numbers until " character
+                    subSeq = "";
+                    while (svg[i+1] != '"') {
+                        subSeq += svg[i+1];
+                        i++;
+                    }
+                    width = parseInt(subSeq);
+                    subSeq = "";
+
+                }
+                if (seq === 'height="') {
+                    while (svg[i+1] != '"') {
+                        subSeq += svg[i+1];
+                        i++;
+                    }
+                    height = parseInt(subSeq);
+                    subSeq = "";
+                    
+                }
+                if (seq === 'd="M') {
+                    // Read first coordinate after absolute move
+                    while (svg[i+1] != ' ') {
+                        subSeq += svg[i+1];
+                        i++;
+                    }
+                    lastCoordinate.push(parseFloat(subSeq));
+                    subSeq = "";
+                    i++;
+                    while (svg[i+1] != ' ') {
+                        subSeq += svg[i+1];
+                        i++;
+                        c(subSeq);
+                    }
+                    lastCoordinate.push(parseFloat(subSeq));
+                    subSeq = "";
+                    c(lastCoordinate);
+                }
+                if (seq === 'C') {
+                    bezier = lastCoordinate.concat(bezier);
+                    c(bezier);
+                    // Read 6 control points, separated with comma between xy pairs
+                    while (svg[i+1] != 'C') {   // Run through empty spaces.
+                        subSeq += svg[i+1];
+                        i++;
+                    }
+                    let matches = subSeq.match(/[\d\.]+/g);
+                    matches.forEach(number => {
+                        bezier.push(parseFloat(number));
+                    });
+                    c(bezier);
+                    return;
+                    
+                }
+                //c("width: " + width + ", height: " + height);
+            }
+            //document.getElementById("svgTextOutput").innerText = str1;
+
+        }
+
+        // http://rosettacode.org/wiki/Cubic_bezier_curves#C
+        function bezier3(x1, y1, x2, y2, x3, y3, x4, y4) {
+          var px = [], py = [];
+          for (var i = 0; i <= b3Seg; i++) {
+            var d = i / b3Seg;
+            var a = 1 - d;
+            var b = a * a;
+            var c = d * d;
+            a = a * b;
+            b = 3 * b * d;
+            c = 3 * a * c;
+            d = c * d;
+            px[i] = parseInt(a * x1 + b * x2 + c * x3 + d * x4);
+            py[i] = parseInt(a * y1 + b * y2 + c * y3 + d * y4);
+          }
+          var x0 = px[0];
+          var y0 = py[0];
+          for (i = 1; i <= b3Seg; i++) {
+            var x = px[i];
+            var y = py[i];
+            drawPolygon(context, [[x0, y0], [x, y]], "red", "red");
+            x0 = x;
+            y0 = y;
+          }
         }
 
         function c(text) {
