@@ -22,7 +22,7 @@
             <div class="caption">imageSrc </div>
         </div>
         <div class="inputoutput">
-            <canvas id="canvasOutput"></canvas>
+            <div id="canvasWindow"></div>
             <div class="caption">filter-output</div>
         </div>
         <div class="inputoutput">
@@ -60,13 +60,14 @@
         let width, height;
         let imgElement = document.getElementById('imageSrc');
         let inputElement = document.getElementById('fileInput');
-        let canvas = document.getElementById("canvasOutput");
-        let ctx = canvas.getContext('2d', [{ willReadFrequently: true }]);
+        let canvasWindow = document.getElementById("canvasWindow");
+        let canvas; // Is set later in openc2image().
         let svgOutput = document.getElementById("svgOutput");
         let src, gray, medianBlurred, thresholded;
         let moduleInitialized = false;
         let firstRun = true;
         let imgData;  // Set later when filters are applied.
+        let teller = 1;
         inputElement.addEventListener('change', (e) => {
             imgElement.src = URL.createObjectURL(e.target.files[0]);
         }, false);
@@ -82,17 +83,7 @@
                 c(gray.cols);
                 opencv2image(gray);
             }
-            
-            // Ensure the canvas size matches the image
-            canvas.width = imgElement.width;
-            canvas.height = imgElement.height;
 
-            // Draw the image onto the canvas
-            //ctx.drawImage(imgElement, 0, 0, imgElement.width, imgElement.height);
-
-            //let mat = cv.imread(imgElement);
-            //cv.imshow('canvasOutput', mat);
-            //mat.delete();
         };
         var Module = {
             // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
@@ -162,6 +153,20 @@
         }
 
         function opencv2image(opencvData) {
+            // Create a new canvas every time and delete any if they are present.
+            c(canvasWindow.childNodes[0]);
+            while (canvasWindow.childNodes.length > 0) {
+                canvasWindow.removeChild(canvasWindow.childNodes[0]);
+            }
+            c(canvasWindow.childNodes[0]);
+            canvas = document.createElement("canvas");
+            canvas.id="canvas" + teller;
+            teller += 1;
+            // Ensure the canvas size matches the image
+            canvas.width = imgElement.width;
+            canvas.height = imgElement.height;
+            canvasWindow.append(canvas);
+            let ctx = canvas.getContext('2d', [{ willReadFrequently: true }]);
             // Convert OpenCV matrix to ImageData
             imgData = ctx.createImageData(canvas.width, canvas.height);
             for (let i = 0, j = 0; i < opencvData.data.length; i++, j += 4) {
