@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Bezier curve - Rosetta Code</h1>
+    <h2><a href="https://rosettacode.org/wiki/Bitmap/B%C3%A9zier_curves/Cubic#JavaScript">https://rosettacode.org/wiki/Bitmap/B%C3%A9zier_curves/Cubic#JavaScript</a></h2>
+
+    <canvas id="container" width="500" height="500"></canvas>
+    <script>
+        let b3Seg = 30;
+        let teller = 0;
+        let lengde = 0;
+        
+        function draw() {
+            var canvas = document.getElementById("container");
+            context = canvas.getContext("2d");
+
+
+            //cubicBezier(20, 200, 700, 50, -300, 50, 380, 150);
+            //cubicBezier(160, 10, 10, 40, 30, 160, 150, 110);
+            //cubicBezier(200,149, 30,50, 120,130, 160,30, b3Seg);
+            //cubicBezier(160,10, 10,40, 30,160, 150,110, b3Seg);
+            cubicBezier(1.654*10, 0.75*10, 1.232*10, 1.432*10, 35.54*10, 1.418*10, 75*10, 0.72*10, b3Seg);
+          }
+
+          // http://rosettacode.org/wiki/Cubic_bezier_curves#C
+          function cubicBezier(x0, y0, x1, y1, x2, y2, x3, y3, n) {
+              let px = [];
+              let py = [];
+              for (let i = 0; i <= n; i++) {
+                  let t = i / n;
+                  let a = Math.pow((1.0 - t), 3);
+                  let b = 3.0 * t * Math.pow((1.0 - t), 2);
+                  let c = 3.0 * Math.pow(t, 2) * (1.0 - t);
+                  let d = Math.pow(t, 3);
+
+                  let x = a * x0 + b * x1 + c * x2 + d * x3;
+                  let y = a * y0 + b * y1 + c * y2 + d * y3;
+                  px.push(x);
+                  py.push(y);
+              }
+              console.log(px,py);
+              let xa = px[0];
+              let ya = py[0];
+              for (i = 1; i < px.length; i++) {
+                let x = px[i];
+                let y = py[i];
+                console.log(x,y);
+                drawPolygon(context, xa, ya, x, y, "red");
+                xa = x;
+                ya = y;
+              }
+          }
+        function drawPolygon(context, x0,y0,x,y, strokeStyle) {
+          teller ++;
+          if (teller > 1000000) {
+            console.log("hei")
+            return;
+          }
+          context.strokeStyle = strokeStyle;
+          context.beginPath();
+          context.lineWidth = 2;
+          
+          context.moveTo(x0, y0);
+          
+          context.lineTo(x,y);
+
+          context.stroke();
+
+          lengde += lineLength(x0,y0,x,y);
+        }
+
+        function lineLength(x0,y0,x,y) {
+          let dx = Math.abs(x-x0);
+          let dy = Math.abs(y-y0);
+          return Math.sqrt((dx*dx) + (dy*dy));
+        }
+
+        draw();
+        console.log("length: " + lengde.toFixed(1));
+    </script>
+    
+</body>
+</html>
