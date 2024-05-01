@@ -331,13 +331,13 @@
                 //coordinateString += point[0] + "," + point[1] + "\n";
             })
             //svgTextOutput.innerText = coordinateString;
-            svgTextOutput.value = coordinateString;
+            svgTextOutput.value = svg;
+            //svgTextOutput.value = coordinateString;
             // Update CSS of textarea so it is tall enough.
             c(userOutput.length);
             let rows = Math.round(userOutput.length/2);
             svgTextOutput.setAttribute("rows",rows);
             
-
         }
 
         // Converted python code to javascript from Rosetta Code:
