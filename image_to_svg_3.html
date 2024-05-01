@@ -22,18 +22,20 @@
     <h2 class="crt-font">Hello OpenCV.js</h2>
     <p id="status" class="crt-font">OpenCV.js is loading...</p>
     <div id="imageContainer">
-        <div class="inputoutput">
-            <img id="imageSrc" src="lillebror_newborn512.png" alt="No Image" />
-            <div class="caption">imageSrc </div>
-        </div>
-        <div class="inputoutput">
-            <canvas id="canvas"></canvas>
-            <div class="caption">filter-output</div>
-        </div>
-        <div class="inputoutput">
-            <div id="svgOutput"></div>
-            <div class="caption">svg-output</div>
-        </div>
+        
+    </div>
+    <div class="inputoutput">
+        <img id="imageSrc" src="lillebror_newborn512.png" alt="No Image" />
+        <div class="caption">imageSrc </div>
+    </div>
+    <div class="inputoutput">
+        <div id="svgOutput"></div>
+        <div class="caption">svg-output</div>
+    </div>
+    <div id="canvasWindow">
+        <div id="btnCloseDiv"><input type="button" id="btnClose" value="Close" /></div>
+        <canvas id="canvas"></canvas>
+        <div class="caption">filter-output</div>
     </div>
     <div class="controls">
         <div><input type="file" id="fileInput" name="file" />  </div>
@@ -65,6 +67,9 @@
         });
         document.getElementById("btnCopy").addEventListener("click", (e) => {
             copySVG();
+        });
+        document.getElementById("btnClose").addEventListener("click", (e) => {
+            document.getElementById("canvasWindow").style.visibility = "hidden";
         });
         updateSliders();
         let width, height;
@@ -181,6 +186,7 @@
                 imgData.data[j + 3] = 255; // Alpha channel
             }
             ctx.putImageData(imgData, 0, 0);
+            document.getElementById("canvasWindow").style.visibility = "visible";
         }
 
         function createSvg() {
@@ -198,8 +204,9 @@
             
 
             // Set parameters if needed
+            let turd_factor = document.getElementById("rngTurdsize").value;
             Potrace.setParameter({
-                turdsize: 8,
+                turdsize: turd_factor,
                 optcurve: true,
                 alphamax: 1,
                 opttolerance: 0.2,

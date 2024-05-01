@@ -10,8 +10,21 @@ body {
     background-color: rgb(40, 40, 40);
     color: #fff3ea;
 }
+#canvasWindow {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    visibility: hidden;
+}
+#btnCloseDiv {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    top: 25px;
+    
+}
 #imageSrc {
-    width: 30vw;
+    width: 70vw;
 
 }
 #imageContainer {
@@ -20,7 +33,7 @@ body {
 }
 .inputoutput {
     background-color: rgb(191, 191, 191);
-    width: 30vw;
+    width: 90vw;
 }
 #svgOutput {
     background-color: white;
@@ -29,7 +42,7 @@ body {
     font-size: 120%;
 }
 .controls {
-    width: 40vw;
+    width: 75vw;
     display: flex;
     flex-direction: column;
 }
