@@ -37,6 +37,7 @@ body {
 }
 #svgOutput {
     background-color: white;
+    color: black;
 }
 #status {
     font-size: 120%;
