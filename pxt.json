@@ -16,7 +16,8 @@
         "main.py",
         "bresenham.js",
         "bresenham.css",
-        "bresenham.html"
+        "bresenham.html",
+        "kodeFraSimulator.ts"
     ],
     "testFiles": [
         "test.ts"
