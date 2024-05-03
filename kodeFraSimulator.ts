@@ -57,8 +57,15 @@ namespace figures {
     calculatePointFromIndex: (index: number) => tegneRobot.IXY;
   }
 
+  /**
+   * Draws a square
+   * @param xPosition - Coordinate on X axis
+   * @param yPosition - Coordinate on y axis
+   * @param radius - length of radius
+   * @param fidelity - level of detail in circle
+   */
+  //% block
   export function drawCircle({ xPosition, yPosition, radius, fidelity = 36 }: ICircleProps) {
-
     tegneRobot.draw.figureStack.push({
       numberOfIndexes: fidelity + 1,
       calculatePointFromIndex: function (index: number) {
