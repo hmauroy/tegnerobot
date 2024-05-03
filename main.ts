@@ -4,6 +4,9 @@ input.onButtonPressed(Button.A, function () {
 input.onButtonPressed(Button.B, function () {
     waitTime += -50
 })
+// Initialize serial comms.
+serial.redirectToUSB();
+serial.writeString('Serial initialized \n');
 let yHigh = 0
 let xHigh = 0
 let radius = 0.5
@@ -22,7 +25,6 @@ basic.forever(function () {
         xHigh = 1
         yHigh = 1
     }
-    servos.P0.setAngle(150)
     basic.showLeds(`
         . . # . .
         . # . . .
