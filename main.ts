@@ -12,8 +12,8 @@ let high = 1
 high = 1
 let waitTime = 400
 figures.drawSquare(
-10,
-10,
+5,
+2,
 1,
 0
 )

@@ -27,7 +27,7 @@ namespace figures {
                 const origin = { x: xPosition, y: yPosition };
                 const size = lengthOfSide;
                 const rotate = rotation;
-                const halfSize = Math.round(size * 0.5);
+                const halfSize = Math.ceil(size * 0.5);
 
                 switch (index) {
                     case 1:
@@ -127,7 +127,7 @@ namespace tegneRobot {
     }
 
     export const draw: IDraw = {
-        pulseInterval: 400,
+        pulseInterval: 40,
         penDown: false,
         targetPointIndex: 0,
         running: true,
@@ -207,11 +207,12 @@ namespace tegneRobot {
         if (draw.running) {
 
             if (timeDifference(currentTime) >= draw.pulseInterval) {
-                serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
-                serialLog("machine.x: " + machine.currentPosition.x);
-                serialLog("machine.y: " + machine.currentPosition.y);
 
                 if (draw.pulseHigh) {
+                    serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+                    serialLog("machine.x: " + machine.currentPosition.x);
+                    serialLog("machine.y: " + machine.currentPosition.y);
+                    
                     const err2 = 2 * bresenham.err;
 
                     if (err2 >= bresenham.dy) {
@@ -235,11 +236,12 @@ namespace tegneRobot {
                     draw.pulseHigh = false;
                 }
                 else {
-                    serialLog("0");
                     activatePin(DigitalPin.P13, 0);
                     activatePin(DigitalPin.P15, 0);
                     draw.pulseHigh = true;
                 }
+                serialLog("machine.x: " + machine.currentPosition.x);
+                serialLog("machine.y: " + machine.currentPosition.y);
                 draw.previousTime = currentTime;
                 //serialLog("t: " + draw.previousTime);
             }
@@ -249,6 +251,9 @@ namespace tegneRobot {
     }
 
     export function updateParameters() {
+        serialLog("updateParameters()");
+        serialLog("draw.figureNumberOfIndexes= " + draw.figureNumberOfIndexes);
+        serialLog("draw.targetPointIndex= " + draw.targetPointIndex);
         if (draw.targetPointIndex < draw.figureNumberOfIndexes - 1) {
             draw.targetPointIndex += 1;
 
