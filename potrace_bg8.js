@@ -1237,7 +1237,8 @@ var Potrace = (function() {
   function getSVG(size, opt_type) {
   
     function path(curve) {
-    
+        
+        // Original function
       function bezier(i) {
         var b = 'C ' + (curve.c[i * 3 + 0].x * size).toFixed(3) + ' ' +
             (curve.c[i * 3 + 0].y * size).toFixed(3) + ',';
@@ -1247,23 +1248,40 @@ var Potrace = (function() {
             (curve.c[i * 3 + 2].y * size).toFixed(3) + ' ';
         return b;
       }
+        // BG8 bezier constructor for array of bezier-arrays.
+        function bezierBG8(i) {
+            let b = ["C"];
+            b.push(parseFloat((curve.c[i * 3 + 0].x * size).toFixed(3)));
+            b.push(parseFloat((curve.c[i * 3 + 0].y * size).toFixed(3)));
+            b.push(parseFloat((curve.c[i * 3 + 1].x * size).toFixed(3)));
+            b.push(parseFloat((curve.c[i * 3 + 1].y * size).toFixed(3)));
+            b.push(parseFloat((curve.c[i * 3 + 2].x * size).toFixed(3)));
+            b.push(parseFloat((curve.c[i * 3 + 2].y * size).toFixed(3)));
+          return b;
+        }
     
-      function segment(i) {
-        var s = 'L ' + (curve.c[i * 3 + 1].x * size).toFixed(3) + ' ' +
-            (curve.c[i * 3 + 1].y * size).toFixed(3) + ' ';
-        s += (curve.c[i * 3 + 2].x * size).toFixed(3) + ' ' +
-            (curve.c[i * 3 + 2].y * size).toFixed(3) + ' ';
+        function segment(i) {
+            let s = ["L",
+                parseFloat((curve.c[i * 3 + 1].x * size).toFixed(3)),
+                parseFloat((curve.c[i * 3 + 1].y * size).toFixed(3)),
+                parseFloat((curve.c[i * 3 + 2].x * size).toFixed(3)),
+                parseFloat((curve.c[i * 3 + 2].y * size).toFixed(3))
+            ];
         return s;
       }
 
+        
       var n = curve.n, i;
-      var p = 'M' + (curve.c[(n - 1) * 3 + 2].x * size).toFixed(3) +
-          ' ' + (curve.c[(n - 1) * 3 + 2].y * size).toFixed(3) + ' ';
+        let p = [["M",
+            parseFloat((curve.c[(n - 1) * 3 + 2].x * size).toFixed(3)),
+            parseFloat((curve.c[(n - 1) * 3 + 2].y * size).toFixed(3))]]
+
       for (i = 0; i < n; i++) {
         if (curve.tag[i] === "CURVE") {
-          p += bezier(i);
+            p = p.concat([bezierBG8(i)]);
+          //p += bezier(i); // Original
         } else if (curve.tag[i] === "CORNER") {
-          p += segment(i);
+          p = p.concat([segment(i)]);
         }
       }
       //p += 
@@ -1284,7 +1302,7 @@ var Potrace = (function() {
         svg += path(c); */
       bezierCurves.push(path(pathlist[i].curve));
     }
-    return bezierCurves;
+      return JSON.stringify(bezierCurves); // Henriks idea for easy manipulation afterwards.
   }
   
   return{
