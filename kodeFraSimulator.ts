@@ -32,8 +32,7 @@ namespace figures {
       rotation: rotation,
       numberOfIndexes: numberOfIndexes,
       halfSize: size * 0.5,
-
-      calculatePointFromIndex: (index: number): tegneRobot.IXY => {
+      calculatePointFromIndex: function (index: number): tegneRobot.IXY {
         switch (index) {
           case 1:
             return { x: this.origin.x + this.halfSize, y: this.origin.y - this.halfSize };
@@ -73,7 +72,7 @@ namespace figures {
       numberOfIndexes: fidelity + 1,
       stepSize: 360 / fidelity,
       step: (Math.PI / 180) * this.stepSize,
-      calculatePointFromIndex: (index: number) => {
+      calculatePointFromIndex: function (index: number) {
         return {
           x: Math.round(Math.cos(index * this.step) * this.radius) + this.origin.x,
           y: Math.round(Math.sin(index * this.step) * this.radius) + this.origin.y,
