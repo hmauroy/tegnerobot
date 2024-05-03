@@ -2,11 +2,7 @@
 namespace figures {
 
   export interface ISquare {
-    origin: tegneRobot.IXY;
-    size: number;
-    rotation: number;
     numberOfIndexes: number;
-    halfSize: number;
     calculatePointFromIndex: (index: number) => tegneRobot.IXY;
   }
 
@@ -22,27 +18,27 @@ namespace figures {
    * @param rotation - rotation of square #TODO: not implemented yet.
    */
   //% block
-  export function drawSquare({ xPosition, yPosition, lengthOfSide: size, rotation = 1 }: ISquareProps) {
+  export function drawSquare({ xPosition, yPosition, lengthOfSide: lengthOfSide, rotation = 1 }: ISquareProps) {
 
     const numberOfIndexes = 5;
 
     tegneRobot.draw.figureStack.push({
-      origin: { x: xPosition, y: yPosition },
-      size: size,
-      rotation: rotation,
       numberOfIndexes: numberOfIndexes,
-      halfSize: size * 0.5,
       calculatePointFromIndex: function (index: number): tegneRobot.IXY {
-        const origin = this.origin;
+        const origin = { x: xPosition, y: yPosition };
+        const size = lengthOfSide;
+        const rotate = rotation;
+        const halfSize = size * 0.5;
+
         switch (index) {
           case 1:
-            return { x: origin.x + this.halfSize, y: this.origin.y - this.halfSize };
+            return { x: origin.x + halfSize, y: origin.y - halfSize };
           case 2:
-            return { x: this.origin.x + this.halfSize, y: this.origin.y + this.halfSize };
+            return { x: origin.x + halfSize, y: origin.y + halfSize };
           case 3:
-            return { x: this.origin.x - this.halfSize, y: this.origin.y + this.halfSize };
+            return { x: origin.x - halfSize, y: origin.y + halfSize };
           default:
-            return { x: this.origin.x - this.halfSize, y: this.origin.y - this.halfSize };
+            return { x: origin.x - halfSize, y: origin.y - halfSize };
         }
       }
     });
