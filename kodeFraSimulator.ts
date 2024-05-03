@@ -60,7 +60,7 @@ namespace figures {
     radius: number;
     numberOfIndexes: number;
     stepSize: number;
-    step: number;
+    step: () => number;
     calculatePointFromIndex: (index: number) => tegneRobot.IXY;
   }
 
@@ -71,7 +71,7 @@ namespace figures {
       radius: radius,
       numberOfIndexes: fidelity + 1,
       stepSize: 360 / fidelity,
-      step: (Math.PI / 180) * this.stepSize,
+      step: function () { return (Math.PI / 180) * this.stepSize },
       calculatePointFromIndex: function (index: number) {
         return {
           x: Math.round(Math.cos(index * this.step) * this.radius) + this.origin.x,
@@ -81,8 +81,6 @@ namespace figures {
     })
   }
 }
-
-
 
 namespace tegneRobot {
   const machine = {
@@ -183,7 +181,7 @@ namespace tegneRobot {
 
   export function updateParameters() {
     if (draw.targetPointIndex < draw.figureNumberOfIndexes - 1) {
-      draw.targetPointIndex++;
+      draw.targetPointIndex += 1;
 
       setNewTargetPoint();
       setupBresenhamForPoint();
@@ -200,7 +198,7 @@ namespace tegneRobot {
       if (draw.figureIndex < draw.figureStack.length - 1) {
 
         draw.targetPointIndex = -1;
-        draw.figureIndex++;
+        draw.figureIndex += 1;
         draw.figureNumberOfIndexes = draw.figureStack[draw.figureIndex].numberOfIndexes;
 
 
