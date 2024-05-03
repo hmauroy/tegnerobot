@@ -212,9 +212,11 @@ namespace tegneRobot {
   }
 
   function setNewTargetPoint() {
-    draw.targetPoint = draw.figureStack[
-      draw.figureIndex
-    ].calculatePointFromIndex(draw.targetPointIndex);
+    if (draw.figureStack.length > 0) {
+      draw.targetPoint = draw.figureStack[
+        draw.figureIndex
+      ].calculatePointFromIndex(draw.targetPointIndex);
+    }
   }
 
   function setupBresenhamForPoint() {
