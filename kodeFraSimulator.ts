@@ -65,7 +65,7 @@ namespace figures {
    * @param fidelity - level of detail in circle
    */
   //% block
-  export function drawCircle({ xPosition, yPosition, radius, fidelity = 36 }: ICircleProps) {
+  export function drawCircle(xPosition: number, yPosition: number, radius: number, fidelity = 36) {
     tegneRobot.draw.figureStack.push({
       numberOfIndexes: fidelity + 1,
       calculatePointFromIndex: function (index: number) {
