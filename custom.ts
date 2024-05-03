@@ -127,7 +127,7 @@ namespace tegneRobot {
     }
 
     export const draw: IDraw = {
-        pulseInterval: 100000,
+        pulseInterval: 5000,
         penDown: false,
         targetPointIndex: 0,
         running: true,
@@ -175,13 +175,24 @@ namespace tegneRobot {
         return currentTime - draw.previousTime;
     }
 
+    /**
+     * Runs the main loop with microsecond timing.
+     */
+    //% block="Start drawing all figures" blockGap=8
+    export function startDrawing() {
+        initiateDrawingParameters();
+        while(true) {
+            drawFigureStack();
+            control.waitMicros(draw.pulseInterval);
+        }
+    }
+
 
     /**
      * Draws the figures
      */
     //% block="Draw Figures" blockGap=8
     export function drawFigureStack() {
-        serialLog("drawFigureStack");
         if (
             machine.currentPosition.x === draw.targetPoint.x &&
             machine.currentPosition.y === draw.targetPoint.y && draw.running
@@ -189,22 +200,23 @@ namespace tegneRobot {
             updateParameters();
         }
 
-        let currentTime = input.runningTimeMicros();
+        let currentTime = micros();
+        //let currentTime = input.runningTime();
 
 
         if (draw.running) {
 
             if (timeDifference(currentTime) >= draw.pulseInterval) {
-                serialLog("curr time:" + currentTime);
+                serialLog("dt: " + timeDifference(currentTime));
 
                 if (draw.pulseHigh) {
-                    serialLog("next" + currentTime);
                     const err2 = 2 * bresenham.err;
 
                     if (err2 >= bresenham.dy) {
                         bresenham.err = bresenham.err + bresenham.dy;
 
                         if (machine.currentPosition.x !== draw.targetPoint.x) {
+                            //serialLog("stepX");
                             activatePin(DigitalPin.P13, 1);
                         }
                     }
@@ -212,12 +224,14 @@ namespace tegneRobot {
                         bresenham.err = bresenham.err + bresenham.dx;
 
                         if (machine.currentPosition.y !== draw.targetPoint.y) {
+                            serialLog("stepY");
                             activatePin(DigitalPin.P15, 1);
                         }
                     }
                     draw.pulseHigh = false;
                 }
                 else {
+                    //serialLog("LOW");
                     activatePin(DigitalPin.P13, 0);
                     activatePin(DigitalPin.P15, 0);
                     draw.pulseHigh = true;
@@ -225,7 +239,6 @@ namespace tegneRobot {
             }
 
             draw.previousTime = currentTime;
-            serialLog("previousTime " + draw.previousTime);
         }
     }
 
@@ -243,7 +256,7 @@ namespace tegneRobot {
 
         } else {
 
-            //raisePen();
+            liftPen();
 
             if (draw.figureIndex < draw.figureStack.length - 1) {
 
@@ -391,7 +404,12 @@ namespace tegneRobot {
 
     function micros() {
         // Get time ellapsed since app start in microseconds.
-        return input.runningTimeMicros()
+        return input.runningTimeMicros();
+    }
+
+    function millis() {
+        // Get time ellapsed since app start in milliseconds.
+        return input.runningTime();
     }
 
     let PCA9557_ADDR = 24

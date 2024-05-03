@@ -14,10 +14,7 @@ let waitTime = 400
 figures.drawSquare(
 0,
 0,
-100,
+10,
 0
 )
-tegneRobot.initiateDrawingParameters()
-basic.forever(function () {
-    tegneRobot.drawFigureStack()
-})
+tegneRobot.startDrawing()
