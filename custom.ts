@@ -127,7 +127,7 @@ namespace tegneRobot {
     }
 
     export const draw: IDraw = {
-        pulseInterval: 400,
+        pulseInterval: 100000,
         penDown: false,
         targetPointIndex: 0,
         running: true,
@@ -161,6 +161,7 @@ namespace tegneRobot {
         checkFigureStack();
         setNewTargetPoint();
         setupBresenhamForPoint();
+        draw.pulseHigh = true;
     }
 
 
@@ -180,6 +181,7 @@ namespace tegneRobot {
      */
     //% block="Draw Figures" blockGap=8
     export function drawFigureStack() {
+        serialLog("drawFigureStack");
         if (
             machine.currentPosition.x === draw.targetPoint.x &&
             machine.currentPosition.y === draw.targetPoint.y && draw.running
@@ -193,8 +195,10 @@ namespace tegneRobot {
         if (draw.running) {
 
             if (timeDifference(currentTime) >= draw.pulseInterval) {
+                serialLog("curr time:" + currentTime);
 
                 if (draw.pulseHigh) {
+                    serialLog("next" + currentTime);
                     const err2 = 2 * bresenham.err;
 
                     if (err2 >= bresenham.dy) {
@@ -221,6 +225,7 @@ namespace tegneRobot {
             }
 
             draw.previousTime = currentTime;
+            serialLog("previousTime " + draw.previousTime);
         }
     }
 
@@ -238,7 +243,7 @@ namespace tegneRobot {
 
         } else {
 
-            raisePen();
+            //raisePen();
 
             if (draw.figureIndex < draw.figureStack.length - 1) {
 
@@ -256,6 +261,7 @@ namespace tegneRobot {
     }
 
     function setNewTargetPoint() {
+        serialLog("setNewTargetPoint");
         if (draw.figureStack.length > 0) {
             draw.targetPoint = draw.figureStack[
                 draw.figureIndex
@@ -264,6 +270,7 @@ namespace tegneRobot {
     }
 
     function setupBresenhamForPoint() {
+        serialLog("setupBresenhamForPoint");
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
         bresenham.dy = -Math.abs(draw.targetPoint.y - machine.currentPosition.y);
         bresenham.err = bresenham.dx + bresenham.dy;
@@ -358,6 +365,11 @@ namespace tegneRobot {
         pinStates.pin16 = pin16;
     }
 
+    function serialLog(text : string) {
+        serial.writeString(text);
+        serial.writeString("\r\n")
+    }
+
     //% blockId="setI2CPins" block="set i2c data to %sdaPin and clock to %sclPin|"
     //% shim=i2crr::setI2CPins
     //% sdaPin.defl=DigitalPin.P1 sclPin.defl=DigitalPin.P2
@@ -379,7 +391,7 @@ namespace tegneRobot {
 
     function micros() {
         // Get time ellapsed since app start in microseconds.
-        return input.runningTimeMicrosMicros()
+        return input.runningTimeMicros()
     }
 
     let PCA9557_ADDR = 24
