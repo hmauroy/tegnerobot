@@ -27,7 +27,7 @@ namespace figures {
                 const origin = { x: xPosition, y: yPosition };
                 const size = lengthOfSide;
                 const rotate = rotation;
-                const halfSize = size * 0.5;
+                const halfSize = Math.round(size * 0.5);
 
                 switch (index) {
                     case 1:
@@ -207,7 +207,9 @@ namespace tegneRobot {
         if (draw.running) {
 
             if (timeDifference(currentTime) >= draw.pulseInterval) {
-                //serialLog("dt: " + timeDifference(currentTime));
+                serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+                serialLog("machine.x: " + machine.currentPosition.x);
+                serialLog("machine.y: " + machine.currentPosition.y);
 
                 if (draw.pulseHigh) {
                     const err2 = 2 * bresenham.err;
@@ -216,6 +218,7 @@ namespace tegneRobot {
                         bresenham.err = bresenham.err + bresenham.dy;
 
                         if (machine.currentPosition.x !== draw.targetPoint.x) {
+                            machine.currentPosition.x += machine.direction.x
                             serialLog("X");
                             activatePin(DigitalPin.P13, 1);
                         }
@@ -224,6 +227,7 @@ namespace tegneRobot {
                         bresenham.err = bresenham.err + bresenham.dx;
 
                         if (machine.currentPosition.y !== draw.targetPoint.y) {
+                            machine.currentPosition.y += machine.direction.y
                             serialLog("Y");
                             activatePin(DigitalPin.P15, 1);
                         }
