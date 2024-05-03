@@ -122,7 +122,8 @@ namespace tegneRobot {
         figureNumberOfIndexes: number,
         figureStack: (figures.ISquare | figures.ICircle)[],
         targetPoint: { x: number, y: number },
-        previousTime: number
+        previousTime: number,
+        pulseHigh: boolean
     }
 
     export const draw: IDraw = {
