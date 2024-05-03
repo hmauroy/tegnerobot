@@ -158,6 +158,7 @@ namespace tegneRobot {
 
 
     export function initiateDrawingParameters() {
+        serialLog("---- Initiate drawing ----");
         checkFigureStack();
         setNewTargetPoint();
         setupBresenhamForPoint();
@@ -168,6 +169,7 @@ namespace tegneRobot {
 
     export function checkFigureStack() {
         draw.running = draw.figureStack.length > 0;
+        draw.figureNumberOfIndexes = draw.figureStack[draw.figureIndex].numberOfIndexes;
     }
 
 
@@ -266,6 +268,7 @@ namespace tegneRobot {
             }
 
         } else {
+            serialLog("Updates figureNumberOfIndexes");
 
             liftPen();
 
