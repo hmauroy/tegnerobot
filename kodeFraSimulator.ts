@@ -140,6 +140,7 @@ namespace tegneRobot {
   /**
    * Draws the figures
    */
+  //% block="Draw Figures" blockGap=8
   export function drawFigureStack() {
     if (
       machine.currentPosition.x === draw.targetPoint.x &&
