@@ -6,19 +6,16 @@ namespace figures {
     calculatePointFromIndex: (index: number) => tegneRobot.IXY;
   }
 
-  interface ISquareProps {
-    xPosition: number; yPosition: number; lengthOfSide: number; rotation?: number
-  }
-
   /**
    * Draws a square
    * @param xPosition - Coordinate on X axis
    * @param yPosition - Coordinate on y axis
-   * @param size - length of size
+   * @param lengthOfSide - length of size
    * @param rotation - rotation of square #TODO: not implemented yet.
    */
-  //% block
-  export function drawSquare({ xPosition, yPosition, lengthOfSide: lengthOfSide, rotation = 1 }: ISquareProps) {
+  //% block="Draw Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation" blockGap=8
+  //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=1
+  export function drawSquare(xPosition: number, yPosition: number, lengthOfSide: number, rotation = 0) {
 
     const numberOfIndexes = 5;
 
@@ -44,14 +41,6 @@ namespace figures {
     });
   }
 
-
-  interface ICircleProps {
-    xPosition: number,
-    yPosition: number,
-    radius: number,
-    fidelity?: number
-  }
-
   export interface ICircle {
     numberOfIndexes: number;
     calculatePointFromIndex: (index: number) => tegneRobot.IXY;
@@ -65,7 +54,7 @@ namespace figures {
    * @param percision - level of detail in circle
    */
   //% block="Draw Circle|x Coordinate %xPosition|y Coordinate %yPosition| radius %radius| percision %percision" blockGap=8
-  //% xPosition.min=0 yPosition.min=0 radius.min=1 percision.defl=36
+  //% xPosition.min=0 yPosition.min=0 radius.min=1 radius.defl=1 percision.defl=36
   export function drawCircle(xPosition: number, yPosition: number, radius: number, percision = 36) {
     tegneRobot.draw.figureStack.push({
       numberOfIndexes: percision + 1,
@@ -143,11 +132,15 @@ namespace tegneRobot {
   }
 
 
-  function timeDifference() {
-    return input.runningTime() - draw.previousTime;
+  function timeDifference(currentTime: number) {
+    return currentTime - draw.previousTime;
   }
 
-  export function mainLoop() {
+
+  /**
+   * Draws the figures
+   */
+  export function drawFigureStack() {
     if (
       machine.currentPosition.x === draw.targetPoint.x &&
       machine.currentPosition.y === draw.targetPoint.y && draw.running
@@ -155,9 +148,11 @@ namespace tegneRobot {
       updateParameters();
     }
 
+    let currentTime = input.runningTime();
+
 
     if (draw.running) {
-      if (timeDifference() >= draw.pulseInterval) {
+      if (timeDifference(currentTime) >= draw.pulseInterval) {
 
         const err2 = 2 * bresenham.err;
 
