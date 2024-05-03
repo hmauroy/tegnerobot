@@ -4,6 +4,18 @@
  * 
  * Licensed under the GPL
  * 
+ * Update May 2024 by Henrik Mauroy hmauroy@gmail.com
+ * Returns an array of arrays, each representing coordinates
+ * for the 3 different path-types for SVG:
+ * M(ove) with absolute coordinates for one destination point.
+ * C(ubic bezier) with 6 control points
+ * L(ine) with 2 control points
+ * 
+ * Each number is truncated to 3 decimals to save space in output.
+ * Output is JSON-format.
+ * 
+ * Below is original usage. Everyting is the same except the output.
+ * 
  * Usage
  *   loadImageFromFile(file) : load image from File API
  *   loadImageFromUrl(url): load image from URL
