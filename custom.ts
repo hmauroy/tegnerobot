@@ -203,7 +203,7 @@ namespace tegneRobot {
         }
 
         //let currentTime = micros();
-        let currentTime = input.runningTime();
+        let currentTime = millis();
 
 
         if (draw.running) {
