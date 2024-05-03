@@ -62,16 +62,17 @@ namespace figures {
    * @param xPosition - Coordinate on X axis
    * @param yPosition - Coordinate on y axis
    * @param radius - length of radius
-   * @param fidelity - level of detail in circle
+   * @param percision - level of detail in circle
    */
-  //% block
-  export function drawCircle(xPosition: number, yPosition: number, radius: number, fidelity = 36) {
+  //% block="Draw Circle|x Coordinate %xPosition|y Coordinate %yPosition| radius %radius| percision %percision" blockGap=8
+  //% xPosition.min=0 yPosition.min=0 radius.min=1 percision.min=36
+  export function drawCircle(xPosition: number, yPosition: number, radius: number, percision = 36) {
     tegneRobot.draw.figureStack.push({
-      numberOfIndexes: fidelity + 1,
+      numberOfIndexes: percision + 1,
       calculatePointFromIndex: function (index: number) {
         const origin = { x: xPosition, y: yPosition };
         const r = radius;
-        const stepSize = 360 / fidelity;
+        const stepSize = 360 / percision;
         const step = (Math.PI / 180) * stepSize;
 
         return {
