@@ -65,7 +65,7 @@ namespace figures {
    * @param percision - level of detail in circle
    */
   //% block="Draw Circle|x Coordinate %xPosition|y Coordinate %yPosition| radius %radius| percision %percision" blockGap=8
-  //% xPosition.min=0 yPosition.min=0 radius.min=1 percision.min=36
+  //% xPosition.min=0 yPosition.min=0 radius.min=1 percision.defl=36
   export function drawCircle(xPosition: number, yPosition: number, radius: number, percision = 36) {
     tegneRobot.draw.figureStack.push({
       numberOfIndexes: percision + 1,
