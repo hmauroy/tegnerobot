@@ -127,7 +127,7 @@ namespace tegneRobot {
     }
 
     export const draw: IDraw = {
-        pulseInterval: 5000,
+        pulseInterval: 400,
         penDown: false,
         targetPointIndex: 0,
         running: true,
@@ -183,7 +183,7 @@ namespace tegneRobot {
         initiateDrawingParameters();
         while(true) {
             drawFigureStack();
-            control.waitMicros(draw.pulseInterval);
+            control.waitMicros(100);
         }
     }
 
@@ -200,14 +200,14 @@ namespace tegneRobot {
             updateParameters();
         }
 
-        let currentTime = micros();
-        //let currentTime = input.runningTime();
+        //let currentTime = micros();
+        let currentTime = input.runningTime();
 
 
         if (draw.running) {
 
             if (timeDifference(currentTime) >= draw.pulseInterval) {
-                serialLog("dt: " + timeDifference(currentTime));
+                //serialLog("dt: " + timeDifference(currentTime));
 
                 if (draw.pulseHigh) {
                     const err2 = 2 * bresenham.err;
@@ -216,7 +216,7 @@ namespace tegneRobot {
                         bresenham.err = bresenham.err + bresenham.dy;
 
                         if (machine.currentPosition.x !== draw.targetPoint.x) {
-                            //serialLog("stepX");
+                            serialLog("X");
                             activatePin(DigitalPin.P13, 1);
                         }
                     }
@@ -224,21 +224,23 @@ namespace tegneRobot {
                         bresenham.err = bresenham.err + bresenham.dx;
 
                         if (machine.currentPosition.y !== draw.targetPoint.y) {
-                            serialLog("stepY");
+                            serialLog("Y");
                             activatePin(DigitalPin.P15, 1);
                         }
                     }
                     draw.pulseHigh = false;
                 }
                 else {
-                    //serialLog("LOW");
+                    serialLog("0");
                     activatePin(DigitalPin.P13, 0);
                     activatePin(DigitalPin.P15, 0);
                     draw.pulseHigh = true;
                 }
+                draw.previousTime = currentTime;
+                //serialLog("t: " + draw.previousTime);
             }
 
-            draw.previousTime = currentTime;
+            
         }
     }
 
