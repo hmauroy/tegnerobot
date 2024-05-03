@@ -53,26 +53,23 @@ namespace figures {
   }
 
   export interface ICircle {
-    origin: tegneRobot.IXY;
-    radius: number;
     numberOfIndexes: number;
-    stepSize: number;
-    step: () => number;
     calculatePointFromIndex: (index: number) => tegneRobot.IXY;
   }
 
   export function drawCircle({ xPosition, yPosition, radius, fidelity = 36 }: ICircleProps) {
 
     tegneRobot.draw.figureStack.push({
-      origin: { x: xPosition, y: yPosition },
-      radius: radius,
       numberOfIndexes: fidelity + 1,
-      stepSize: 360 / fidelity,
-      step: function () { return (Math.PI / 180) * this.stepSize },
       calculatePointFromIndex: function (index: number) {
+        const origin = { x: xPosition, y: yPosition };
+        const r = radius;
+        const stepSize = 360 / fidelity;
+        const step = (Math.PI / 180) * stepSize;
+
         return {
-          x: Math.round(Math.cos(index * this.step) * this.radius) + this.origin.x,
-          y: Math.round(Math.sin(index * this.step) * this.radius) + this.origin.y,
+          x: Math.round(Math.cos(index * step) * r) + origin.x,
+          y: Math.round(Math.sin(index * step) * r) + origin.y,
         };
       }
     })
