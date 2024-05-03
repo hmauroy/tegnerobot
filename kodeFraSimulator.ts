@@ -15,7 +15,7 @@ namespace figures {
   }
 
   /**
-   * Draws a circle
+   * Draws a square
    * @param xPosition - Coordinate on X axis
    * @param yPosition - Coordinate on y axis
    * @param size - length of size
@@ -33,9 +33,10 @@ namespace figures {
       numberOfIndexes: numberOfIndexes,
       halfSize: size * 0.5,
       calculatePointFromIndex: function (index: number): tegneRobot.IXY {
+        const origin = this.origin;
         switch (index) {
           case 1:
-            return { x: this.origin.x + this.halfSize, y: this.origin.y - this.halfSize };
+            return { x: origin.x + this.halfSize, y: this.origin.y - this.halfSize };
           case 2:
             return { x: this.origin.x + this.halfSize, y: this.origin.y + this.halfSize };
           case 3:
