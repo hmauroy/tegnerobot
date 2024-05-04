@@ -6,6 +6,9 @@ namespace figures {
     export interface ISquare {
         numberOfIndexes: number;
         calculatePointFromIndex: (index: number) => tegneRobot.IXY;
+        figureType: string;
+        x: number;
+        y: number;
     }
 
     /**
@@ -17,19 +20,21 @@ namespace figures {
      */
     //% block="Draw Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation" blockGap=8
     //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=1
-    export function drawSquare(xPosition: number, yPosition: number, lengthOfSide: number, rotation = 0) {
+    export function drawSquare(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0) {
 
         const numberOfIndexes = 5;
 
         tegneRobot.draw.figureStack.push({
             numberOfIndexes: numberOfIndexes,
+            figureType: "square",
+            x: xPosition,
+            y: yPosition,
             calculatePointFromIndex: function (index: number): tegneRobot.IXY {
                 const stepsPerMM = Math.ceil(5000 / 62.0);
                 const origin = { x: xPosition*stepsPerMM, y: yPosition*stepsPerMM };
                 const size = lengthOfSide * stepsPerMM;
                 const rotate = rotation;
                 const halfSize = Math.ceil(size * 0.5);
-                tegneRobot.serialLog("size: " + size + ", halfSize: " + halfSize);
 
                 /*
                 switch (index) {
@@ -61,33 +66,34 @@ namespace figures {
     export interface ICircle {
         numberOfIndexes: number;
         calculatePointFromIndex: (index: number) => tegneRobot.IXY;
+        figureType: string;
+        x: number;
+        y: number;
     }
 
     /**
      * Draws a square
-     * @param xPosition - Coordinate on X axis
-     * @param yPosition - Coordinate on y axis
-     * @param radius - length of radius
-     * @param precision - level of detail in circle
+     * @param xPosition - Coordinate on X axis in mm.
+     * @param yPosition - Coordinate on y axis in mm.
+     * @param radius - length of radius in mm.
+     * @param precision - number of line segments for circle.
      */
     //% block="Draw Circle|x Coordinate %xPosition|y Coordinate %yPosition| radius %radius| precision %precision" blockGap=8
     //% xPosition.min=0 yPosition.min=0 radius.min=2 radius.defl=1 precision.defl=36
     export function drawCircle(xPosition: number, yPosition: number, radius: number, precision: number = 36) {
         tegneRobot.draw.figureStack.push({
             numberOfIndexes: precision + 1,
+            figureType: "circle",
+            x: xPosition,
+            y: yPosition,
             calculatePointFromIndex: function (index: number) {
-                const origin = { x: xPosition, y: yPosition };
-                const r = radius;
+                const stepsPerMM = Math.ceil(5000 / 62.0);
+                const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
+                const r = radius * stepsPerMM;
                 const stepSize = 360 / precision;
                 const step = (Math.PI / 180) * stepSize ;
 
                 return {
-                    /*
-                    theta = theta + d_theta;
-                    x = radius * cos(theta) + x0_px;
-                    y = radius * sin(theta) + y0_px;
-
-                    */
                     x: Math.ceil(Math.cos(index * step) * r) + origin.x,
                     y: Math.ceil(Math.sin(index * step) * r) + origin.y,
                 };
@@ -161,7 +167,7 @@ namespace tegneRobot {
     }
 
     export const draw: IDraw = {
-        pulseInterval: 600,
+        pulseInterval: 400,
         penDown: false,
         targetPointIndex: 0,
         running: true,
@@ -204,6 +210,8 @@ namespace tegneRobot {
     export function checkFigureStack() {
         draw.running = draw.figureStack.length > 0;
         draw.figureNumberOfIndexes = draw.figureStack[draw.figureIndex].numberOfIndexes;
+        serialLog("new " + draw.figureStack[draw.figureIndex].figureType);
+        serialLog("position " + draw.figureStack[draw.figureIndex].x + "," + draw.figureStack[draw.figureIndex].y);
     }
 
 
@@ -315,6 +323,9 @@ namespace tegneRobot {
                 draw.targetPointIndex = -1;
                 draw.figureIndex += 1;
                 draw.figureNumberOfIndexes = draw.figureStack[draw.figureIndex].numberOfIndexes;
+                serialLog("new " + draw.figureStack[draw.figureIndex].figureType);
+                serialLog("position " + draw.figureStack[draw.figureIndex].x + "," + draw.figureStack[draw.figureIndex].y);
+                coordinateString += "" + draw.figureStack[draw.figureIndex].figureType + "\r\n";
 
 
             } else {
