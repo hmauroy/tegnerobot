@@ -12,8 +12,13 @@ let high = 1
 high = 1
 let waitTime = 400
 figures.drawCircle(
-    400, 
-    400, 
-    350, 
-    30)
+    3000, 
+    3000, 
+    2000, 
+    36)
+figures.drawCircle(
+    3000,
+    3000,
+    2000,
+    36)
 tegneRobot.startDrawing()

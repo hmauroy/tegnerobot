@@ -79,9 +79,15 @@ namespace figures {
                 const origin = { x: xPosition, y: yPosition };
                 const r = radius;
                 const stepSize = 360 / precision;
-                const step = Math.ceil( (Math.PI / 180) * stepSize );
+                const step = (Math.PI / 180) * stepSize ;
 
                 return {
+                    /*
+                    theta = theta + d_theta;
+                    x = radius * cos(theta) + x0_px;
+                    y = radius * sin(theta) + y0_px;
+
+                    */
                     x: Math.ceil(Math.cos(index * step) * r) + origin.x,
                     y: Math.ceil(Math.sin(index * step) * r) + origin.y,
                 };
@@ -136,6 +142,8 @@ namespace tegneRobot {
         pin15: 0,
         pin16: 1
     };
+
+    let coordinateString = "";
 
 
 
@@ -211,7 +219,7 @@ namespace tegneRobot {
         initiateDrawingParameters();
         while(true) {
             drawFigureStack();
-            control.waitMicros(10);
+            control.waitMicros(1);
         }
     }
 
@@ -283,7 +291,7 @@ namespace tegneRobot {
     }
 
     export function updateParameters() {
-        serialLog("updateParameters()");
+        //serialLog("updateParameters()");
         //serialLog("draw.figureNumberOfIndexes= " + draw.figureNumberOfIndexes);
         //serialLog("draw.targetPointIndex= " + draw.targetPointIndex);
         if (draw.targetPointIndex < draw.figureNumberOfIndexes - 1) {
@@ -311,6 +319,7 @@ namespace tegneRobot {
 
             } else {
                 serialLog("Finished all drawings :)");
+                serialLog(coordinateString);
 
                 draw.running = false;
 
@@ -323,8 +332,9 @@ namespace tegneRobot {
             draw.targetPoint = draw.figureStack[
                 draw.figureIndex
             ].calculatePointFromIndex(draw.targetPointIndex);
-            serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
-            serialLog("current: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+            coordinateString += "" + draw.targetPoint.x + "," + draw.targetPoint.y + "\r\n";
+            //serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
+            //serialLog("current: " + machine.currentPosition.x + "," + machine.currentPosition.y);
         }
     }
 
@@ -357,7 +367,7 @@ namespace tegneRobot {
             pinStates.pin16 = 0;
             machine.direction.y = -1;
         }
-        serialLog("dirx, diry: " + machine.direction.x + "," + machine.direction.y);
+        //serialLog("dirx, diry: " + machine.direction.x + "," + machine.direction.y);
     }
 
     function activatePin(pin: DigitalPin, value: number) {
