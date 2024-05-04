@@ -129,7 +129,7 @@ namespace tegneRobot {
     }
 
     export const draw: IDraw = {
-        pulseInterval: 40,
+        pulseInterval: 600,
         penDown: false,
         targetPointIndex: 0,
         running: true,
@@ -187,7 +187,7 @@ namespace tegneRobot {
         initiateDrawingParameters();
         while(true) {
             drawFigureStack();
-            control.waitMicros(100);
+            //control.waitMicros(100);
         }
     }
 
@@ -204,8 +204,8 @@ namespace tegneRobot {
             updateParameters();
         }
 
-        //let currentTime = micros();
-        let currentTime = millis();
+        let currentTime = micros();
+        //let currentTime = millis();
 
 
         if (draw.running) {
@@ -213,9 +213,9 @@ namespace tegneRobot {
             if (timeDifference(currentTime) >= draw.pulseInterval) {
 
                 if (draw.pulseHigh) {
-                    serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
-                    serialLog("machine.x: " + machine.currentPosition.x);
-                    serialLog("machine.y: " + machine.currentPosition.y);
+                    //serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+                    //serialLog("machine.x: " + machine.currentPosition.x);
+                    //serialLog("machine.y: " + machine.currentPosition.y);
                     
                     const err2 = 2 * bresenham.err;
 
