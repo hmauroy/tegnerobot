@@ -12,9 +12,27 @@ let high = 1
 high = 1
 let waitTime = 400
 figures.drawSquare(
-50,
+0,
 0,
 50,
+0
+)
+figures.drawSquare(
+0,
+0,
+30,
+0
+)
+figures.drawSquare(
+0,
+0,
+10,
+0
+)
+figures.drawSquare(
+25,
+25,
+25,
 0
 )
 tegneRobot.startDrawing()

@@ -117,6 +117,8 @@ namespace tegneRobot {
         direction: IXY;
     }
 
+    // x: 1 = CW, -1 = CCW
+    // y: 1 = CW, -1 = CCW
     interface IDirection {
         x: 1 | -1;
         y: 1 | -1;
@@ -126,6 +128,15 @@ namespace tegneRobot {
         currentPosition: { x: 0, y: 0 },
         direction: { x: 1, y: 1 },
     };
+
+    const pinStates = {
+        //% stepper pins: pin13=stepperX, pin15=stepperY, pin14=dirX, pin16=dirY
+        pin13: 0,
+        pin14: 0,
+        pin15: 0,
+        pin16: 1
+    };
+
 
 
     interface IDraw {
@@ -178,6 +189,7 @@ namespace tegneRobot {
         setNewTargetPoint();
         setupBresenhamForPoint();
         draw.pulseHigh = 1;
+        serialLog("xdir: " + machine.direction.x + ", ydir: " + machine.direction.y);
     }
 
 
@@ -329,24 +341,33 @@ namespace tegneRobot {
         serialLog("direction xDifference: " + xDifference);
 
         if (xDifference && machine.direction.x === -1) {
-            activatePin(DigitalPin.P14, 1);
-            machine.direction.x = machine.direction.x * -1;
+            serialLog("Target to right, dirx: " + machine.direction.x);
+            serialLog("flip xdir to positive CW:");
+            pinStates.pin14 = 0;
+            machine.direction.x = 1;
         }
         else if (!xDifference && machine.direction.x === 1) {
-            activatePin(DigitalPin.P14, 0);
-            machine.direction.x = machine.direction.x * -1;
+            serialLog("Target to left, dirx: " + machine.direction.x);
+            serialLog("flip xdir to negative CCW:");
+            pinStates.pin14 = 1;
+            machine.direction.x = -1;
         }
 
         const yDifference = draw.targetPoint.y >= machine.currentPosition.y;
         serialLog("direction yDifference: " + yDifference);
 
+        // Y-axis has inverted direction for stepper motor.
         if (yDifference && machine.direction.y === -1) {
-            activatePin(DigitalPin.P16, 1);
-            machine.direction.y = machine.direction.y * -1;
+            serialLog("Target below, diry: " + machine.direction.y);
+            serialLog("flip ydir to positive CCW:");
+            pinStates.pin16 = 1;
+            machine.direction.y = 1;
         }
         else if (!yDifference && machine.direction.y === 1) {
-            activatePin(DigitalPin.P16, 0);
-            machine.direction.y = machine.direction.y * -1;
+            serialLog("Target above, diry: " + machine.direction.y);
+            serialLog("flip ydir to negative CW:");
+            pinStates.pin16 = 0;
+            machine.direction.y = -1;
         }
     }
 
@@ -363,14 +384,7 @@ namespace tegneRobot {
         false,
     }
 
-    const pinStates = {
-        //% stepper pins: pin13=stepperX, pin15=stepperY, pin14=dirX, pin16=dirY
-        pin13: 0,
-        pin14: 0,
-        pin15: 0,
-        pin16: 0
-    }
-
+    
 
     /**
      * TODO: describe your function here
