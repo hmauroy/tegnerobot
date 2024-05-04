@@ -227,7 +227,7 @@ namespace tegneRobot {
         initiateDrawingParameters();
         while(true) {
             drawFigureStack();
-            control.waitMicros(draw.pulseInterval);
+            control.waitMicros(1);
         }
     }
 
@@ -244,48 +244,54 @@ namespace tegneRobot {
             updateParameters();
         }
 
-        //let currentTime = micros();
+        let currentTime = micros();
         //let currentTime = millis();
 
 
         if (draw.running) {
 
-            stepSteppers();
+            if (timeDifference(currentTime) >= draw.pulseInterval) {
+                stepSteppers();
 
-            // If pulse is LOW, we do all the calculations needed for the next HIGH pulse.
-            if (draw.pulseHigh === 0) {
-                //serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+                // If pulse is LOW, we do all the calculations needed for the next HIGH pulse.
+                if (draw.pulseHigh === 0) {
+                    //serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+                    //serialLog("machine.x: " + machine.currentPosition.x);
+                    //serialLog("machine.y: " + machine.currentPosition.y);
+                    
+                    
+                    const err2 = 2 * bresenham.err;
+
+                    if (err2 >= bresenham.dy) {
+                        bresenham.err = bresenham.err + bresenham.dy;
+
+                        if (machine.currentPosition.x !== draw.targetPoint.x) {
+                            machine.currentPosition.x += machine.direction.x
+                            //serialLog("X");
+                            pinStates.pin13 = 1;
+                        }
+                    }
+                    if (err2 <= bresenham.dx) {
+                        bresenham.err = bresenham.err + bresenham.dx;
+
+                        if (machine.currentPosition.y !== draw.targetPoint.y) {
+                            machine.currentPosition.y += machine.direction.y
+                            //serialLog("Y");
+                            pinStates.pin15 = 1;
+                        }
+                    }
+                    draw.pulseHigh = 1;
+                    
+                }
+                else {
+                    pinStates.pin13 = 0;
+                    pinStates.pin15 = 0;
+                    draw.pulseHigh = 0;
+                }
                 //serialLog("machine.x: " + machine.currentPosition.x);
                 //serialLog("machine.y: " + machine.currentPosition.y);
-
-
-                const err2 = 2 * bresenham.err;
-
-                if (err2 >= bresenham.dy) {
-                    bresenham.err = bresenham.err + bresenham.dy;
-
-                    if (machine.currentPosition.x !== draw.targetPoint.x) {
-                        machine.currentPosition.x += machine.direction.x
-                        //serialLog("X");
-                        pinStates.pin13 = 1;
-                    }
-                }
-                if (err2 <= bresenham.dx) {
-                    bresenham.err = bresenham.err + bresenham.dx;
-
-                    if (machine.currentPosition.y !== draw.targetPoint.y) {
-                        machine.currentPosition.y += machine.direction.y
-                        //serialLog("Y");
-                        pinStates.pin15 = 1;
-                    }
-                }
-                draw.pulseHigh = 1;
-
-            }
-            else {
-                pinStates.pin13 = 0;
-                pinStates.pin15 = 0;
-                draw.pulseHigh = 0;
+                draw.previousTime = currentTime;
+                //serialLog("t: " + draw.previousTime);
             }
 
             

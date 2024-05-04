@@ -1,3 +1,9 @@
+input.onButtonPressed(Button.A, function () {
+    waitTime += 50
+})
+input.onButtonPressed(Button.B, function () {
+    waitTime += -50
+})
 // Initialize serial comms.
 serial.writeString("Serial initialized")
 serial.writeString("" + ("\r\n"))
