@@ -31,6 +31,7 @@ namespace figures {
                 const halfSize = Math.ceil(size * 0.5);
                 tegneRobot.serialLog("size: " + size + ", halfSize: " + halfSize);
 
+                /*
                 switch (index) {
                     case 1:
                         return { x: origin.x  + halfSize, y: origin.y - halfSize };
@@ -40,6 +41,18 @@ namespace figures {
                         return { x: origin.x - halfSize, y: origin.y + halfSize };
                     default:
                         return { x: origin.x - halfSize, y: origin.y - halfSize };
+                }
+                */
+
+                switch (index) {
+                    case 1:
+                        return { x: origin.x + size, y: origin.y };
+                    case 2:
+                        return { x: origin.x + size, y: origin.y + size };
+                    case 3:
+                        return { x: origin.x, y: origin.y + size };
+                    default:
+                        return { x: origin.x, y: origin.y };
                 }
             }
         });
