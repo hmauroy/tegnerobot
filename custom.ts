@@ -167,7 +167,7 @@ namespace tegneRobot {
     }
 
     export const draw: IDraw = {
-        pulseInterval: 400,
+        pulseInterval: 600,
         penDown: false,
         targetPointIndex: 0,
         running: true,
