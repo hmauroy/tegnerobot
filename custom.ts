@@ -325,7 +325,7 @@ namespace tegneRobot {
                 draw.figureNumberOfIndexes = draw.figureStack[draw.figureIndex].numberOfIndexes;
                 serialLog("new " + draw.figureStack[draw.figureIndex].figureType);
                 serialLog("position " + draw.figureStack[draw.figureIndex].x + "," + draw.figureStack[draw.figureIndex].y);
-                coordinateString += "" + draw.figureStack[draw.figureIndex].figureType + "\r\n";
+                //coordinateString += "" + draw.figureStack[draw.figureIndex].figureType + "\r\n";
 
 
             } else {
@@ -343,7 +343,7 @@ namespace tegneRobot {
             draw.targetPoint = draw.figureStack[
                 draw.figureIndex
             ].calculatePointFromIndex(draw.targetPointIndex);
-            coordinateString += "" + draw.targetPoint.x + "," + draw.targetPoint.y + "\r\n";
+            //coordinateString += "" + draw.targetPoint.x + "," + draw.targetPoint.y + "\r\n";
             //serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
             //serialLog("current: " + machine.currentPosition.x + "," + machine.currentPosition.y);
         }

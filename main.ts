@@ -23,7 +23,7 @@ figures.drawCircle(
     36)
 figures.drawSquare(
     30, 
-    10, 
+    0, 
     40, 
     null)
 tegneRobot.startDrawing()
