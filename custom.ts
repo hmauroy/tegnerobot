@@ -167,7 +167,7 @@ namespace tegneRobot {
     }
 
     export const draw: IDraw = {
-        pulseInterval: 400,
+        pulseInterval: 800,
         penDown: false,
         targetPointIndex: 0,
         running: true,
@@ -227,7 +227,7 @@ namespace tegneRobot {
         initiateDrawingParameters();
         while(true) {
             drawFigureStack();
-            control.waitMicros(1);
+            control.waitMicros(10);
         }
     }
 
