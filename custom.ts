@@ -68,22 +68,22 @@ namespace figures {
      * @param xPosition - Coordinate on X axis
      * @param yPosition - Coordinate on y axis
      * @param radius - length of radius
-     * @param percision - level of detail in circle
+     * @param precision - level of detail in circle
      */
-    //% block="Draw Circle|x Coordinate %xPosition|y Coordinate %yPosition| radius %radius| percision %percision" blockGap=8
-    //% xPosition.min=0 yPosition.min=0 radius.min=1 radius.defl=1 percision.defl=36
-    export function drawCircle(xPosition: number, yPosition: number, radius: number, percision = 36) {
+    //% block="Draw Circle|x Coordinate %xPosition|y Coordinate %yPosition| radius %radius| precision %precision" blockGap=8
+    //% xPosition.min=0 yPosition.min=0 radius.min=2 radius.defl=1 precision.defl=36
+    export function drawCircle(xPosition: number, yPosition: number, radius: number, precision: number = 36) {
         tegneRobot.draw.figureStack.push({
-            numberOfIndexes: percision + 1,
+            numberOfIndexes: precision + 1,
             calculatePointFromIndex: function (index: number) {
                 const origin = { x: xPosition, y: yPosition };
                 const r = radius;
-                const stepSize = 360 / percision;
-                const step = (Math.PI / 180) * stepSize;
+                const stepSize = 360 / precision;
+                const step = Math.ceil( (Math.PI / 180) * stepSize );
 
                 return {
-                    x: Math.round(Math.cos(index * step) * r) + origin.x,
-                    y: Math.round(Math.sin(index * step) * r) + origin.y,
+                    x: Math.ceil(Math.cos(index * step) * r) + origin.x,
+                    y: Math.ceil(Math.sin(index * step) * r) + origin.y,
                 };
             }
         })
@@ -189,7 +189,6 @@ namespace tegneRobot {
         setNewTargetPoint();
         setupBresenhamForPoint();
         draw.pulseHigh = 1;
-        serialLog("xdir: " + machine.direction.x + ", ydir: " + machine.direction.y);
     }
 
 
@@ -320,17 +319,16 @@ namespace tegneRobot {
     }
 
     function setNewTargetPoint() {
-        serialLog("setNewTargetPoint");
         if (draw.figureStack.length > 0) {
             draw.targetPoint = draw.figureStack[
                 draw.figureIndex
             ].calculatePointFromIndex(draw.targetPointIndex);
-            serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
+            serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+            serialLog("current: " + machine.currentPosition.x + "," + machine.currentPosition.y);
         }
     }
 
     function setupBresenhamForPoint() {
-        //serialLog("setupBresenhamForPoint");
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
         bresenham.dy = -Math.abs(draw.targetPoint.y - machine.currentPosition.y);
         bresenham.err = bresenham.dx + bresenham.dy;
@@ -338,37 +336,28 @@ namespace tegneRobot {
 
     function changeDirection() {
         const xDifference = draw.targetPoint.x >= machine.currentPosition.x;
-        serialLog("direction xDifference: " + xDifference);
 
         if (xDifference && machine.direction.x === -1) {
-            serialLog("Target to right, dirx: " + machine.direction.x);
-            serialLog("flip xdir to positive CW:");
             pinStates.pin14 = 0;
             machine.direction.x = 1;
         }
         else if (!xDifference && machine.direction.x === 1) {
-            serialLog("Target to left, dirx: " + machine.direction.x);
-            serialLog("flip xdir to negative CCW:");
             pinStates.pin14 = 1;
             machine.direction.x = -1;
         }
 
         const yDifference = draw.targetPoint.y >= machine.currentPosition.y;
-        serialLog("direction yDifference: " + yDifference);
 
         // Y-axis has inverted direction for stepper motor.
         if (yDifference && machine.direction.y === -1) {
-            serialLog("Target below, diry: " + machine.direction.y);
-            serialLog("flip ydir to positive CCW:");
             pinStates.pin16 = 1;
             machine.direction.y = 1;
         }
         else if (!yDifference && machine.direction.y === 1) {
-            serialLog("Target above, diry: " + machine.direction.y);
-            serialLog("flip ydir to negative CW:");
             pinStates.pin16 = 0;
             machine.direction.y = -1;
         }
+        serialLog("dirx, diry: " + machine.direction.x + "," + machine.direction.y);
     }
 
     function activatePin(pin: DigitalPin, value: number) {
