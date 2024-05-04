@@ -322,6 +322,7 @@ namespace tegneRobot {
 
     function changeDirection() {
         const xDifference = draw.targetPoint.x >= machine.currentPosition.x;
+        serialLog("direction xDifference: " + xDifference);
 
         if (xDifference && machine.direction.x === -1) {
             activatePin(DigitalPin.P14, 1);
@@ -333,6 +334,7 @@ namespace tegneRobot {
         }
 
         const yDifference = draw.targetPoint.y >= machine.currentPosition.y;
+        serialLog("direction yDifference: " + yDifference);
 
         if (yDifference && machine.direction.y === -1) {
             activatePin(DigitalPin.P16, 1);
