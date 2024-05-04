@@ -14,7 +14,7 @@ let waitTime = 400
 figures.drawSquare(
 50,
 0,
-2,
+50,
 0
 )
 tegneRobot.startDrawing()

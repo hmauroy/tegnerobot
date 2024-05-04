@@ -138,7 +138,7 @@ namespace tegneRobot {
         figureStack: (figures.ISquare | figures.ICircle)[],
         targetPoint: { x: number, y: number },
         previousTime: number,
-        pulseHigh: boolean
+        pulseHigh: number
     }
 
     export const draw: IDraw = {
@@ -151,7 +151,7 @@ namespace tegneRobot {
         figureStack: [],
         targetPoint: { x: 0, y: 0 },
         previousTime: 0,
-        pulseHigh: true
+        pulseHigh: 1
 
     };
 
@@ -177,7 +177,7 @@ namespace tegneRobot {
         checkFigureStack();
         setNewTargetPoint();
         setupBresenhamForPoint();
-        draw.pulseHigh = true;
+        draw.pulseHigh = 1;
     }
 
 
@@ -200,7 +200,7 @@ namespace tegneRobot {
         initiateDrawingParameters();
         while(true) {
             drawFigureStack();
-            //control.waitMicros(100);
+            control.waitMicros(10);
         }
     }
 
@@ -224,11 +224,14 @@ namespace tegneRobot {
         if (draw.running) {
 
             if (timeDifference(currentTime) >= draw.pulseInterval) {
+                stepSteppers();
 
-                if (draw.pulseHigh) {
+                // If pulse is LOW, we do all the calculations needed for the next HIGH pulse.
+                if (draw.pulseHigh === 0) {
                     //serialLog("target: " + draw.targetPoint.x + "," + draw.targetPoint.y);
                     //serialLog("machine.x: " + machine.currentPosition.x);
                     //serialLog("machine.y: " + machine.currentPosition.y);
+                    
                     
                     const err2 = 2 * bresenham.err;
 
@@ -238,7 +241,7 @@ namespace tegneRobot {
                         if (machine.currentPosition.x !== draw.targetPoint.x) {
                             machine.currentPosition.x += machine.direction.x
                             //serialLog("X");
-                            activatePin(DigitalPin.P13, 1);
+                            pinStates.pin13 = 1;
                         }
                     }
                     if (err2 <= bresenham.dx) {
@@ -247,15 +250,16 @@ namespace tegneRobot {
                         if (machine.currentPosition.y !== draw.targetPoint.y) {
                             machine.currentPosition.y += machine.direction.y
                             //serialLog("Y");
-                            activatePin(DigitalPin.P15, 1);
+                            pinStates.pin15 = 1;
                         }
                     }
-                    draw.pulseHigh = false;
+                    draw.pulseHigh = 1;
+                    
                 }
                 else {
-                    activatePin(DigitalPin.P13, 0);
-                    activatePin(DigitalPin.P15, 0);
-                    draw.pulseHigh = true;
+                    pinStates.pin13 = 0;
+                    pinStates.pin15 = 0;
+                    draw.pulseHigh = 0;
                 }
                 //serialLog("machine.x: " + machine.currentPosition.x);
                 //serialLog("machine.y: " + machine.currentPosition.y);
@@ -405,7 +409,7 @@ namespace tegneRobot {
     //% help=setPinStates/draw weight=77
     //% block="setPinStates|pin8 %pin8|pin9 %pin9|pin15 %pin15|pin16 %pin16" icon="\uf1db" blockGap=8
     export function setPinStates(pin13: DigitalPin, pin14: number, pin15: number, pin16: number): void {
-        pinStates.pin13 = pin13;
+        pinStates.pin13 = draw.pulseHigh;
         pinStates.pin14 = pin14;
         pinStates.pin15 = pin15;
         pinStates.pin16 = pin16;
