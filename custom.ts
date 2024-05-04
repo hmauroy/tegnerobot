@@ -12,8 +12,8 @@ namespace figures {
      * Draws a square
      * @param xPosition - Coordinate on X axis
      * @param yPosition - Coordinate on y axis
-     * @param lengthOfSide - length of size
-     * @param rotation - rotation of square #TODO: not implemented yet.
+     * @param lengthOfSide - length of size in mm. 5000 steps = 62.0 mm Y-axis, 64.6 mm X-axis approximately. Must be set by user after running calibrationX() and calibrationY() blocks once. # TODO: Not implemented yet.
+     * @param rotation - rotation of square calculated by rotating around center point calculated by averaging all 4 corners. #TODO: not implemented yet. 
      */
     //% block="Draw Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation" blockGap=8
     //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=1
@@ -24,14 +24,16 @@ namespace figures {
         tegneRobot.draw.figureStack.push({
             numberOfIndexes: numberOfIndexes,
             calculatePointFromIndex: function (index: number): tegneRobot.IXY {
-                const origin = { x: xPosition, y: yPosition };
-                const size = lengthOfSide;
+                const stepsPerMM = Math.ceil(5000 / 62.0);
+                const origin = { x: xPosition*stepsPerMM, y: yPosition*stepsPerMM };
+                const size = lengthOfSide * stepsPerMM;
                 const rotate = rotation;
                 const halfSize = Math.ceil(size * 0.5);
+                tegneRobot.serialLog("size: " + size + ", halfSize: " + halfSize);
 
                 switch (index) {
                     case 1:
-                        return { x: origin.x + halfSize, y: origin.y - halfSize };
+                        return { x: origin.x  + halfSize, y: origin.y - halfSize };
                     case 2:
                         return { x: origin.x + halfSize, y: origin.y + halfSize };
                     case 3:
@@ -222,7 +224,7 @@ namespace tegneRobot {
 
                         if (machine.currentPosition.x !== draw.targetPoint.x) {
                             machine.currentPosition.x += machine.direction.x
-                            serialLog("X");
+                            //serialLog("X");
                             activatePin(DigitalPin.P13, 1);
                         }
                     }
@@ -231,7 +233,7 @@ namespace tegneRobot {
 
                         if (machine.currentPosition.y !== draw.targetPoint.y) {
                             machine.currentPosition.y += machine.direction.y
-                            serialLog("Y");
+                            //serialLog("Y");
                             activatePin(DigitalPin.P15, 1);
                         }
                     }
@@ -242,8 +244,8 @@ namespace tegneRobot {
                     activatePin(DigitalPin.P15, 0);
                     draw.pulseHigh = true;
                 }
-                serialLog("machine.x: " + machine.currentPosition.x);
-                serialLog("machine.y: " + machine.currentPosition.y);
+                //serialLog("machine.x: " + machine.currentPosition.x);
+                //serialLog("machine.y: " + machine.currentPosition.y);
                 draw.previousTime = currentTime;
                 //serialLog("t: " + draw.previousTime);
             }
@@ -254,8 +256,8 @@ namespace tegneRobot {
 
     export function updateParameters() {
         serialLog("updateParameters()");
-        serialLog("draw.figureNumberOfIndexes= " + draw.figureNumberOfIndexes);
-        serialLog("draw.targetPointIndex= " + draw.targetPointIndex);
+        //serialLog("draw.figureNumberOfIndexes= " + draw.figureNumberOfIndexes);
+        //serialLog("draw.targetPointIndex= " + draw.targetPointIndex);
         if (draw.targetPointIndex < draw.figureNumberOfIndexes - 1) {
             draw.targetPointIndex += 1;
 
@@ -268,7 +270,7 @@ namespace tegneRobot {
             }
 
         } else {
-            serialLog("Updates figureNumberOfIndexes");
+            //serialLog("Updates figureNumberOfIndexes");
 
             liftPen();
 
@@ -280,6 +282,7 @@ namespace tegneRobot {
 
 
             } else {
+                serialLog("Finished all drawings :)");
 
                 draw.running = false;
 
@@ -293,11 +296,12 @@ namespace tegneRobot {
             draw.targetPoint = draw.figureStack[
                 draw.figureIndex
             ].calculatePointFromIndex(draw.targetPointIndex);
+            serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
         }
     }
 
     function setupBresenhamForPoint() {
-        serialLog("setupBresenhamForPoint");
+        //serialLog("setupBresenhamForPoint");
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
         bresenham.dy = -Math.abs(draw.targetPoint.y - machine.currentPosition.y);
         bresenham.err = bresenham.dx + bresenham.dy;
@@ -392,7 +396,7 @@ namespace tegneRobot {
         pinStates.pin16 = pin16;
     }
 
-    function serialLog(text : string) {
+    export function serialLog(text : string) {
         serial.writeString(text);
         serial.writeString("\r\n")
     }
