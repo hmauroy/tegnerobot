@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 400,
+        pulseInterval: 800,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -76,6 +76,7 @@ namespace tegneRobot {
          * Moves head to 0,0 (upper left corner).
          * Moves steppers too much into negative direction.
          */
+        moveHeadTo(0,0);
     }
 
     /**
@@ -93,66 +94,67 @@ namespace tegneRobot {
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
         bresenham.dy = -Math.abs(draw.targetPoint.y - machine.currentPosition.y); // NB! Negative value!
         bresenham.err = bresenham.dx + bresenham.dy;
-        serialLog("dx, dy: " + bresenham.dx + "," + bresenham.dy);
+        let realDx = draw.targetPoint.x - machine.currentPosition.x;
+        let realDy = draw.targetPoint.y - machine.currentPosition.y;
+        serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+        serialLog("dx, dy: " + realDx + "," + realDy);
 
         if (machine.currentPosition.x < draw.targetPoint.x) {
             bresenham.sx = 1;
+            pinStates.dirX = 0;
         }
         else {
             bresenham.sx = -1;
+            pinStates.dirX = 1;
         }
         if (machine.currentPosition.y < draw.targetPoint.y) {
             bresenham.sy = 1;
+            pinStates.dirY = 1;
         }
         else {
             bresenham.sy = -1;
+            pinStates.dirY = 0;
         }
+
+        serialLog("dirx: " + bresenham.sx);
+        serialLog("diry: " + bresenham.sy);
 
         // Initializes the steps.
         draw.isDrawing = runBresenham(); // Updates global variables nextXStep, nextYStep to either +1, -1 or 0 for a step or not.
 
-        while (draw.isDrawing) {
-            if (micros() - draw.previousTime >= draw.pulseInterval) {
-                if (draw.pulseHigh) {
-                    draw.previousTime = micros();
-                    //draw.previousTime = millis();
-                    draw.pulseHigh = !draw.pulseHigh; // Flips logic.
-                    pinStates.stepperX = 0;
-                    pinStates.stepperY = 0;
-                    stepSteppers();
-                }
-                else {
-                    draw.previousTime = micros();
-                    //draw.previousTime = millis();
-                    // Set directions directions
-                    if (draw.nextXStep < 0) {
-                        pinStates.dirX = 1;
+        
+        control.inBackground(function() {
+            while (draw.isDrawing) {
+                if (micros() - draw.previousTime >= draw.pulseInterval) {
+                    if (draw.pulseHigh) {
+                        draw.previousTime = micros();
+                        //draw.previousTime = millis();
+                        draw.pulseHigh = !draw.pulseHigh; // Flips logic.
+                        pinStates.stepperX = 0;
+                        pinStates.stepperY = 0;
+                        stepSteppers();
                     }
                     else {
-                        pinStates.dirX = 0;
+                        draw.previousTime = micros();
+                        //draw.previousTime = millis();
 
+                        // Turns puls on or off. NB! Only 1 pulse/pixel.
+                        pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
+                        pinStates.stepperY = Math.abs(draw.nextYStep);
+                        draw.pulseHigh = !draw.pulseHigh; // flips logic
+                        //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+                        stepSteppers();
+
+                        // Calculate next step while we wait for next update.
+                        draw.isDrawing = runBresenham();
                     }
-                    if (draw.nextYStep < 0) {
-                        pinStates.dirY = 0;
-                    }
-                    else {
-                        pinStates.dirY = 1;
-                    }
-
-                    // Turns puls on or off. NB! Only 1 pulse/pixel.
-
-                    pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
-                    pinStates.stepperY = Math.abs(draw.nextYStep);
-                    draw.pulseHigh = !draw.pulseHigh; // flips logic
-                    //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
-                    stepSteppers();
-
-                    // Calculate next step while we wait for next update.
-                    draw.isDrawing = runBresenham();
                 }
-            }
 
-        } // END while (isDrawing)
+            } // END while (isDrawing)
+            control.waitMicros(10);
+            
+        })
+        
         serialLog("Finished move to.")
         serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
     }
@@ -313,22 +315,15 @@ namespace tegneRobot {
     //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=1
     export function drawSquare(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0) {
 
-        const numberOfIndexes = 5;
-
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
         const size = lengthOfSide * stepsPerMM;
-        let index = 1;
-        switch (index) {
-            case 1:
-                return { x: origin.x + size, y: origin.y };
-            case 2:
-                return { x: origin.x + size, y: origin.y + size };
-            case 3:
-                return { x: origin.x, y: origin.y + size };
-            default:
-                return { x: origin.x, y: origin.y };
-        }
+        moveHeadTo(origin.x, origin.y);
+        moveHeadTo(origin.x + size, origin.y);
+        moveHeadTo(origin.x + size, origin.y + size);
+        moveHeadTo(origin.x, origin.y + size);
+        moveHeadTo(origin.x, origin.y);
+        serialLog("Finished square");
 
     }
 
