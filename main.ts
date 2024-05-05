@@ -6,6 +6,8 @@ let high = 1
 high = 1
 let waitTime = 400
 tegneRobot.drawSquare(15,10,10)
+tegneRobot.drawSquare(15, 10, 10)
+tegneRobot.drawSquare(15, 10, 10)
 tegneRobot.homeHead()
 
 

@@ -125,34 +125,31 @@ namespace tegneRobot {
         
         control.inBackground(function() {
             while (draw.isDrawing) {
-                if (micros() - draw.previousTime >= draw.pulseInterval) {
-                    if (draw.pulseHigh) {
-                        draw.previousTime = micros();
-                        //draw.previousTime = millis();
-                        draw.pulseHigh = !draw.pulseHigh; // Flips logic.
-                        pinStates.stepperX = 0;
-                        pinStates.stepperY = 0;
-                        stepSteppers();
-                    }
-                    else {
-                        draw.previousTime = micros();
-                        //draw.previousTime = millis();
-
-                        // Turns puls on or off. NB! Only 1 pulse/pixel.
-                        pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
-                        pinStates.stepperY = Math.abs(draw.nextYStep);
-                        draw.pulseHigh = !draw.pulseHigh; // flips logic
-                        //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
-                        stepSteppers();
-
-                        // Calculate next step while we wait for next update.
-                        draw.isDrawing = runBresenham();
-                    }
+                if (draw.pulseHigh) {
+                    //draw.previousTime = micros();
+                    //draw.previousTime = millis();
+                    draw.pulseHigh = !draw.pulseHigh; // Flips logic.
+                    pinStates.stepperX = 0;
+                    pinStates.stepperY = 0;
+                    stepSteppers();
                 }
+                else {
+                    //draw.previousTime = micros();
+                    //draw.previousTime = millis();
+
+                    // Turns puls on or off. NB! Only 1 pulse/pixel.
+                    pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
+                    pinStates.stepperY = Math.abs(draw.nextYStep);
+                    draw.pulseHigh = !draw.pulseHigh; // flips logic
+                    //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+                    stepSteppers();
+
+                    // Calculate next step while we wait for next update.
+                    draw.isDrawing = runBresenham();
+                }
+                control.waitMicros(400);
 
             } // END while (isDrawing)
-            control.waitMicros(10);
-            
         })
         
         serialLog("Finished move to.")
