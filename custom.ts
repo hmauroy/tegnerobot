@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 500,
+        pulseInterval: 5000,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -112,18 +112,18 @@ namespace tegneRobot {
         draw.isDrawing = runBresenham(); // Updates global variables nextXStep, nextYStep to either +1, -1 or 0 for a step or not.
 
         while (draw.isDrawing) {
-            if (millis() - draw.previousTime >= draw.pulseInterval) {
+            if (micros() - draw.previousTime >= draw.pulseInterval) {
                 if (draw.pulseHigh) {
-                    //draw.previousTime = micros();
-                    draw.previousTime = millis();
+                    draw.previousTime = micros();
+                    //draw.previousTime = millis();
                     draw.pulseHigh = !draw.pulseHigh; // Flips logic.
                     pinStates.stepperX = 0;
                     pinStates.stepperY = 0;
                     stepSteppers();
                 }
                 else {
-                    //draw.previousTime = micros();
-                    draw.previousTime = millis();
+                    draw.previousTime = micros();
+                    //draw.previousTime = millis();
                     // Set directions directions
                     if (draw.nextXStep < 0) {
                         pinStates.dirX = 1;
@@ -210,7 +210,7 @@ namespace tegneRobot {
     //% help=stepSteppers/draw weight=77
     //% block="Step steppers"  icon="\uf204" blockGap=8
     export function stepSteppers() {
-        serialLog("stepperX: " + pinStates.stepperX + ", stepperY: " + pinStates.stepperY);
+        //serialLog("stepperX: " + pinStates.stepperX + ", stepperY: " + pinStates.stepperY);
         // Read from pinStates object and write using digitalWrite()
         pins.digitalWritePin(DigitalPin.P13, pinStates.stepperX);
         pins.digitalWritePin(DigitalPin.P14, pinStates.dirX);
