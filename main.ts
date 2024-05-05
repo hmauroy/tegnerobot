@@ -1,3 +1,9 @@
+input.onButtonPressed(Button.A, function () {
+    waitTime += 50
+})
+input.onButtonPressed(Button.B, function () {
+    waitTime += -50
+})
 // Initialize serial comms.
 serial.writeString("Serial initialized")
 serial.writeString("" + ("\r\n"))
@@ -6,21 +12,18 @@ let high = 1
 high = 1
 let waitTime = 400
 figures.drawCircle(
-50,
-20,
-20,
-36
-)
+    50, 
+    20, 
+    20, 
+    36)
 figures.drawCircle(
-50,
-60,
-20,
-36
-)
+    50,
+    60,
+    20,
+    36)
 figures.drawSquare(
-30,
-0,
-40,
-null
-)
+    30, 
+    0, 
+    40, 
+    null)
 tegneRobot.startDrawing()
