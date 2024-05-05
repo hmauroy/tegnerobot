@@ -10,15 +10,22 @@ body {
     background-color: rgb(40, 40, 40);
     color: #fff3ea;
 }
+#topDiv {
+    display: flex;
+    width: 80vw;
+    height: 150px;
+    justify-content: space-around;
+    border-bottom: 50px;
+}
 #canvasWindow {
     position: absolute;
-    top: 5px;
+    top: 130px;
     left: 5px;
     visibility: hidden;
 }
 #svgWindow {
     position: absolute;
-    top: 5px;
+    top: 130px;
     left: 675px;
     visibility: visible;
     width: 650px;
@@ -49,9 +56,11 @@ body {
     font-size: 120%;
 }
 .controls {
-    width: 75vw;
     display: flex;
     flex-direction: column;
+}
+input[type="range"] {
+  width: 400px; /* Adjust this value to set the desired width */
 }
 #btnUpdate {
     width: 10vw;

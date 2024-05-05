@@ -20,33 +20,33 @@
 </head>
 
 <body>
-    <h2 class="crt-font">Hello OpenCV.js</h2>
-    <p id="status" class="crt-font">OpenCV.js is loading...</p>
-    <div id="imageContainer">
-        
+    <div id="topDiv">
+        <div id="heading">
+            <h2 class="crt-font">Image to SVG</h2>
+            <p id="status" class="crt-font">OpenCV.js is loading...</p>
+        </div>
+        <div class="controls">
+            <div><input type="file" id="fileInput" name="file" />  </div>
+            <div>Blur factor <input type="range" id="rngBlur" min="1" max="99" value="3" step="1" /><span id="txtBlur">9</span>  </div>
+            <div>Treshold factor <input type="range" id="rngThresh" min="2" max="99" value="2" step="1" /><span id="txtThresh">9</span></div>
+            <div>Turd size <input type="range" id="rngTurdsize" min="0" max="100" value="8" step="1" /><span id="txtTurd">8</span></div>
+            <div><input type="button" id="btnUpdate" value="Update" /></div>
+            <div><input type="button" id="btnSVG" value="Create SVG" /></div>
+        </div>
     </div>
+    
     <div class="inputoutput">
         <img id="imageSrc" src="lillebror_newborn512.png" alt="No Image" />
-        <div class="caption">imageSrc </div>
     </div>
     <div class="inputoutput" id="svgWindow">
         <div class="btnCloseDiv"><input type="button" id="btnCloseSVG" value="Close" /></div>
         <div id="svgOutput"></div>
-        <div class="caption">svg-output</div>
     </div>
     <div id="canvasWindow">
         <div class="btnCloseDiv"><input type="button" id="btnCloseCanvas" value="Close" /></div>
         <canvas id="canvas"></canvas>
-        <div class="caption">filter-output</div>
     </div>
-    <div class="controls">
-        <div><input type="file" id="fileInput" name="file" />  </div>
-        <div>Blur factor <input type="range" id="rngBlur" min="1" max="99" value="3" step="1" /><span id="txtBlur">9</span>  </div>
-        <div>Treshold factor <input type="range" id="rngThresh" min="2" max="99" value="2" step="1" /><span id="txtThresh">9</span></div>
-        <div>Turd size <input type="range" id="rngTurdsize" min="0" max="42" value="8" step="1" /><span id="txtTurd">8</span></div>
-        <div><input type="button" id="btnUpdate" value="Update" /></div>
-        <div><input type="button" id="btnSVG" value="Create SVG" /></div>
-    </div>
+    
     <div><input type="button" id="btnCopy" value="Copy SVG" /></div>
     <textarea id="svgTextOutput" rows="5", cols="50"></textarea>
     <div id="bottomText"></div>
