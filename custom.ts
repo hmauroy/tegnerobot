@@ -33,31 +33,33 @@ namespace tegneRobot {
 
     const pinStates = {
         //% stepper pins: pin13=stepperX, pin15=stepperY, pin14=dirX, pin16=dirY
-        pin13: 0,
-        pin14: 0,
-        pin15: 0,
-        pin16: 1
+        stepperX: 0,
+        dirX: 0,
+        stepperY: 0,
+        dirY: 0
     };
 
 
 
-
-
     export const draw = {
-        pulseInterval: 800,
+        pulseInterval: 400,
         penDown: false,
-        running: true,
+        isDrawing: true,
         targetPoint: { x: 0, y: 0 },
         previousTime: 0,
-        pulseHigh: 1
-
+        pulseHigh: true,
+        nextXStep: 0,
+        nextYStep: 0,
     };
 
 
      export const bresenham = {
         err: 0,
+        err2: 0,
         dx: 0,
         dy: 0,
+        sx: 0,
+        sy: 0
     };
 
     enum penLifted {
@@ -77,15 +79,107 @@ namespace tegneRobot {
     }
 
     /**
-    * Move head to
-    * @param xPosition - Coordinate on X axis in pixel coordinates
+    * Move head to xoordinate
+    * @param xPosition - Coordinate on X axis in pixel coordinates. Float is accepted as input.
     * @param yPosition - Coordinate on y axis in pixel coordinates
     */
-    //% block="Move Head To|x coordinate %xPosition|y coordinate %yPosition" blockGap=8
+    //%help = moveHeadTo / draw weight = 77
+    //% block="Move Head To|xCoordinate %xPosition|yCoordinate %yPosition" blockGap=8
     //% xPosition.min=0 yPosition.min=0
+    //% xPosition.fieldOptions.precision=1 yPosition.fieldOptions.precision=1 
     export function moveHeadTo(xPosition: number, yPosition: number) {
+        draw.targetPoint.x = Math.ceil(xPosition);
+        draw.targetPoint.y = Math.ceil(yPosition);
+        bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
+        bresenham.dy = Math.abs(draw.targetPoint.y - machine.currentPosition.y);
+        bresenham.err = bresenham.dx + bresenham.dy;
+        serialLog("dx, dy: " + bresenham.dx + "," + bresenham.dy);
 
+        if (machine.currentPosition.x < draw.targetPoint.x) {
+            bresenham.sx = 1;
+        }
+        else {
+            bresenham.sx = -1;
+        }
+        if (machine.currentPosition.y < draw.targetPoint.y) {
+            bresenham.sy = 1;
+        }
+        else {
+            bresenham.sy = -1;
+        }
 
+        // Initializes the steps.
+        draw.isDrawing = runBresenham(); // Updates global variables nextXStep, nextYStep to either +1, -1 or 0 for a step or not.
+
+        while (draw.isDrawing) {
+            if (millis() - draw.previousTime >= draw.pulseInterval) {
+                if (draw.pulseHigh) {
+                    draw.previousTime = micros();
+                    draw.pulseHigh = !draw.pulseHigh; // Flips logic.
+                    pinStates.stepperX = 0;
+                    pinStates.stepperY = 0;
+                    
+                }
+                else {
+                    draw.previousTime = micros();
+                    // Set directions directions
+                    if (draw.nextXStep < 0) {
+                        pinStates.dirX = 1;
+                    }
+                    else {
+                        pinStates.dirX = 0;
+
+                    }
+                    if (draw.nextYStep < 0) {
+                        pinStates.dirY = 0;
+                    }
+                    else {
+                        pinStates.dirY = 1;
+                    }
+
+                    // Turns puls on or off. NB! Only 1 pulse/pixel.
+
+                    pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
+                    pinStates.stepperY = Math.abs(draw.nextYStep);
+                    draw.pulseHigh = !draw.pulseHigh; // flips logic
+                    stepSteppers();
+
+                    // Calculate next step while we wait for next update.
+                    draw.isDrawing = runBresenham();
+                }
+            }
+
+        } // END while (isDrawing)
+    }
+
+    function runBresenham() : boolean  {
+        // Calculates steps in x and y directions. 0, -1 or 1
+        // Updates global variables dx, dy, and error variable err.
+        bresenham.err2 = 2 * bresenham.err;
+        draw.nextXStep = 0;
+        draw.nextYStep = 0;
+
+        if (machine.currentPosition.x === draw.targetPoint.x && machine.currentPosition.y === draw.targetPoint.y) {
+            return false;
+        }
+        if (bresenham.err2 >= bresenham.dy) {
+            if (machine.currentPosition.x === draw.targetPoint.x) {
+                return false;
+            }
+            // Update step and error
+            bresenham.err = bresenham.err + bresenham.dy;
+            machine.currentPosition.x = machine.currentPosition.x + bresenham.sx;
+            draw.nextXStep = bresenham.sx;
+        }
+        if (bresenham.err2 <= bresenham.dx) {
+            if (machine.currentPosition.y === draw.targetPoint.y) {
+                return false;
+            }
+            bresenham.err = bresenham.err + bresenham.dx;
+            machine.currentPosition.y = machine.currentPosition.y + bresenham.sy;
+            draw.nextYStep = bresenham.sy;
+        }
+        return true;
     }
 
 
@@ -93,20 +187,11 @@ namespace tegneRobot {
     
 
     /**
-     * TODO: describe your function here
      * Logic calculates if x-stepper and y-stepper should run.
      * If so, each function is called individually to update the positions
      * of the drawing head by updating the "pinStates"-object.
      * For each pulse the information about pin states should be 
      * sent over I2C to the PCA9557 chip as one 8-bit number.
-     * This means that global variables about pin states are
-     * updated when turnStepperX() and turnStepperY() is called.
-     * function turnStepperX() {
-            machine.currentPosition.x += machine.direction.x * animation.stepSize;
-        }
-        function turnStepperY() {
-            machine.currentPosition.y += machine.direction.y * animation.stepSize;
-        }
 
         Using function inside pins.cpp
         void digitalWritePin(DigitalPin name, int value) {
@@ -119,20 +204,20 @@ namespace tegneRobot {
     //% block="Step steppers"  icon="\uf204" blockGap=8
     export function stepSteppers() {
         // Read from pinStates object and write using digitalWrite()
-        pins.digitalWritePin(DigitalPin.P13, pinStates.pin13);
-        pins.digitalWritePin(DigitalPin.P14, pinStates.pin14);
-        pins.digitalWritePin(DigitalPin.P15, pinStates.pin15);
-        pins.digitalWritePin(DigitalPin.P16, pinStates.pin16);
+        pins.digitalWritePin(DigitalPin.P13, pinStates.stepperX);
+        pins.digitalWritePin(DigitalPin.P14, pinStates.dirX);
+        pins.digitalWritePin(DigitalPin.P15, pinStates.stepperY);
+        pins.digitalWritePin(DigitalPin.P16, pinStates.dirY);
 
     }
 
     //% help=setPinStates/draw weight=77
     //% block="setPinStates|pin8 %pin8|pin9 %pin9|pin15 %pin15|pin16 %pin16" icon="\uf1db" blockGap=8
     export function setPinStates(pin13: DigitalPin, pin14: number, pin15: number, pin16: number): void {
-        pinStates.pin13 = draw.pulseHigh;
-        pinStates.pin14 = pin14;
-        pinStates.pin15 = pin15;
-        pinStates.pin16 = pin16;
+        pinStates.stepperX = pin13;
+        pinStates.dirX = pin14;
+        pinStates.stepperY = pin15;
+        pinStates.dirY = pin16;
     }
 
     export function serialLog(text : string) {
