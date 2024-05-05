@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 400,
+        pulseInterval: 500,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -112,18 +112,19 @@ namespace tegneRobot {
         draw.isDrawing = runBresenham(); // Updates global variables nextXStep, nextYStep to either +1, -1 or 0 for a step or not.
 
         while (draw.isDrawing) {
-            if (micros() - draw.previousTime >= draw.pulseInterval) {
+            if (millis() - draw.previousTime >= draw.pulseInterval) {
                 if (draw.pulseHigh) {
-                    draw.previousTime = micros();
-                    //draw.previousTime = millis();
+                    //draw.previousTime = micros();
+                    draw.previousTime = millis();
                     draw.pulseHigh = !draw.pulseHigh; // Flips logic.
                     pinStates.stepperX = 0;
                     pinStates.stepperY = 0;
-                    
+                    serialLog("stepperX: " + pinStates.stepperX + ", stepperY: " + pinStates.stepperY);
+                    stepSteppers();
                 }
                 else {
-                    draw.previousTime = micros();
-                    //draw.previousTime = millis();
+                    //draw.previousTime = micros();
+                    draw.previousTime = millis();
                     // Set directions directions
                     if (draw.nextXStep < 0) {
                         pinStates.dirX = 1;
@@ -143,6 +144,7 @@ namespace tegneRobot {
 
                     pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
                     pinStates.stepperY = Math.abs(draw.nextYStep);
+                    serialLog("stepperX: " + pinStates.stepperX + ", stepperY: " + pinStates.stepperY);
                     draw.pulseHigh = !draw.pulseHigh; // flips logic
                     //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
                     stepSteppers();

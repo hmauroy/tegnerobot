@@ -5,5 +5,4 @@ let radius = 0.5
 let high = 1
 high = 1
 let waitTime = 400
-tegneRobot.moveHeadTo(1000, 700)
-tegneRobot.moveHeadTo(500, 342)
+tegneRobot.moveHeadTo(100, 50)
