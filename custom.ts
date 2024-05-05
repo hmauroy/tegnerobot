@@ -119,7 +119,6 @@ namespace tegneRobot {
                     draw.pulseHigh = !draw.pulseHigh; // Flips logic.
                     pinStates.stepperX = 0;
                     pinStates.stepperY = 0;
-                    serialLog("stepperX: " + pinStates.stepperX + ", stepperY: " + pinStates.stepperY);
                     stepSteppers();
                 }
                 else {
@@ -144,7 +143,6 @@ namespace tegneRobot {
 
                     pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
                     pinStates.stepperY = Math.abs(draw.nextYStep);
-                    serialLog("stepperX: " + pinStates.stepperX + ", stepperY: " + pinStates.stepperY);
                     draw.pulseHigh = !draw.pulseHigh; // flips logic
                     //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
                     stepSteppers();
@@ -212,6 +210,7 @@ namespace tegneRobot {
     //% help=stepSteppers/draw weight=77
     //% block="Step steppers"  icon="\uf204" blockGap=8
     export function stepSteppers() {
+        serialLog("stepperX: " + pinStates.stepperX + ", stepperY: " + pinStates.stepperY);
         // Read from pinStates object and write using digitalWrite()
         pins.digitalWritePin(DigitalPin.P13, pinStates.stepperX);
         pins.digitalWritePin(DigitalPin.P14, pinStates.dirX);
