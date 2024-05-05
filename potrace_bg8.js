@@ -44,7 +44,7 @@
  *                                    optional parameter opt_type can be "curve"
  */
 
-var Potrace = (function() {
+var PotraceBG8 = (function() {
 
   function Point(x, y) {
     this.x = x;
@@ -1284,16 +1284,16 @@ var Potrace = (function() {
 
         
       var n = curve.n, i;
-        let p = [["M",
+        let p = ["M",
             parseFloat((curve.c[(n - 1) * 3 + 2].x * size).toFixed(3)),
-            parseFloat((curve.c[(n - 1) * 3 + 2].y * size).toFixed(3))]]
+            parseFloat((curve.c[(n - 1) * 3 + 2].y * size).toFixed(3))]
 
       for (i = 0; i < n; i++) {
         if (curve.tag[i] === "CURVE") {
-            p = p.concat([bezierBG8(i)]);
+            p = p.concat(bezierBG8(i));
           //p += bezier(i); // Original
         } else if (curve.tag[i] === "CORNER") {
-          p = p.concat([segment(i)]);
+          p = p.concat(segment(i));
         }
       }
       //p += 

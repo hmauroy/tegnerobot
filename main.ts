@@ -9,5 +9,3 @@ tegneRobot.circle(50,30,20)
 tegneRobot.circle(50, 70, 20)
 tegneRobot.drawSquare(30, 10, 40)
 tegneRobot.homeHead()
-
-

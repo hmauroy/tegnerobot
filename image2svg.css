@@ -16,15 +16,21 @@ body {
     left: 5px;
     visibility: hidden;
 }
-#btnCloseDiv {
+#svgWindow {
+    position: absolute;
+    top: 5px;
+    left: 675px;
+    visibility: visible;
+    width: 650px;
+}
+.btnCloseDiv {
     position: relative;
     display: flex;
     justify-content: flex-end;
     top: 25px;
-    
 }
 #imageSrc {
-    width: 30vw;
+    width: 650px;
 
 }
 #imageContainer {
@@ -32,12 +38,12 @@ body {
     justify-content: space-around;
 }
 .inputoutput {
-    background-color: rgb(191, 191, 191);
     width: 90vw;
 }
 #svgOutput {
     background-color: white;
     color: black;
+    width: 650px;
 }
 #status {
     font-size: 120%;
