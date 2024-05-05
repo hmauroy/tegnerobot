@@ -91,7 +91,7 @@ namespace tegneRobot {
         draw.targetPoint.x = Math.ceil(xPosition);
         draw.targetPoint.y = Math.ceil(yPosition);
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
-        bresenham.dy = Math.abs(draw.targetPoint.y - machine.currentPosition.y);
+        bresenham.dy = -Math.abs(draw.targetPoint.y - machine.currentPosition.y); // NB! Negative value!
         bresenham.err = bresenham.dx + bresenham.dy;
         serialLog("dx, dy: " + bresenham.dx + "," + bresenham.dy);
 
@@ -112,9 +112,10 @@ namespace tegneRobot {
         draw.isDrawing = runBresenham(); // Updates global variables nextXStep, nextYStep to either +1, -1 or 0 for a step or not.
 
         while (draw.isDrawing) {
-            if (millis() - draw.previousTime >= draw.pulseInterval) {
+            if (micros() - draw.previousTime >= draw.pulseInterval) {
                 if (draw.pulseHigh) {
                     draw.previousTime = micros();
+                    //draw.previousTime = millis();
                     draw.pulseHigh = !draw.pulseHigh; // Flips logic.
                     pinStates.stepperX = 0;
                     pinStates.stepperY = 0;
@@ -122,6 +123,7 @@ namespace tegneRobot {
                 }
                 else {
                     draw.previousTime = micros();
+                    //draw.previousTime = millis();
                     // Set directions directions
                     if (draw.nextXStep < 0) {
                         pinStates.dirX = 1;
@@ -142,6 +144,7 @@ namespace tegneRobot {
                     pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
                     pinStates.stepperY = Math.abs(draw.nextYStep);
                     draw.pulseHigh = !draw.pulseHigh; // flips logic
+                    //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
                     stepSteppers();
 
                     // Calculate next step while we wait for next update.
@@ -150,11 +153,15 @@ namespace tegneRobot {
             }
 
         } // END while (isDrawing)
+        serialLog("Finished move to.")
+        serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
     }
 
     function runBresenham() : boolean  {
         // Calculates steps in x and y directions. 0, -1 or 1
         // Updates global variables dx, dy, and error variable err.
+        //serialLog("Bresenham current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+        //serialLog("Target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
         bresenham.err2 = 2 * bresenham.err;
         draw.nextXStep = 0;
         draw.nextYStep = 0;
