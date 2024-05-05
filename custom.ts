@@ -96,8 +96,8 @@ namespace tegneRobot {
         bresenham.err = bresenham.dx + bresenham.dy;
         let realDx = draw.targetPoint.x - machine.currentPosition.x;
         let realDy = draw.targetPoint.y - machine.currentPosition.y;
-        serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
-        serialLog("dx, dy: " + realDx + "," + realDy);
+        //serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+        //serialLog("dx, dy: " + realDx + "," + realDy);
 
         if (machine.currentPosition.x < draw.targetPoint.x) {
             bresenham.sx = 1;
@@ -116,8 +116,8 @@ namespace tegneRobot {
             pinStates.dirY = 0;
         }
 
-        serialLog("dirx: " + bresenham.sx);
-        serialLog("diry: " + bresenham.sy);
+        //serialLog("dirx: " + bresenham.sx);
+        //serialLog("diry: " + bresenham.sy);
 
         // Initializes the steps.
         draw.isDrawing = runBresenham(); // Updates global variables nextXStep, nextYStep to either +1, -1 or 0 for a step or not.
@@ -150,10 +150,11 @@ namespace tegneRobot {
                 control.waitMicros(400);
 
             } // END while (isDrawing)
+            control.waitMicros(10);
         })
         
-        serialLog("Finished move to.")
-        serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+        //serialLog("Finished move to.")
+        //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
     }
 
     function runBresenham() : boolean  {
@@ -321,6 +322,46 @@ namespace tegneRobot {
         moveHeadTo(origin.x, origin.y + size);
         moveHeadTo(origin.x, origin.y);
         serialLog("Finished square");
+
+    }
+
+
+    /**
+     * Draws a circle
+     * @param x coordinate
+     * @param y coordinate
+     * @param r radius
+     * @param lift if pen should lift after drawing finished
+     */
+    //% help=circle/draw weight=77
+    //% block="circle|centerX %x|centerY %y|radius %r|penLifted %lift" icon="\uf1db" blockGap=8
+    //% x.min=0 x.max=16 y.min=0 y.max=12 r.min=0 r.max=8
+    //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 
+    export function circle(centerX: number, centerY: number, r: number, lift = false): void {
+        const stepsPerMM = Math.ceil(5000 / 62.0);
+        const origin = { x: centerX * stepsPerMM, y: centerY * stepsPerMM };
+        const segment_length = 2;
+        const n_segments = (2 * Math.PI * r) / segment_length;
+        const n = Math.ceil(n_segments);
+        const d_theta = 2 * Math.PI / n;
+        let theta = 0;
+
+        const radius = Math.ceil(r * stepsPerMM);
+        let x0 = origin.x + radius;
+        let y0 = origin.y
+
+        // Run for loop of n line segments.
+        for (let i = 0; i < n; i++) {
+            theta = theta + d_theta;
+            draw.targetPoint.x = radius * Math.cos(theta) + origin.x;
+            draw.targetPoint.y = radius * Math.sin(theta) + origin.y;
+            moveHeadTo(draw.targetPoint.x, draw.targetPoint.y);
+        }
+
+        serialLog("Finished circle");
+
+
+
 
     }
 
