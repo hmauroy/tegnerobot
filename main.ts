@@ -7,19 +7,19 @@ high = 1
 let waitTime = 400
 figures.drawCircle(
 50,
+30,
 20,
-20,
-36
+62
 )
 figures.drawCircle(
 50,
-60,
+70,
 20,
-36
+62
 )
 figures.drawSquare(
 30,
-0,
+10,
 40,
 null
 )
