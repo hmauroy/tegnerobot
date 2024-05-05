@@ -1,6 +1,7 @@
 table, th, td {
-    border: solid black 1px;
+    border: solid #b1f5bc 1px;
     border-collapse: collapse;
+    background-color: rgb(40, 40, 40);
 }
 td {
     box-sizing: border-box;
