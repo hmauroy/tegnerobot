@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 600,
+        pulseInterval: 100,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },

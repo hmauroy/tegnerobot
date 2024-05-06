@@ -15,8 +15,12 @@ tegneRobot.triangle(
 0,
 true
 )
-tegneRobot.moveHeadTo(10, 0)
-tegneRobot.moveHeadTo(0, 0)
+tegneRobot.circle(
+30,
+30,
+30,
+false
+)
 tegneRobot.triangle(
 10,
 70,
