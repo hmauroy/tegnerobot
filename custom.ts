@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 400,
+        pulseInterval: 300,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -98,7 +98,7 @@ namespace tegneRobot {
         let realDx = draw.targetPoint.x - machine.currentPosition.x;
         let realDy = draw.targetPoint.y - machine.currentPosition.y;
         //serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
-        serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
+        //serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
         //serialLog("dx, dy: " + realDx + "," + realDy);
 
         if (machine.currentPosition.x < draw.targetPoint.x) {
@@ -433,7 +433,7 @@ namespace tegneRobot {
             for (let j=0; j<svgArr[i].length; j++) {
                 if (svgArr[i][j] === "M") {
                     // Absolute move
-                    serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
+                    //serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
                     j += 2;
@@ -452,8 +452,8 @@ namespace tegneRobot {
                     coordinates.forEach(coord => {
                         serial.writeString("" + coord + "," );
                     });
-                    */
                     serial.writeLine("");
+                    */
                     lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
                     // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
                     curveLength = pythagoras(coordinates[6]-coordinates[0], coordinates[7]-coordinates[1]);
