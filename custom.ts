@@ -409,6 +409,21 @@ namespace tegneRobot {
 
     }
 
+    /**
+    * Draws the SVG
+    * @param svgString - Bezier curves on this format: 
+    * @param rotation - rotation of triangle calculated by rotating around center point calculated by averaging all 3 corners. #TODO: not implemented yet. 
+    */
+    //% block="SVG|SVG string %svgString |penLifted %lift" blockGap=8
+    export function svg(svgString: string, lift = false): void {
+        const stepsPerMM = Math.ceil(5000 / 62.0);
+        if (lift) {
+            liftPen();
+        }
+        serialLog("Finished SVG drawing");
+
+    }
+
 
 
 
