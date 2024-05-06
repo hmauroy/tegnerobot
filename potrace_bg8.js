@@ -1262,7 +1262,7 @@ var PotraceBG8 = (function () {
             }
             // BG8 bezier constructor for array of bezier-arrays.
             function bezierBG8(i) {
-                let b = ["C"];
+                let b = ['C'];
                 b.push(parseFloat((curve.c[i * 3 + 0].x * size).toFixed(3)));
                 b.push(parseFloat((curve.c[i * 3 + 0].y * size).toFixed(3)));
                 b.push(parseFloat((curve.c[i * 3 + 1].x * size).toFixed(3)));
@@ -1273,7 +1273,7 @@ var PotraceBG8 = (function () {
             }
 
             function segment(i) {
-                let s = ["L",
+                let s = ['L',
                     parseFloat((curve.c[i * 3 + 1].x * size).toFixed(3)),
                     parseFloat((curve.c[i * 3 + 1].y * size).toFixed(3)),
                     parseFloat((curve.c[i * 3 + 2].x * size).toFixed(3)),
@@ -1284,7 +1284,7 @@ var PotraceBG8 = (function () {
 
 
             var n = curve.n, i;
-            let p = ["M",
+            let p = ['M',
                 parseFloat((curve.c[(n - 1) * 3 + 2].x * size).toFixed(3)),
                 parseFloat((curve.c[(n - 1) * 3 + 2].y * size).toFixed(3))]
 
