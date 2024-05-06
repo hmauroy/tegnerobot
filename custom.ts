@@ -125,12 +125,6 @@ namespace tegneRobot {
 
 
         while (draw.isDrawing) {
-            if (pins.digitalReadPin(DigitalPin.P11)) {
-                increaseSpeed();
-            }
-            if (pins.digitalReadPin(DigitalPin.P5)) {
-                decreseSpeed();
-            }
             if (draw.pulseHigh) {
                 //draw.previousTime = micros();
                 //draw.previousTime = millis();
@@ -256,7 +250,7 @@ namespace tegneRobot {
         }
     }
 
-    export function decreseSpeed() {
+    export function decreaseSpeed() {
         draw.pulseInterval += 100;
         if (draw.pulseInterval >= 1000) {
             draw.pulseInterval = 1000;

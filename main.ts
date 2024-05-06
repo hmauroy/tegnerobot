@@ -1,8 +1,8 @@
 input.onButtonPressed(Button.A, function () {
-    tegneRobot.decreseSpeed();
+    tegneRobot.draw.pulseInterval = 400;
 })
 input.onButtonPressed(Button.B, function () {
-    tegneRobot.increaseSpeed();
+    tegneRobot.draw.pulseInterval = 150;
 })
 serial.writeLine("Initiated drawing robot!")
 tegneRobot.triangle(
