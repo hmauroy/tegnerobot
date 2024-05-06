@@ -464,10 +464,10 @@ namespace tegneRobot {
                     */
                     lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
                     // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
-                    //curveLength = pythagoras(coordinates[6]-coordinates[0], coordinates[7]-coordinates[1]);
+                    curveLength = pythagoras(coordinates[6]-coordinates[0], coordinates[7]-coordinates[1]);
 
-                    //n_segments = Math.ceil(curveLength / 2);
-                    n_segments = 30;
+                    n_segments = Math.ceil(curveLength / 2);
+                    //n_segments = 30;
                     serialLog("n_segments: " + n_segments);
                     x0 = coordinates[0];
                     y0 = coordinates[1];
