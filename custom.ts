@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 350,
+        pulseInterval: 600,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -125,6 +125,12 @@ namespace tegneRobot {
 
 
         while (draw.isDrawing) {
+            if (pins.digitalReadPin(DigitalPin.P11)) {
+                increaseSpeed();
+            }
+            if (pins.digitalReadPin(DigitalPin.P5)) {
+                decreseSpeed();
+            }
             if (draw.pulseHigh) {
                 //draw.previousTime = micros();
                 //draw.previousTime = millis();
@@ -241,6 +247,20 @@ namespace tegneRobot {
         //% Lowers the pen by moving the servo to middle position.
         serialLog("Pen lowered.")
         servos.P0.setAngle(90);
+    }
+
+    export function increaseSpeed() {
+        draw.pulseInterval -= 100;
+        if (draw.pulseInterval <= 200) {
+            draw.pulseInterval = 200;
+        }
+    }
+
+    export function decreseSpeed() {
+        draw.pulseInterval += 100;
+        if (draw.pulseInterval >= 1000) {
+            draw.pulseInterval = 1000;
+        }
     }
 
     function micros() {

@@ -1,3 +1,9 @@
+input.onButtonPressed(Button.A, function () {
+    tegneRobot.decreseSpeed();
+})
+input.onButtonPressed(Button.B, function () {
+    tegneRobot.increaseSpeed();
+})
 serial.writeLine("Initiated drawing robot!")
 tegneRobot.triangle(
 0,
