@@ -422,6 +422,7 @@ namespace tegneRobot {
         // Run through array
         let lastCoordinates: number[] = [];
         let coordinates: number[] = [];
+        let subBezier: number[] = [];
         for (let i=0; i<svgArr.length; i++) {
             for (let j=0; j<svgArr[i].length; j++) {
                 if (svgArr[i][j] === "M") {
@@ -429,18 +430,24 @@ namespace tegneRobot {
                     serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
+                    j += 2;
 
                 }
                 if (svgArr[i][j] === "C") {
                     // Cubic bezier
                     coordinates = []; // Initialize empty array to store lastCoordinates and the next 6 control points.
+                    subBezier = [];
                     coordinates = coordinates.concat(lastCoordinates);
-                    coordinates = coordinates.concat([svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6]]);
+                    subBezier = [svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6]];
+                    coordinates = coordinates.concat(subBezier);
                     //serialLog("C " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
                     serialLog("C");
-                    serialLog("" + coordinates[0]);
+                    coordinates.forEach(coord => {
+                        serial.writeString("" + coord + "," );
+                    })
+                    serial.writeLine("");
                     lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
-                    j = j+6;
+                    j += 6;
 
                 }
                 if (svgArr[i][j] === "L") {
