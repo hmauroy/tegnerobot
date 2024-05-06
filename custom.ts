@@ -90,8 +90,8 @@ namespace tegneRobot {
     //% xPosition.min=0 yPosition.min=0
     //% xPosition.fieldOptions.precision=1 yPosition.fieldOptions.precision=1 
     export function moveHeadTo(xPosition: number, yPosition: number) {
-        draw.targetPoint.x = Math.ceil(xPosition);
-        draw.targetPoint.y = Math.ceil(yPosition);
+        draw.targetPoint.x = Math.round(xPosition);
+        draw.targetPoint.y = Math.round(yPosition);
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
         bresenham.dy = -Math.abs(draw.targetPoint.y - machine.currentPosition.y); // NB! Negative value!
         bresenham.err = bresenham.dx + bresenham.dy;
@@ -260,29 +260,7 @@ namespace tegneRobot {
     function pythagoras(dx:number, dy: number): number {
         return Math.sqrt(dx*dx + dy*dy);
     }
-
-    
-
-
-    // http://rosettacode.org/wiki/Cubic_bezier_curves#C
-    function cubicBezier(x0: number, y0:number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, n: number) {
-        let px = [];
-        let py = [];
-        for (let i = 0; i <= n; i++) {
-            let t = i / n;
-            let a = Math.pow((1.0 - t), 3);
-            let b = 3.0 * t * Math.pow((1.0 - t), 2);
-            let c = 3.0 * Math.pow(t, 2) * (1.0 - t);
-            let d = Math.pow(t, 3);
-
-            let x = a * x0 + b * x1 + c * x2 + d * x3;
-            let y = a * y0 + b * y1 + c * y2 + d * y3;
-            px.push(x);
-            py.push(y);
-        }
-        return px,py;
-    }
-
+  
     function micros() {
         // Get time ellapsed since app start in microseconds.
         return input.runningTimeMicros();
@@ -468,17 +446,19 @@ namespace tegneRobot {
                     coordinates = coordinates.concat(lastCoordinates);
                     coordinates = coordinates.concat( [ svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6] ] );
                     //serialLog("C " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
-                    serialLog("C");
+                    //serialLog("C");
+                    /*
                     coordinates.forEach(coord => {
                         serial.writeString("" + coord + "," );
-                    })
+                    });
+                    */
                     serial.writeLine("");
                     lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
                     // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
                     curveLength = pythagoras(coordinates[6]-coordinates[0], coordinates[7]-coordinates[1]);
 
                     n_segments = Math.ceil(curveLength / 2);
-                    serialLog("n_segments: " + n_segments);
+                    //serialLog("n_segments: " + n_segments);
                     x0 = coordinates[0];
                     y0 = coordinates[1];
                     x1 = coordinates[2];
@@ -488,7 +468,8 @@ namespace tegneRobot {
                     x3 = coordinates[6];
                     y3 = coordinates[7];
                     // Calculate each point along bezier curve.
-                    for (let i = 0; i <= n_segments; i++) {
+                    // http://rosettacode.org/wiki/Cubic_bezier_curves#C
+                    for (let i = 0; i < n_segments; i++) {
                         let t = i / n_segments;
                         let a = Math.pow((1.0 - t), 3);
                         let b = 3.0 * t * Math.pow((1.0 - t), 2);
@@ -498,7 +479,7 @@ namespace tegneRobot {
                         let x = a * x0 + b * x1 + c * x2 + d * x3;
                         let y = a * y0 + b * y1 + c * y2 + d * y3;
 
-                        moveHeadTo(x,y);
+                        moveHeadTo(x * stepsPerMM, y * stepsPerMM );
 
                     }
 
@@ -508,11 +489,13 @@ namespace tegneRobot {
                 if (svgArr[i][j] === "L") {
                     // Line
                     coordinates = [svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4] ] ; // Start and end coordinates are indicated by L segment.
+                    /*
                     serialLog("L");
                     coordinates.forEach(coord => {
                         serial.writeString("" + coord + ",");
-                    })
+                    });
                     serial.writeLine("");
+                    */
                     lastCoordinates = [svgArr[i][j + 3], svgArr[i][j + 4]];
                     j += 4;
 
@@ -520,10 +503,6 @@ namespace tegneRobot {
             }
             
         }
-
-
-        
-
 
         if (lift) {
             liftPen();
