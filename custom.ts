@@ -261,6 +261,28 @@ namespace tegneRobot {
         return Math.sqrt(dx*dx + dy*dy);
     }
 
+    
+
+
+    // http://rosettacode.org/wiki/Cubic_bezier_curves#C
+    function cubicBezier(x0: number, y0:number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, n: number) {
+        let px = [];
+        let py = [];
+        for (let i = 0; i <= n; i++) {
+            let t = i / n;
+            let a = Math.pow((1.0 - t), 3);
+            let b = 3.0 * t * Math.pow((1.0 - t), 2);
+            let c = 3.0 * Math.pow(t, 2) * (1.0 - t);
+            let d = Math.pow(t, 3);
+
+            let x = a * x0 + b * x1 + c * x2 + d * x3;
+            let y = a * y0 + b * y1 + c * y2 + d * y3;
+            px.push(x);
+            py.push(y);
+        }
+        return px,py;
+    }
+
     function micros() {
         // Get time ellapsed since app start in microseconds.
         return input.runningTimeMicros();
@@ -440,6 +462,8 @@ namespace tegneRobot {
                 }
                 if (svgArr[i][j] === "C") {
                     // Cubic bezier
+                    let px;
+                    let py;
                     coordinates = []; // Initialize empty array to store lastCoordinates and the next 6 control points.
                     coordinates = coordinates.concat(lastCoordinates);
                     coordinates = coordinates.concat( [ svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6] ] );
@@ -455,6 +479,7 @@ namespace tegneRobot {
 
                     n_segments = Math.ceil(curveLength / 2);
                     serialLog("n_segments: " + n_segments);
+                    px, py = cubicBezier(coordinates[0], coordinates[1], coordinates[2], coordinates[3], coordinates[4], coordinates[5], coordinates[6], coordinates[7],n_segments)
                     j += 6;
 
                 }
@@ -485,6 +510,8 @@ namespace tegneRobot {
         serialLog("Finished SVG drawing");
 
     }
+
+
 
 
 
