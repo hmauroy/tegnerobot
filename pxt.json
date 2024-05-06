@@ -11,14 +11,12 @@
     "files": [
         "main.blocks",
         "main.ts",
+        "main.py",
         "README.md",
         "custom.ts",
-        "bresenham.js",
-        "bresenham.css",
-        "bresenham_TVA.css",
-        "bresenham.html",
         "image_to_svg.html",
         "image2svg.css",
+        "potrace.js",
         "potrace_bg8.js"
     ],
     "testFiles": [
