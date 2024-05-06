@@ -11,7 +11,6 @@
     "files": [
         "main.blocks",
         "main.ts",
-        "main.py",
         "README.md",
         "custom.ts",
         "image_to_svg.html",
