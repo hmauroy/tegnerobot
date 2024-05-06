@@ -95,30 +95,30 @@ namespace tegneRobot {
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
         bresenham.dy = -Math.abs(draw.targetPoint.y - machine.currentPosition.y); // NB! Negative value!
         bresenham.err = bresenham.dx + bresenham.dy;
-        let realDx = draw.targetPoint.x - machine.currentPosition.x;
-        let realDy = draw.targetPoint.y - machine.currentPosition.y;
+        //let realDx = draw.targetPoint.x - machine.currentPosition.x;
+        //let realDy = draw.targetPoint.y - machine.currentPosition.y;
         //serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
-        serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
+        //serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
         //serialLog("dx, dy: " + realDx + "," + realDy);
 
         if (machine.currentPosition.x < draw.targetPoint.x) {
             bresenham.sx = 1;
-            pins.digitalWritePin(DigitalPin.P14, 0);
+            //pins.digitalWritePin(DigitalPin.P14, 0);
             pinStates.dirX = 0;
         }
         else {
             bresenham.sx = -1;
-            pins.digitalWritePin(DigitalPin.P14, 1);
+            //pins.digitalWritePin(DigitalPin.P14, 1);
             pinStates.dirX = 1;
         }
         if (machine.currentPosition.y < draw.targetPoint.y) {
             bresenham.sy = 1;
-            pins.digitalWritePin(DigitalPin.P16, 1);
+            //pins.digitalWritePin(DigitalPin.P16, 1);
             pinStates.dirY = 1;
         }
         else {
             bresenham.sy = -1;
-            pins.digitalWritePin(DigitalPin.P16, 0);
+            //pins.digitalWritePin(DigitalPin.P16, 0);
             pinStates.dirY = 0;
         }
 
@@ -134,6 +134,8 @@ namespace tegneRobot {
                 //draw.previousTime = micros();
                 //draw.previousTime = millis();
                 draw.pulseHigh = !draw.pulseHigh; // Flips logic.
+                //pins.digitalWritePin(DigitalPin.P13, 0);
+                //pins.digitalWritePin(DigitalPin.P15, 0);
                 pinStates.stepperX = 0;
                 pinStates.stepperY = 0;
                 stepSteppers();
@@ -146,6 +148,8 @@ namespace tegneRobot {
                 pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
                 pinStates.stepperY = Math.abs(draw.nextYStep);
                 draw.pulseHigh = !draw.pulseHigh; // flips logic
+                //pins.digitalWritePin(DigitalPin.P13, 1);
+                //pins.digitalWritePin(DigitalPin.P15, 1);
                 //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
                 stepSteppers();
 
@@ -441,24 +445,23 @@ namespace tegneRobot {
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
                     j += 2;
-                    moveHeadTo(lastCoordinates[0], lastCoordinates[1]);
+                    //moveHeadTo(lastCoordinates[0], lastCoordinates[1]);
 
                 }
                 if (svgArr[i][j] === "C") {
                     // Cubic bezier
-                    let px:number[] = [];
-                    let py: number[] = [];
+                    let drawCoords: (number|number)[][] = [];
                     coordinates = []; // Initialize empty array to store lastCoordinates and the next 6 control points.
                     coordinates = coordinates.concat(lastCoordinates);
                     coordinates = coordinates.concat( [ svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6] ] );
                     //serialLog("C " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
                     //serialLog("C");
-                    
+                    /*
                     coordinates.forEach(coord => {
                         serial.writeString("" + coord + "," );
                     });
                     serial.writeLine("");
-                    
+                    */
                     lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
                     // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
                     //curveLength = pythagoras(coordinates[6]-coordinates[0], coordinates[7]-coordinates[1]);
@@ -476,7 +479,7 @@ namespace tegneRobot {
                     y3 = coordinates[7];
                     // Calculate each point along bezier curve.
                     // http://rosettacode.org/wiki/Cubic_bezier_curves#C
-                    for (let k = 0; k <= n_segments; k++) {
+                    for (let k = 0; k < n_segments; k++) {
                         let t = k / n_segments;
                         let a = Math.pow((1.0 - t), 3);
                         let b = 3.0 * t * Math.pow((1.0 - t), 2);
@@ -487,9 +490,14 @@ namespace tegneRobot {
                         let y = a * y0 + b * y1 + c * y2 + d * y3;
 
                         //serialLog("" + x + "," + y);
-                        moveHeadTo(x * stepsPerMM, y * stepsPerMM);
-
+                        drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
                     }
+
+                    // Draw the points
+                    drawCoords.forEach(point => {
+                        serialLog("" + point[0] + "," + point[1]);
+                        moveHeadTo(point[0], point[1]);
+                    })
 
                     j += 6;
 
@@ -518,7 +526,6 @@ namespace tegneRobot {
         serialLog("Finished SVG drawing");
         serialLog("current pos: " + machine.currentPosition.x + "," + machine.currentPosition.y);
 
-        basic.showIcon(IconNames.Happy)
         basic.pause(500);
     }
 
