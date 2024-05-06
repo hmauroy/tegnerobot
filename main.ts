@@ -1,1 +1,20 @@
-
+serial.writeLine("Initiated drawing robot!")
+tegneRobot.circle(
+50,
+30,
+20,
+false
+)
+tegneRobot.circle(
+50,
+70,
+20,
+false
+)
+tegneRobot.drawSquare(
+30,
+10,
+40,
+0
+)
+tegneRobot.homeHead()
