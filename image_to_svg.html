@@ -237,8 +237,9 @@
                 document.getElementById("svgWindow").style.visibility = "visible";
             });
             // Create array with bezier curves
+            let scaleFactor = 100 / width;  // 100mm / 650px = 0,153 mm/px
             PotraceBG8.process(function () {
-                let svg = PotraceBG8.getSVG(1,"curve");
+                let svg = PotraceBG8.getSVG(scaleFactor,"curve");
                 let beziers;
                 try {
                     beziers = JSON.parse(svg);
