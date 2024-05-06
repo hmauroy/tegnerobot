@@ -76,6 +76,7 @@ namespace tegneRobot {
          * Moves head to 0,0 (upper left corner).
          * Moves steppers too much into negative direction.
          */
+        liftPen();
         moveHeadTo(0, 0);
     }
 
@@ -308,9 +309,9 @@ namespace tegneRobot {
     * @param lengthOfSide - length of size in mm. 5000 steps = 62.0 mm Y-axis, 64.6 mm X-axis approximately. Must be set by user after running calibrationX() and calibrationY() blocks once. # TODO: Not implemented yet.
     * @param rotation - rotation of square calculated by rotating around center point calculated by averaging all 4 corners. #TODO: not implemented yet. 
     */
-    //% block="Draw Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
+    //% block="Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
     //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=10
-    export function drawSquare(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = false): void {
+    export function square(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = false): void {
         lowerPen();
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
@@ -336,7 +337,7 @@ namespace tegneRobot {
      * @param lift if pen should lift after drawing finished
      */
     //% help=circle/draw weight=77
-    //% block="circle|centerX %x|centerY %y|radius %r|penLifted %lift" icon="\uf1db" blockGap=8
+    //% block="Circle|centerX %x|centerY %y|radius %r|penLifted %lift" icon="\uf1db" blockGap=8
     //% x.min=0 x.max=120 y.min=0 y.max=100 r.min=3 r.max=50
     //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 r.defl=3
     export function circle(centerX: number, centerY: number, r: number, lift = false): void {
