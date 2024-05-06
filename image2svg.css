@@ -14,18 +14,23 @@ body {
     display: flex;
     width: 80vw;
     height: 150px;
-    justify-content: space-around;
-    border-bottom: 50px;
+    justify-content: flex-start;
+    margin-bottom: 50px;
+}
+#heading {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
 }
 #canvasWindow {
     position: absolute;
-    top: 130px;
+    top: 190px;
     left: 5px;
     visibility: hidden;
 }
 #svgWindow {
     position: absolute;
-    top: 130px;
+    top: 190px;
     left: 675px;
     visibility: visible;
     width: 650px;
@@ -58,6 +63,7 @@ body {
 .controls {
     display: flex;
     flex-direction: column;
+    margin-left: 150px;
 }
 input[type="range"] {
   width: 400px; /* Adjust this value to set the desired width */

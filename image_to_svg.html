@@ -27,6 +27,7 @@
         </div>
         <div class="controls">
             <div><input type="file" id="fileInput" name="file" />  </div>
+            <div>Drawing max width <input type="range" id="rngDrawingWidth" min="50" max="120" value="100" step="1" /><span id="txtDrawingWidth">100</span> mm  </div>
             <div>Blur factor <input type="range" id="rngBlur" min="1" max="99" value="3" step="1" /><span id="txtBlur">9</span>  </div>
             <div>Treshold factor <input type="range" id="rngThresh" min="2" max="99" value="2" step="1" /><span id="txtThresh">9</span></div>
             <div>Turd size <input type="range" id="rngTurdsize" min="0" max="100" value="8" step="1" /><span id="txtTurd">8</span></div>
@@ -55,6 +56,9 @@
         // Listeners
         document.getElementById("btnUpdate").addEventListener("click", (e) => {
             applyFilters();
+        });
+        document.getElementById("rngDrawingWidth").addEventListener("input", (e) => {
+            updateSliders();
         });
         document.getElementById("rngBlur").addEventListener("input", (e) => {
             updateSliders();
@@ -174,9 +178,11 @@
             let blur_factor = document.getElementById("rngBlur").value;
             let threshold_factor = document.getElementById("rngThresh").value;
             let turd_factor = document.getElementById("rngTurdsize").value;
+            let drawingWidth = document.getElementById("rngDrawingWidth").value;
             document.getElementById("txtBlur").innerHTML = blur_factor;
             document.getElementById("txtThresh").innerHTML = threshold_factor;
             document.getElementById("txtTurd").innerHTML = turd_factor;
+            document.getElementById("txtDrawingWidth").innerHTML = drawingWidth;
         }
 
         function opencv2image(opencvData) {
@@ -231,15 +237,16 @@
             });
 
             // Process the image and show SVG
+            let drawingWidth = document.getElementById("rngDrawingWidth").value;
+            let scaleFactor = drawingWidth / width;  // E.g. 100mm / 650px = 0,153 mm/px
             Potrace.process(function () {
-                let svg = Potrace.getSVG(1,"curve");
+                let svg = Potrace.getSVG(1,"curve");    // scale=1, We want the same size as the image displayed.
                 document.getElementById("svgOutput").innerHTML = svg;
                 document.getElementById("svgWindow").style.visibility = "visible";
             });
             // Create array with bezier curves
-            let scaleFactor = 100 / width;  // 100mm / 650px = 0,153 mm/px
             PotraceBG8.process(function () {
-                let svg = PotraceBG8.getSVG(scaleFactor,"curve");
+                let svg = PotraceBG8.getSVG(scaleFactor,"curve"); // Scaling to fit drawing robot.
                 let beziers;
                 try {
                     beziers = JSON.parse(svg);
