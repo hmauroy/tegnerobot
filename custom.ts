@@ -411,12 +411,52 @@ namespace tegneRobot {
 
     /**
     * Draws the SVG
-    * @param svgString - Bezier curves on this format: 
-    * @param rotation - rotation of triangle calculated by rotating around center point calculated by averaging all 3 corners. #TODO: not implemented yet. 
+    * @param svgString - Bezier curves on this format: "[[\"M\",6.962,0.115,\"C\",10.833,0.138,17.167,0.138,21.038,0.115,\"C\",24.91,0.092,21.742,0.074,14,0.074,\"C\",6.258,0.074,3.09,0.092,6.962,0.115]]"
+    * Webpage exports JSON with double quotes which are escaped automatically by MakeCode editor.
     */
     //% block="SVG|SVG string %svgString |penLifted %lift" blockGap=8
     export function svg(svgString: string, lift = false): void {
         const stepsPerMM = Math.ceil(5000 / 62.0);
+        let svgArr: (any | (string | number))[][] = JSON.parse(svgString);
+
+        // Run through array
+        let lastCoordinates: number[] = [];
+        let coordinates: number[] = [];
+        for (let i=0; i<svgArr.length; i++) {
+            for (let j=0; j<svgArr[i].length; j++) {
+                if (svgArr[i][j] === "M") {
+                    // Absolute move
+                    serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
+                    lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
+                    coordinates = [];
+
+                }
+                if (svgArr[i][j] === "C") {
+                    // Cubic bezier
+                    coordinates = []; // Initialize empty array to store lastCoordinates and the next 6 control points.
+                    coordinates = coordinates.concat(lastCoordinates);
+                    coordinates = coordinates.concat([svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6]]);
+                    //serialLog("C " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
+                    serialLog("C");
+                    serialLog("" + coordinates[0]);
+                    lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
+                    j = j+6;
+
+                }
+                if (svgArr[i][j] === "L") {
+                    // Line
+                    serialLog("L " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
+
+                }
+            }
+            
+        }
+
+        basic.showNumber(svgArr.length);
+
+        
+
+
         if (lift) {
             liftPen();
         }
