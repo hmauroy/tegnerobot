@@ -10,6 +10,7 @@
     <h2><a href="https://rosettacode.org/wiki/Bitmap/B%C3%A9zier_curves/Cubic#JavaScript">https://rosettacode.org/wiki/Bitmap/B%C3%A9zier_curves/Cubic#JavaScript</a></h2>
 
     <canvas id="container" width="500" height="500"></canvas>
+    <div id="coordinate_output"></div>
     <script>
         let b3Seg = 30;
         let teller = 0;
@@ -23,15 +24,15 @@
             //cubicBezier(20, 200, 700, 50, -300, 50, 380, 150);
             //cubicBezier(160, 10, 10, 40, 30, 160, 150, 110);
             //cubicBezier(200,149, 30,50, 120,130, 160,30, b3Seg);
-            //cubicBezier(160,10, 10,40, 30,160, 150,110, b3Seg);
-            cubicBezier(1.654*10, 0.75*10, 1.232*10, 1.432*10, 35.54*10, 1.418*10, 75*10, 0.72*10, b3Seg);
+            cubicBezier(160,10, 10,40, 30,160, 150,110, b3Seg);
+            //cubicBezier(1.654*10, 0.75*10, 1.232*10, 1.432*10, 35.54*10, 1.418*10, 75*10, 0.72*10, b3Seg);
           }
 
           // http://rosettacode.org/wiki/Cubic_bezier_curves#C
           function cubicBezier(x0, y0, x1, y1, x2, y2, x3, y3, n) {
               let px = [];
               let py = [];
-              for (let i = 0; i <= n; i++) {
+              for (let i = 0; i < n; i++) {
                   let t = i / n;
                   let a = Math.pow((1.0 - t), 3);
                   let b = 3.0 * t * Math.pow((1.0 - t), 2);
@@ -44,16 +45,21 @@
                   py.push(y);
               }
               console.log(px,py);
+              let coordinateOutput = "";
               let xa = px[0];
               let ya = py[0];
+              coordinateOutput += xa.toFixed(2) + "," + ya.toFixed(2) + "\n";
               for (i = 1; i < px.length; i++) {
                 let x = px[i];
                 let y = py[i];
-                console.log(x,y);
+                coordinateOutput += x.toFixed(2) + "," + y.toFixed(2) + "\n";
+                console.log(coordinateOutput);
+                console.log(x.toFixed(2),",",y.toFixed(2));
                 drawPolygon(context, xa, ya, x, y, "red");
                 xa = x;
                 ya = y;
               }
+              document.getElementById("coordinate_output").innerText = coordinateOutput;
           }
         function drawPolygon(context, x0,y0,x,y, strokeStyle) {
           teller ++;
