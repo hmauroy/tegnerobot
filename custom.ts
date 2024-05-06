@@ -97,7 +97,7 @@ namespace tegneRobot {
         bresenham.err = bresenham.dx + bresenham.dy;
         let realDx = draw.targetPoint.x - machine.currentPosition.x;
         let realDy = draw.targetPoint.y - machine.currentPosition.y;
-        //serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+        serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
         //serialLog("dx, dy: " + realDx + "," + realDy);
 
         if (machine.currentPosition.x < draw.targetPoint.x) {
@@ -444,12 +444,12 @@ namespace tegneRobot {
     export function svg(svgString: string, lift = false): void {
         const stepsPerMM = Math.ceil(5000 / 62.0);
         let svgArr: (any | (string | number))[][] = JSON.parse(svgString);
-
         // Run through array
         let lastCoordinates: number[] = [];
         let coordinates: number[] = [];
         let n_segments = 1;
         let curveLength = 0;
+        let x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number;
         for (let i=0; i<svgArr.length; i++) {
             for (let j=0; j<svgArr[i].length; j++) {
                 if (svgArr[i][j] === "M") {
@@ -462,8 +462,8 @@ namespace tegneRobot {
                 }
                 if (svgArr[i][j] === "C") {
                     // Cubic bezier
-                    let px;
-                    let py;
+                    let px:number[] = [];
+                    let py: number[] = [];
                     coordinates = []; // Initialize empty array to store lastCoordinates and the next 6 control points.
                     coordinates = coordinates.concat(lastCoordinates);
                     coordinates = coordinates.concat( [ svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6] ] );
@@ -479,7 +479,29 @@ namespace tegneRobot {
 
                     n_segments = Math.ceil(curveLength / 2);
                     serialLog("n_segments: " + n_segments);
-                    px, py = cubicBezier(coordinates[0], coordinates[1], coordinates[2], coordinates[3], coordinates[4], coordinates[5], coordinates[6], coordinates[7],n_segments)
+                    x0 = coordinates[0];
+                    y0 = coordinates[1];
+                    x1 = coordinates[2];
+                    y1 = coordinates[3];
+                    x2 = coordinates[4];
+                    y2 = coordinates[5];
+                    x3 = coordinates[6];
+                    y3 = coordinates[7];
+                    // Calculate each point along bezier curve.
+                    for (let i = 0; i <= n_segments; i++) {
+                        let t = i / n_segments;
+                        let a = Math.pow((1.0 - t), 3);
+                        let b = 3.0 * t * Math.pow((1.0 - t), 2);
+                        let c = 3.0 * Math.pow(t, 2) * (1.0 - t);
+                        let d = Math.pow(t, 3);
+
+                        let x = a * x0 + b * x1 + c * x2 + d * x3;
+                        let y = a * y0 + b * y1 + c * y2 + d * y3;
+
+                        moveHeadTo(x,y);
+
+                    }
+
                     j += 6;
 
                 }
@@ -499,7 +521,6 @@ namespace tegneRobot {
             
         }
 
-        basic.showNumber(svgArr.length);
 
         
 
