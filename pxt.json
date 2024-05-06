@@ -15,11 +15,7 @@
         "custom.ts",
         "image_to_svg.html",
         "image2svg.css",
-        "potrace_bg8.js",
-        "bresenham.js",
-        "bresenham.css",
-        "bresenham_TVA.css",
-        "bresenham.html"
+        "potrace_bg8.js"
     ],
     "testFiles": [
         "test.ts"
@@ -31,5 +27,5 @@
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "tsprj"
 }
