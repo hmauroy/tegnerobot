@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 800,
+        pulseInterval: 350,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -147,7 +147,7 @@ namespace tegneRobot {
                 // Calculate next step while we wait for next update.
                 draw.isDrawing = runBresenham();
             }
-            control.waitMicros(400);
+            control.waitMicros(draw.pulseInterval);
 
         } // END while (isDrawing)
 
@@ -217,14 +217,6 @@ namespace tegneRobot {
 
     }
 
-    //% help=setPinStates/draw weight=77
-    //% block="setPinStates|pin8 %pin8|pin9 %pin9|pin15 %pin15|pin16 %pin16" icon="\uf1db" blockGap=8
-    export function setPinStates(pin13: DigitalPin, pin14: number, pin15: number, pin16: number): void {
-        pinStates.stepperX = pin13;
-        pinStates.dirX = pin14;
-        pinStates.stepperY = pin15;
-        pinStates.dirY = pin16;
-    }
 
     export function serialLog(text: string) {
         serial.writeLine(text);
@@ -367,8 +359,39 @@ namespace tegneRobot {
         }
         serialLog("Finished circle");
 
+    }
 
-
+    /**
+    * Draws a triangle
+    * @param x1 - Coordinate on X axis in mm
+    * @param y1 - Coordinate on y axis
+    * @param x2 - Coordinate on X axis
+    * @param y2 - Coordinate on y axis
+    * @param x3 - Coordinate on X axis
+    * @param y3 - Coordinate on y axis
+    * @param rotation - rotation of triangle calculated by rotating around center point calculated by averaging all 3 corners. #TODO: not implemented yet. 
+    */
+    //% block="Triangle|x1 %x1|y1 %y1|x2 %x2|y2 %y2|x3 %x3|y3 %y3|rotation %rotation |penLifted %lift" blockGap=8
+    //% x1.min=0, x2.min=0, x3.min=0, y1.min=0 y2.min=0 y3.min=0
+    export function triangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, rotation: number = 0, lift = false): void {
+        const stepsPerMM = Math.ceil(5000 / 62.0);
+        const positions = { 
+            x1: x1 * stepsPerMM, 
+            y1: y1 * stepsPerMM,
+            x2: x2 * stepsPerMM,
+            y2: y2 * stepsPerMM,
+            x3: x3 * stepsPerMM,
+            y3: y3 * stepsPerMM
+            };
+        moveHeadTo(positions.x1, positions.y1);
+        lowerPen();
+        moveHeadTo(positions.x2, positions.y2);
+        moveHeadTo(positions.x3, positions.y3);
+        moveHeadTo(positions.x1, positions.y1);
+        if (lift) {
+            liftPen();
+        }
+        serialLog("Finished triangle");
 
     }
 
