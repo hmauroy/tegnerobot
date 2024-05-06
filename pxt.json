@@ -15,6 +15,7 @@
         "custom.ts",
         "image_to_svg.html",
         "image2svg.css",
+        "potrace.js",
         "potrace_bg8.js"
     ],
     "testFiles": [
