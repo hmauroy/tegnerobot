@@ -10,21 +10,39 @@ body {
     background-color: rgb(40, 40, 40);
     color: #fff3ea;
 }
+#topDiv {
+    display: flex;
+    width: 80vw;
+    height: 150px;
+    justify-content: flex-start;
+    margin-bottom: 50px;
+}
+#heading {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+}
 #canvasWindow {
     position: absolute;
-    top: 5px;
+    top: 190px;
     left: 5px;
     visibility: hidden;
 }
-#btnCloseDiv {
+#svgWindow {
+    position: absolute;
+    top: 190px;
+    left: 675px;
+    visibility: visible;
+    width: 650px;
+}
+.btnCloseDiv {
     position: relative;
     display: flex;
     justify-content: flex-end;
     top: 25px;
-    
 }
 #imageSrc {
-    width: 30vw;
+    width: 650px;
 
 }
 #imageContainer {
@@ -32,20 +50,23 @@ body {
     justify-content: space-around;
 }
 .inputoutput {
-    background-color: rgb(191, 191, 191);
     width: 90vw;
 }
 #svgOutput {
     background-color: white;
     color: black;
+    width: 650px;
 }
 #status {
     font-size: 120%;
 }
 .controls {
-    width: 75vw;
     display: flex;
     flex-direction: column;
+    margin-left: 150px;
+}
+input[type="range"] {
+  width: 400px; /* Adjust this value to set the desired width */
 }
 #btnUpdate {
     width: 10vw;
