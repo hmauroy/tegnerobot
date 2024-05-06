@@ -240,11 +240,13 @@ namespace tegneRobot {
 
     function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
+        serialLog("Pen lifted.")
         servos.P0.setAngle(150);
     }
 
     function lowerPen(): void {
         //% Lowers the pen by moving the servo to middle position.
+        serialLog("Pen lowered.")
         servos.P0.setAngle(90);
     }
 
@@ -306,10 +308,10 @@ namespace tegneRobot {
     * @param lengthOfSide - length of size in mm. 5000 steps = 62.0 mm Y-axis, 64.6 mm X-axis approximately. Must be set by user after running calibrationX() and calibrationY() blocks once. # TODO: Not implemented yet.
     * @param rotation - rotation of square calculated by rotating around center point calculated by averaging all 4 corners. #TODO: not implemented yet. 
     */
-    //% block="Draw Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation" blockGap=8
-    //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=1
-    export function drawSquare(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0) {
-
+    //% block="Draw Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
+    //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=10
+    export function drawSquare(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = false): void {
+        lowerPen();
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
         const size = lengthOfSide * stepsPerMM;
@@ -318,6 +320,9 @@ namespace tegneRobot {
         moveHeadTo(origin.x + size, origin.y + size);
         moveHeadTo(origin.x, origin.y + size);
         moveHeadTo(origin.x, origin.y);
+        if (lift) {
+            liftPen();
+        }
         serialLog("Finished square");
 
     }
@@ -332,9 +337,10 @@ namespace tegneRobot {
      */
     //% help=circle/draw weight=77
     //% block="circle|centerX %x|centerY %y|radius %r|penLifted %lift" icon="\uf1db" blockGap=8
-    //% x.min=0 x.max=16 y.min=0 y.max=12 r.min=0 r.max=8
-    //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 
+    //% x.min=0 x.max=120 y.min=0 y.max=100 r.min=3 r.max=50
+    //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 r.defl=3
     export function circle(centerX: number, centerY: number, r: number, lift = false): void {
+        lowerPen();
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: centerX * stepsPerMM, y: centerY * stepsPerMM };
         const segment_length = 2;
@@ -355,6 +361,9 @@ namespace tegneRobot {
             moveHeadTo(draw.targetPoint.x, draw.targetPoint.y);
         }
 
+        if (lift) {
+            liftPen();
+        }
         serialLog("Finished circle");
 
 
