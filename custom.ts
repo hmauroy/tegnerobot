@@ -422,7 +422,6 @@ namespace tegneRobot {
         // Run through array
         let lastCoordinates: number[] = [];
         let coordinates: number[] = [];
-        let subBezier: number[] = [];
         for (let i=0; i<svgArr.length; i++) {
             for (let j=0; j<svgArr[i].length; j++) {
                 if (svgArr[i][j] === "M") {
@@ -436,10 +435,8 @@ namespace tegneRobot {
                 if (svgArr[i][j] === "C") {
                     // Cubic bezier
                     coordinates = []; // Initialize empty array to store lastCoordinates and the next 6 control points.
-                    subBezier = [];
                     coordinates = coordinates.concat(lastCoordinates);
-                    subBezier = [svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6]];
-                    coordinates = coordinates.concat(subBezier);
+                    coordinates = coordinates.concat( [ svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6] ] );
                     //serialLog("C " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
                     serialLog("C");
                     coordinates.forEach(coord => {
@@ -452,7 +449,16 @@ namespace tegneRobot {
                 }
                 if (svgArr[i][j] === "L") {
                     // Line
-                    serialLog("L " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
+                    coordinates = []; // Initialize empty array to store lastCoordinates and the end point for line.
+                    coordinates = coordinates.concat(lastCoordinates);
+                    coordinates = coordinates.concat( [ svgArr[i][j + 1], svgArr[i][j + 2] ] );
+                    serialLog("L");
+                    coordinates.forEach(coord => {
+                        serial.writeString("" + coord + ",");
+                    })
+                    serial.writeLine("");
+                    lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
+                    j += 2;
 
                 }
             }
