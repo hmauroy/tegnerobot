@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 300,
+        pulseInterval: 6000,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -421,7 +421,7 @@ namespace tegneRobot {
     */
     //% block="SVG|SVG string %svgString |penLifted %lift" blockGap=8
     export function svg(svgString: string, lift = false): void {
-        const stepsPerMM = Math.ceil(5000 / 62.0);
+        const stepsPerMM = 5000 / 62.0;
         let svgArr: (any | (string | number))[][] = JSON.parse(svgString);
         // Run through array
         let lastCoordinates: number[] = [];
@@ -437,6 +437,7 @@ namespace tegneRobot {
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
                     j += 2;
+                    moveHeadTo(lastCoordinates[0], lastCoordinates[1]);
 
                 }
                 if (svgArr[i][j] === "C") {
@@ -456,10 +457,11 @@ namespace tegneRobot {
                     */
                     lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
                     // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
-                    curveLength = pythagoras(coordinates[6]-coordinates[0], coordinates[7]-coordinates[1]);
+                    //curveLength = pythagoras(coordinates[6]-coordinates[0], coordinates[7]-coordinates[1]);
 
-                    n_segments = Math.ceil(curveLength / 2);
-                    //serialLog("n_segments: " + n_segments);
+                    //n_segments = Math.ceil(curveLength / 2);
+                    n_segments = 30;
+                    serialLog("n_segments: " + n_segments);
                     x0 = coordinates[0];
                     y0 = coordinates[1];
                     x1 = coordinates[2];
@@ -470,8 +472,8 @@ namespace tegneRobot {
                     y3 = coordinates[7];
                     // Calculate each point along bezier curve.
                     // http://rosettacode.org/wiki/Cubic_bezier_curves#C
-                    for (let i = 0; i < n_segments; i++) {
-                        let t = i / n_segments;
+                    for (let k = 0; k < n_segments; k++) {
+                        let t = k / n_segments;
                         let a = Math.pow((1.0 - t), 3);
                         let b = 3.0 * t * Math.pow((1.0 - t), 2);
                         let c = 3.0 * Math.pow(t, 2) * (1.0 - t);
@@ -480,7 +482,7 @@ namespace tegneRobot {
                         let x = a * x0 + b * x1 + c * x2 + d * x3;
                         let y = a * y0 + b * y1 + c * y2 + d * y3;
 
-                        moveHeadTo(x * stepsPerMM, y * stepsPerMM );
+                        moveHeadTo(x, y);
 
                     }
 
@@ -509,7 +511,10 @@ namespace tegneRobot {
             liftPen();
         }
         serialLog("Finished SVG drawing");
+        serialLog("current pos: " + machine.currentPosition.x + "," + machine.currentPosition.y);
 
+        basic.showIcon(IconNames.Happy)
+        basic.pause(500);
     }
 
 
