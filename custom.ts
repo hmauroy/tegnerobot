@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 100,
+        pulseInterval: 400,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -97,7 +97,8 @@ namespace tegneRobot {
         bresenham.err = bresenham.dx + bresenham.dy;
         let realDx = draw.targetPoint.x - machine.currentPosition.x;
         let realDy = draw.targetPoint.y - machine.currentPosition.y;
-        serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+        //serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
+        serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
         //serialLog("dx, dy: " + realDx + "," + realDy);
 
         if (machine.currentPosition.x < draw.targetPoint.x) {
