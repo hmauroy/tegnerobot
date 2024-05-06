@@ -257,6 +257,10 @@ namespace tegneRobot {
         }
     }
 
+    function pythagoras(dx:number, dy: number): number {
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+
     function micros() {
         // Get time ellapsed since app start in microseconds.
         return input.runningTimeMicros();
@@ -422,6 +426,8 @@ namespace tegneRobot {
         // Run through array
         let lastCoordinates: number[] = [];
         let coordinates: number[] = [];
+        let n_segments = 1;
+        let curveLength = 0;
         for (let i=0; i<svgArr.length; i++) {
             for (let j=0; j<svgArr[i].length; j++) {
                 if (svgArr[i][j] === "M") {
@@ -444,21 +450,24 @@ namespace tegneRobot {
                     })
                     serial.writeLine("");
                     lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
+                    // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
+                    curveLength = pythagoras(coordinates[6]-coordinates[0], coordinates[7]-coordinates[1]);
+
+                    n_segments = Math.ceil(curveLength / 2);
+                    serialLog("n_segments: " + n_segments);
                     j += 6;
 
                 }
                 if (svgArr[i][j] === "L") {
                     // Line
-                    coordinates = []; // Initialize empty array to store lastCoordinates and the end point for line.
-                    coordinates = coordinates.concat(lastCoordinates);
-                    coordinates = coordinates.concat( [ svgArr[i][j + 1], svgArr[i][j + 2] ] );
+                    coordinates = [svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4] ] ; // Start and end coordinates are indicated by L segment.
                     serialLog("L");
                     coordinates.forEach(coord => {
                         serial.writeString("" + coord + ",");
                     })
                     serial.writeLine("");
-                    lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
-                    j += 2;
+                    lastCoordinates = [svgArr[i][j + 3], svgArr[i][j + 4]];
+                    j += 4;
 
                 }
             }
