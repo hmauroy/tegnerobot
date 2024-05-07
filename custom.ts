@@ -328,7 +328,7 @@ namespace tegneRobot {
     * @param lengthOfSide - length of size in mm. 5000 steps = 62.0 mm Y-axis, 64.6 mm X-axis approximately. Must be set by user after running calibrationX() and calibrationY() blocks once. # TODO: Not implemented yet.
     * @param rotation - rotation of square calculated by rotating around center point calculated by averaging all 4 corners. #TODO: not implemented yet. 
     */
-    //% block="Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
+    //% block="Square|upper left Xpos %xPosition|upper left Ypos %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
     //% xPosition.min=0 yPosition.min=0 lengthOfSide.defl=10
     export function square(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = false): void {
         lowerPen();
