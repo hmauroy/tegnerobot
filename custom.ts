@@ -323,14 +323,40 @@ namespace tegneRobot {
     // Figures definitions
     /**
     * Draws a square
-    * @param xPosition - Coordinate on X axis
-    * @param yPosition - Coordinate on y axis
+    * @param xPosition - Upper left coordinate on X axis
+    * @param yPosition - Upper left coordinate on y axis
     * @param lengthOfSide - length of size in mm. 5000 steps = 62.0 mm Y-axis, 64.6 mm X-axis approximately. Must be set by user after running calibrationX() and calibrationY() blocks once. # TODO: Not implemented yet.
     * @param rotation - rotation of square calculated by rotating around center point calculated by averaging all 4 corners. #TODO: not implemented yet. 
     */
     //% block="Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
     //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=10
     export function square(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = false): void {
+        lowerPen();
+        const stepsPerMM = Math.ceil(5000 / 62.0);
+        const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
+        const size = lengthOfSide * stepsPerMM;
+        moveHeadTo(origin.x, origin.y);
+        moveHeadTo(origin.x + size, origin.y);
+        moveHeadTo(origin.x + size, origin.y + size);
+        moveHeadTo(origin.x, origin.y + size);
+        moveHeadTo(origin.x, origin.y);
+        if (lift) {
+            liftPen();
+        }
+        serialLog("Finished square");
+
+    }
+
+    /* Draws a rectangle with sides a and b
+    * @param xPosition - Upper left coordinate on X axis
+    * @param yPosition - Upper left coordinate on y axis
+    * @param a - length of size in mm. 5000 steps = 62.0 mm Y-axis, 64.6 mm X-axis approximately. Must be set by user after running calibrationX() and calibrationY() blocks once. # TODO: Not implemented yet.
+    * @param b - length of size in mm. 5000 steps = 62.0 mm Y-axis, 64.6 mm X-axis approximately. Must be set by user after running calibrationX() and calibrationY() blocks once. # TODO: Not implemented yet.
+    * @param rotation - rotation of square calculated by rotating around center point calculated by averaging all 4 corners. #TODO: not implemented yet. 
+    */
+    //% block="Square|x Coordinate %xPosition|y Coordinate %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
+    //% xPosition.min=0 yPosition.min=0 radius.min=1 lengthOfSide.defl=10
+    export function rectangle(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = false): void {
         lowerPen();
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
