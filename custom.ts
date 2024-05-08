@@ -265,10 +265,6 @@ namespace tegneRobot {
             draw.pulseInterval = 1000;
         }
     }
-
-    function pythagoras(dx:number, dy: number): number {
-        return Math.sqrt(dx*dx + dy*dy);
-    }
   
     function micros() {
         // Get time ellapsed since app start in microseconds.
@@ -286,7 +282,7 @@ namespace tegneRobot {
         let startEvent = 1;
         let startEventValue = 1;
         serial.writeLine("Initiated drawing robot!");
-        serial.writeLine("RAM size: " + control.ramSize() + " bits = " + control.ramSize() / 1024000 + " kB");
+        //serial.writeLine("RAM size: " + control.ramSize() + " bits = " + control.ramSize() / 1024000 + " kB");
         // Sets button B to HIGH
         pins.digitalWritePin(DigitalPin.P11, 1);
         basic.showLeds(`
@@ -497,10 +493,14 @@ namespace tegneRobot {
     }
 
     // Define a type for the elements that can be either a string or a number.
-    type SvgElement = string | number;
+    type SvgElement = any | number;
 
     // Define the interface for the array where each inner array can contain any number of SvgElement.
     type SvgArray = SvgElement[][];
+
+    function pythagoras(dx: SvgElement, dy: SvgElement): number {
+        return Math.sqrt(dx * dx + dy * dy);
+    }
     
     /**
     * Draws the SVG
@@ -509,11 +509,110 @@ namespace tegneRobot {
     */
     //% block="SVGArr|SVG Array %svgArr |penLifted %lift" blockGap=8
     export function svg2(svgArr: SvgArray, lift = false): void {
+        /*
         svgArr.forEach(arr => {
             arr.forEach(val => {
                 serialLog("" + val);
-            })
-        })
+            });
+        });
+        */
+        const stepsPerMM = 5000 / 62.0;
+        // Run through array
+        let lastCoordinates: SvgElement[] = [];
+        let coordinates: SvgElement[] = [];
+        let n_segments = 1;
+        let curveLength: number = 0;
+        let x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number;
+        for (let i = 0; i < svgArr.length; i++) {
+            for (let j = 0; j < svgArr[i].length; j++) {
+                if (svgArr[i][j] === "M") {
+                    // Absolute move
+                    //serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
+                    lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
+                    coordinates = [];
+                    j += 2;
+                    //moveHeadTo(lastCoordinates[0], lastCoordinates[1]);
+
+                }
+                if (svgArr[i][j] === "C") {
+                    // Cubic bezier
+                    let drawCoords: (number | number)[][] = [];
+                    coordinates = []; // Initialize empty array to store lastCoordinates and the next 6 control points.
+                    coordinates = coordinates.concat(lastCoordinates);
+                    coordinates = coordinates.concat([svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6]]);
+                    //serialLog("C " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
+                    //serialLog("C");
+                    /*
+                    coordinates.forEach(coord => {
+                        serial.writeString("" + coord + "," );
+                    });
+                    serial.writeLine("");
+                    */
+                    lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
+                    // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
+                    curveLength = pythagoras(coordinates[6] - coordinates[0], coordinates[7] - coordinates[1]);
+
+                    n_segments = Math.ceil(curveLength / 2);
+                    //n_segments = 30;
+                    serialLog("n_segments: " + n_segments);
+                    x0 = coordinates[0];
+                    y0 = coordinates[1];
+                    x1 = coordinates[2];
+                    y1 = coordinates[3];
+                    x2 = coordinates[4];
+                    y2 = coordinates[5];
+                    x3 = coordinates[6];
+                    y3 = coordinates[7];
+                    // Calculate each point along bezier curve.
+                    // http://rosettacode.org/wiki/Cubic_bezier_curves#C
+                    for (let k = 0; k < n_segments; k++) {
+                        let t = k / n_segments;
+                        let a = Math.pow((1.0 - t), 3);
+                        let b = 3.0 * t * Math.pow((1.0 - t), 2);
+                        let c = 3.0 * Math.pow(t, 2) * (1.0 - t);
+                        let d = Math.pow(t, 3);
+
+                        let x = a * x0 + b * x1 + c * x2 + d * x3;
+                        let y = a * y0 + b * y1 + c * y2 + d * y3;
+
+                        //serialLog("" + x + "," + y);
+                        drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
+                    }
+
+                    // Draw the points
+                    drawCoords.forEach(point => {
+                        //serialLog("" + point[0] + "," + point[1]);
+                        moveHeadTo(point[0], point[1]);
+                    })
+
+                    j += 6;
+
+                }
+                if (svgArr[i][j] === "L") {
+                    // Line
+                    coordinates = [svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4]]; // Start and end coordinates are indicated by L segment.
+                    /*
+                    serialLog("L");
+                    coordinates.forEach(coord => {
+                        serial.writeString("" + coord + ",");
+                    });
+                    serial.writeLine("");
+                    */
+                    lastCoordinates = [svgArr[i][j + 3], svgArr[i][j + 4]];
+                    j += 4;
+
+                }
+            }
+
+        }
+
+        if (lift) {
+            liftPen();
+        }
+        serialLog("Finished SVG drawing");
+        serialLog("current pos: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+
+        basic.pause(500);
     }
 
     /**
