@@ -509,6 +509,7 @@ namespace tegneRobot {
     */
     //% block="SVGArr|SVG Array %svgArr |penLifted %lift" blockGap=8
     export function svg2(svgArr: SvgArray, lift = false): void {
+        serialLog("Draws SVG");
         /*
         svgArr.forEach(arr => {
             arr.forEach(val => {
@@ -554,7 +555,7 @@ namespace tegneRobot {
 
                     n_segments = Math.ceil(curveLength / 2);
                     //n_segments = 30;
-                    serialLog("n_segments: " + n_segments);
+                    //serialLog("n_segments: " + n_segments);
                     x0 = coordinates[0];
                     y0 = coordinates[1];
                     x1 = coordinates[2];
