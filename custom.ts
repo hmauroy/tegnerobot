@@ -528,13 +528,13 @@ namespace tegneRobot {
             for (let j = 0; j < svgArr[i].length; j++) {
                 if (svgArr[i][j] === "M") {
                     // Absolute move
-                    //serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
+                    serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
 
                     let x = svgArr[i][j + 1] * stepsPerMM;
                     let y = svgArr[i][j + 2] * stepsPerMM;
-                    liftPen();
+                    //liftPen();
                     moveHeadTo(x,y);
-                    lowerPen();
+                    //lowerPen();
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
                     j += 2;
@@ -546,7 +546,7 @@ namespace tegneRobot {
                     coordinates = []; // Initialize empty array to store lastCoordinates and the next 6 control points.
                     coordinates = coordinates.concat(lastCoordinates);
                     coordinates = coordinates.concat([svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4], svgArr[i][j + 5], svgArr[i][j + 6]]);
-                    //serialLog("C " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
+                    serialLog("C " + svgArr[i][j + 1] + "," + svgArr[i][j + 2]);
                     //serialLog("C");
                     /*
                     coordinates.forEach(coord => {
@@ -557,6 +557,7 @@ namespace tegneRobot {
                     lastCoordinates = [svgArr[i][j + 5], svgArr[i][j + 6]];
                     // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
                     curveLength = pythagoras(coordinates[6] - coordinates[0], coordinates[7] - coordinates[1]);
+                    //serialLog("" + curveLength);
 
                     n_segments = Math.ceil(curveLength / 2);
                     //n_segments = 30;
@@ -581,16 +582,21 @@ namespace tegneRobot {
                         let x = a * x0 + b * x1 + c * x2 + d * x3;
                         let y = a * y0 + b * y1 + c * y2 + d * y3;
 
+                        x = x * stepsPerMM;
+                        y = y * stepsPerMM;
+
                         //serialLog("" + x + "," + y);
-                        drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
+                        //drawCoords.push([x, y]);
+                        moveHeadTo(x,y);
                     }
 
                     // Draw the points
+                    /*
                     drawCoords.forEach(point => {
                         //serialLog("" + point[0] + "," + point[1]);
                         moveHeadTo(point[0], point[1]);
                     })
-
+                    */
                     j += 6;
 
                 }
@@ -604,12 +610,12 @@ namespace tegneRobot {
                     });
                     serial.writeLine("");
                     // Move to start of L(ine)
-                    liftPen();
+                    //liftPen();
                     let x = svgArr[i][j + 1] * stepsPerMM;
                     let y = svgArr[i][j + 2] * stepsPerMM;
                     moveHeadTo(x,y);
                     // Draw the L(ine)
-                    lowerPen();
+                    //lowerPen();
                     x = svgArr[i][j + 1] * stepsPerMM;
                     y = svgArr[i][j + 2] * stepsPerMM;
                     moveHeadTo(x, y);
