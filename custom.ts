@@ -320,7 +320,7 @@ namespace tegneRobot {
         # . . # .
         . # . # .
         . . # . .
-        `);
+        `,500);
     }
 
     let PCA9557_ADDR = 24
@@ -529,10 +529,15 @@ namespace tegneRobot {
                 if (svgArr[i][j] === "M") {
                     // Absolute move
                     //serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
+
+                    let x = svgArr[i][j + 1] * stepsPerMM;
+                    let y = svgArr[i][j + 2] * stepsPerMM;
+                    liftPen();
+                    moveHeadTo(x,y);
+                    lowerPen();
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
                     j += 2;
-                    //moveHeadTo(lastCoordinates[0], lastCoordinates[1]);
 
                 }
                 if (svgArr[i][j] === "C") {
@@ -592,13 +597,23 @@ namespace tegneRobot {
                 if (svgArr[i][j] === "L") {
                     // Line
                     coordinates = [svgArr[i][j + 1], svgArr[i][j + 2], svgArr[i][j + 3], svgArr[i][j + 4]]; // Start and end coordinates are indicated by L segment.
-                    /*
+                    
                     serialLog("L");
                     coordinates.forEach(coord => {
                         serial.writeString("" + coord + ",");
                     });
                     serial.writeLine("");
-                    */
+                    // Move to start of L(ine)
+                    liftPen();
+                    let x = svgArr[i][j + 1] * stepsPerMM;
+                    let y = svgArr[i][j + 2] * stepsPerMM;
+                    moveHeadTo(x,y);
+                    // Draw the L(ine)
+                    lowerPen();
+                    x = svgArr[i][j + 1] * stepsPerMM;
+                    y = svgArr[i][j + 2] * stepsPerMM;
+                    moveHeadTo(x, y);
+                    
                     lastCoordinates = [svgArr[i][j + 3], svgArr[i][j + 4]];
                     j += 4;
 
