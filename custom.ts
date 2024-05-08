@@ -280,6 +280,53 @@ namespace tegneRobot {
         return input.runningTime();
     }
 
+    //% block="Start drawings wait for button B"  icon="\uf204" blockGap=8
+    export function startDrawing() {
+        let isWaiting = true;
+        let startEvent = 1;
+        let startEventValue = 1;
+        serial.writeLine("Initiated drawing robot!");
+        serial.writeLine("RAM size: " + control.ramSize() + " bits = " + control.ramSize() / 1024000 + " kB");
+        // Sets button B to HIGH
+        pins.digitalWritePin(DigitalPin.P11, 1);
+        basic.showLeds(`
+        . . # . .
+        . . . # .
+        # # # # #
+        . . . # .
+        . . # . .
+        `);
+        control.runInParallel(function () {
+            while (isWaiting) {
+                control.waitMicros(10000);
+                // Detects press of button B when it is pulled LOW
+                if (pins.digitalReadPin(DigitalPin.P11) === 0) {
+                    control.raiseEvent(startEvent, startEventValue);
+                    pins.digitalWritePin(DigitalPin.P11, 1);
+                    isWaiting = false;
+                }
+            }
+        })
+        // Here we halt the program by waiting for event.
+        control.waitForEvent(startEvent, startEventValue);
+        showOkIcon();
+        basic.pause(500);
+        basic.clearScreen();
+        // Show status led
+        led.plot(0, 4);
+    }
+
+    //% block="Show OK icon" icon="\uf204" blockGap=8
+    export function showOkIcon() {
+        basic.showLeds(`
+        . . . . #
+        . . . . #
+        # . . # .
+        . # . # .
+        . . # . .
+        `);
+    }
+
     let PCA9557_ADDR = 24
     let CONFIGURATION_MODE = 3
     let PIN_CONFIGURATION = 219
