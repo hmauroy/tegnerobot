@@ -496,6 +496,26 @@ namespace tegneRobot {
 
     }
 
+    // Define a type for the elements that can be either a string or a number.
+    type SvgElement = string | number;
+
+    // Define the interface for the array where each inner array can contain any number of SvgElement.
+    type SvgArray = SvgElement[][];
+    
+    /**
+    * Draws the SVG
+    * @param svgString - Bezier curves on this format: "[[\"M\",6.962,0.115,\"C\",10.833,0.138,17.167,0.138,21.038,0.115,\"C\",24.91,0.092,21.742,0.074,14,0.074,\"C\",6.258,0.074,3.09,0.092,6.962,0.115]]"
+    * Webpage exports JSON with double quotes which are escaped automatically by MakeCode editor.
+    */
+    //% block="SVGArr|SVG Array %svgArr |penLifted %lift" blockGap=8
+    export function svg2(svgArr: SvgArray, lift = false): void {
+        svgArr.forEach(arr => {
+            arr.forEach(val => {
+                serialLog("" + val);
+            })
+        })
+    }
+
     /**
     * Draws the SVG
     * @param svgString - Bezier curves on this format: "[[\"M\",6.962,0.115,\"C\",10.833,0.138,17.167,0.138,21.038,0.115,\"C\",24.91,0.092,21.742,0.074,14,0.074,\"C\",6.258,0.074,3.09,0.092,6.962,0.115]]"
@@ -542,7 +562,7 @@ namespace tegneRobot {
 
                     n_segments = Math.ceil(curveLength / 2);
                     //n_segments = 30;
-                    serialLog("n_segments: " + n_segments);
+                    //serialLog("n_segments: " + n_segments);
                     x0 = coordinates[0];
                     y0 = coordinates[1];
                     x1 = coordinates[2];
@@ -569,7 +589,7 @@ namespace tegneRobot {
 
                     // Draw the points
                     drawCoords.forEach(point => {
-                        serialLog("" + point[0] + "," + point[1]);
+                        //serialLog("" + point[0] + "," + point[1]);
                         moveHeadTo(point[0], point[1]);
                     })
 
