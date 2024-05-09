@@ -281,10 +281,12 @@ namespace tegneRobot {
         let isWaiting = true;
         let startEvent = 1;
         let startEventValue = 1;
+        let lastTime = input.runningTime();
+        let displayOn = true;
         serial.writeLine("Initiated drawing robot!");
         //serial.writeLine("RAM size: " + control.ramSize() + " bits = " + control.ramSize() / 1024000 + " kB");
         // Sets button B to HIGH
-        pins.digitalWritePin(DigitalPin.P11, 1);
+        pins.digitalWritePin(DigitalPin.P1, 0);
         basic.showLeds(`
         . . # . .
         . . . # .
@@ -296,10 +298,27 @@ namespace tegneRobot {
             while (isWaiting) {
                 control.waitMicros(10000);
                 // Detects press of button B when it is pulled LOW
-                if (pins.digitalReadPin(DigitalPin.P11) === 0) {
+                if (pins.digitalReadPin(DigitalPin.P1) === 1) {
                     control.raiseEvent(startEvent, startEventValue);
-                    pins.digitalWritePin(DigitalPin.P11, 1);
+                    pins.digitalWritePin(DigitalPin.P1, 0);
                     isWaiting = false;
+                }
+                // Blink the display
+                if (millis() - lastTime >= 1000) {
+                    lastTime = input.runningTime();
+                    if (displayOn) {
+                        basic.clearScreen();
+                    }
+                    else {
+                       basic.showLeds(`
+                    . . # . .
+                    . . . # .
+                    # # # # #
+                    . . . # .
+                    . . # . .
+                    `); 
+                    }
+                    displayOn = !displayOn;
                 }
             }
         })
