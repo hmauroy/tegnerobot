@@ -657,7 +657,7 @@ namespace tegneRobot {
     }
 
     /**
-    * Draws the SVG
+    * Draws the SVG from a JSON-string
     * @param svgString - Bezier curves on this format: "[[\"M\",6.962,0.115,\"C\",10.833,0.138,17.167,0.138,21.038,0.115,\"C\",24.91,0.092,21.742,0.074,14,0.074,\"C\",6.258,0.074,3.09,0.092,6.962,0.115]]"
     * Webpage exports JSON with double quotes which are escaped automatically by MakeCode editor.
     */
@@ -753,6 +753,31 @@ namespace tegneRobot {
             }
             
         }
+
+        if (lift) {
+            liftPen();
+        }
+        serialLog("Finished SVG drawing");
+        serialLog("current pos: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+
+        basic.pause(500);
+    }
+
+    /**
+    * Draws the SVG from a text-string of coordinates.
+    * @param svgString - Bezier curves on this format:
+    */
+    //% block="SVG CoordinateString|SVG string %svgString |penLifted %lift" blockGap=8
+    export function svgString(svgString: string, lift = false): void {
+        const stepsPerMM = 5000 / 62.0;
+        // Run through array
+        let lastCoordinates: number[] = [];
+        let coordinates: number[] = [];
+        let n_segments = 1;
+        let curveLength = 0;
+        let x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number;
+        
+        
 
         if (lift) {
             liftPen();
