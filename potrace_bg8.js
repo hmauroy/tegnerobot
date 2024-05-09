@@ -1271,6 +1271,17 @@ var PotraceBG8 = (function () {
                 b.push(parseFloat((curve.c[i * 3 + 2].y * size).toFixed(1)));
                 return b;
             }
+            // BG8 bezier constructor for array of integer values.
+            function bezierBG8Integer(i) {
+                let b = ['C'];
+                b.push(parseInt( (curve.c[i * 3 + 0].x * size*10) ));
+              b.push(parseInt((curve.c[i * 3 + 0].y * size * 10) ));
+              b.push(parseInt((curve.c[i * 3 + 1].x * size * 10) ));
+              b.push(parseInt((curve.c[i * 3 + 1].y * size * 10) ));
+              b.push(parseInt((curve.c[i * 3 + 2].x * size * 10) ));
+              b.push(parseInt((curve.c[i * 3 + 2].y * size * 10) ));
+                return b;
+            }
 
             function segment(i) {
                 let s = ['L',
@@ -1287,10 +1298,14 @@ var PotraceBG8 = (function () {
             let p = ['M',
                 parseFloat((curve.c[(n - 1) * 3 + 2].x * size).toFixed(1)),
                 parseFloat((curve.c[(n - 1) * 3 + 2].y * size).toFixed(1))]
+              //parseInt((curve.c[(n - 1) * 3 + 2].x * size*10)),
+              //parseInt((curve.c[(n - 1) * 3 + 2].y * size*10))]
+                
 
             for (i = 0; i < n; i++) {
                 if (curve.tag[i] === "CURVE") {
-                    p = p.concat(bezierBG8(i));
+                    p = p.concat(bezierBG8(i)); // Float values
+                    //p = p.concat(bezierBG8Integer(i)); // Integer values 10 times larger.
                     //p += bezier(i); // Original
                 } else if (curve.tag[i] === "CORNER") {
                     p = p.concat(segment(i));
