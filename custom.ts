@@ -302,6 +302,7 @@ namespace tegneRobot {
                     control.raiseEvent(startEvent, startEventValue);
                     pins.digitalWritePin(DigitalPin.P11, 1);
                     isWaiting = false;
+                    // Enable pin skrus på for stepper-motor.
                 }
                 // Blink the display
                 if (millis() - lastTime >= 1000) {
@@ -341,6 +342,14 @@ namespace tegneRobot {
         . . # . .
         `,500);
     }
+
+    //% block="End drawing and home head" icon="\uf204" blockGap=8
+    export function endDrawing() {
+        basic.showString("Done!");
+        showOkIcon();
+        homeHead();
+    }
+
 
     let PCA9557_ADDR = 24
     let CONFIGURATION_MODE = 3
