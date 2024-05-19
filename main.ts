@@ -3,17 +3,31 @@ for (let index = 0; index < 10; index++) {
     tegneRobot.rectangle(
     0,
     0,
-    10,
-    10,
+    30,
+    30,
     0,
     true
     )
-    tegneRobot.rectangle(
-    3,
-    3,
-    20,
+    tegneRobot.circle(
+    15,
+    15,
+    15,
+    true
+    )
+    tegneRobot.triangle(
+    15,
+    0,
+    30,
     30,
     0,
+    30,
+    0,
+    true
+    )
+    tegneRobot.circle(
+    15,
+    15,
+    8,
     true
     )
 }

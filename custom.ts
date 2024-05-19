@@ -263,6 +263,7 @@ namespace tegneRobot {
         //% Lowers the pen by moving the servo past middle position.
         //serialLog("Pen lowered.")
         servos.P0.setAngle(100);
+        //servos.P0.stop();
         basic.pause(100);
     }
 
@@ -528,7 +529,7 @@ namespace tegneRobot {
     * @param rotation - rotation of triangle calculated by rotating around center point calculated by averaging all 3 corners. #TODO: not implemented yet. 
     */
     //% block="Triangle|x1 %x1|y1 %y1|x2 %x2|y2 %y2|x3 %x3|y3 %y3|rotation %rotation |penLifted %lift" blockGap=8
-    //% x1.min=0, x2.min=0, x3.min=0, y1.min=0 y2.min=0 y3.min=0
+    //% x1.min=0, x2.min=0, x3.min=0, y1.min=0 y2.min=0 y3.min=0 lift.defl=true
     export function triangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, rotation: number = 0, lift = true): void {
         showStatusIcon();
         const stepsPerMM = Math.ceil(5000 / 62.0);
