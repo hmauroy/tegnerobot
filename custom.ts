@@ -579,9 +579,9 @@ namespace tegneRobot {
 
                     let x = svgArr[i][j + 1] * stepsPerMM;
                     let y = svgArr[i][j + 2] * stepsPerMM;
-                    //liftPen();
+                    liftPen();
                     moveHeadTo(x,y);
-                    //lowerPen();
+                    lowerPen();
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
                     j += 2;
@@ -706,8 +706,12 @@ namespace tegneRobot {
                     //serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
+                    let x = svgArr[i][j + 1] * stepsPerMM;
+                    let y = svgArr[i][j + 2] * stepsPerMM;
+                    liftPen();
+                    moveHeadTo(x, y);
+                    lowerPen();
                     j += 2;
-                    //moveHeadTo(lastCoordinates[0], lastCoordinates[1]);
 
                 }
                 if (svgArr[i][j] === "C") {
@@ -751,15 +755,24 @@ namespace tegneRobot {
                         let x = a * x0 + b * x1 + c * x2 + d * x3;
                         let y = a * y0 + b * y1 + c * y2 + d * y3;
 
+                        x = x * stepsPerMM;
+                        y = y * stepsPerMM;
+
                         //serialLog("" + x + "," + y);
-                        drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
+                        //drawCoords.push([x, y]);
+                        moveHeadTo(x, y);
+
+                        serialLog("" + x + "," + y);
+                        //drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
                     }
 
+                    /*
                     // Draw the points
                     drawCoords.forEach(point => {
                         //serialLog("" + point[0] + "," + point[1]);
                         moveHeadTo(point[0], point[1]);
                     })
+                    */
 
                     j += 6;
 
