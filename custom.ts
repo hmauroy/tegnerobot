@@ -78,6 +78,7 @@ namespace tegneRobot {
          */
         liftPen();
         moveHeadTo(0, 0);
+        servos.P0.stop();
     }
 
     /**
@@ -244,16 +245,16 @@ namespace tegneRobot {
     function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
         //serialLog("Pen lifted.")
-        servos.P0.setAngle(80);
-        basic.pause(250);
+        servos.P0.setAngle(75);
+        basic.pause(350);
     }
 
     //% block="Lower pen"  icon="\uf204" blockGap=8
     function lowerPen(): void {
-        //% Lowers the pen by moving the servo to middle position.
+        //% Lowers the pen by moving the servo past middle position.
         //serialLog("Pen lowered.")
-        servos.P0.setAngle(95);
-        basic.pause(250);
+        servos.P0.setAngle(100);
+        basic.pause(100);
     }
 
     export function increaseSpeed() {
@@ -287,7 +288,7 @@ namespace tegneRobot {
         let startEventValue = 1;
         let lastTime = input.runningTime();
         let displayOn = true;
-        liftPen();
+        servos.P0.stop();
         serial.writeLine("Initiated drawing robot!");
         //serial.writeLine("RAM size: " + control.ramSize() + " bits = " + control.ramSize() / 1024000 + " kB");
         // Sets button B to HIGH
@@ -331,6 +332,7 @@ namespace tegneRobot {
         // Here we halt the program by waiting for event.
         control.waitForEvent(startEvent, startEventValue);
         showOkIcon();
+        liftPen();
         basic.pause(500);
         showStatusIcon();
     }
