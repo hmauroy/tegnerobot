@@ -9,8 +9,8 @@ for (let index = 0; index < 10; index++) {
     true
     )
     tegneRobot.rectangle(
-    20,
-    30,
+    3,
+    3,
     20,
     30,
     0,
