@@ -42,7 +42,7 @@ namespace tegneRobot {
 
 
     export const draw = {
-        pulseInterval: 500,
+        pulseInterval: 400,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -240,16 +240,20 @@ namespace tegneRobot {
         0;
     }
 
+    //% block="Lift pen"  icon="\uf204" blockGap=8
     function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
-        serialLog("Pen lifted.")
-        servos.P0.setAngle(150);
+        //serialLog("Pen lifted.")
+        servos.P0.setAngle(80);
+        basic.pause(250);
     }
 
+    //% block="Lower pen"  icon="\uf204" blockGap=8
     function lowerPen(): void {
         //% Lowers the pen by moving the servo to middle position.
-        serialLog("Pen lowered.")
-        servos.P0.setAngle(90);
+        //serialLog("Pen lowered.")
+        servos.P0.setAngle(95);
+        basic.pause(250);
     }
 
     export function increaseSpeed() {
@@ -276,13 +280,14 @@ namespace tegneRobot {
         return input.runningTime();
     }
 
-    //% block="Start drawings wait for button B"  icon="\uf204" blockGap=8
+    //% block="Start drawings: Move head to upper left, push button B"  icon="\uf204" blockGap=8
     export function startDrawing() {
         let isWaiting = true;
         let startEvent = 1;
         let startEventValue = 1;
         let lastTime = input.runningTime();
         let displayOn = true;
+        liftPen();
         serial.writeLine("Initiated drawing robot!");
         //serial.writeLine("RAM size: " + control.ramSize() + " bits = " + control.ramSize() / 1024000 + " kB");
         // Sets button B to HIGH
@@ -327,9 +332,7 @@ namespace tegneRobot {
         control.waitForEvent(startEvent, startEventValue);
         showOkIcon();
         basic.pause(500);
-        basic.clearScreen();
-        // Show status led
-        led.plot(0, 4);
+        showStatusIcon();
     }
 
     //% block="Show OK icon" icon="\uf204" blockGap=8
@@ -341,6 +344,18 @@ namespace tegneRobot {
         . # . # .
         . . # . .
         `,500);
+    }
+
+    /*
+    * Lights up the lower row of leds as a bar graph related to
+    * the amount of drawing left for the current object being drawn.
+    * How to implement this is not straight forward.
+    */
+    //% block="Show status icon" icon="\uf204" blockGap=8
+    export function showStatusIcon() {
+        basic.clearScreen();
+        // Show only a status led
+        led.plot(0, 4);
     }
 
     //% block="End drawing and home head" icon="\uf204" blockGap=8
@@ -401,12 +416,12 @@ namespace tegneRobot {
     */
     //% block="Square|upper left Xpos %xPosition|upper left Ypos %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
     //% xPosition.min=0 yPosition.min=0 lengthOfSide.defl=10
-    export function square(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = false): void {
-        lowerPen();
+    export function square(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = true): void {
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
         const size = lengthOfSide * stepsPerMM;
         moveHeadTo(origin.x, origin.y);
+        lowerPen();
         moveHeadTo(origin.x + size, origin.y);
         moveHeadTo(origin.x + size, origin.y + size);
         moveHeadTo(origin.x, origin.y + size);
@@ -427,13 +442,13 @@ namespace tegneRobot {
     */
     //% block="Rectangle|upper left Xpos %xPosition|upper left Ypos %yPosition| length %length| height %height| rotation %rotation |penLifted %lift" blockGap=8
     //% xPosition.min=0 yPosition.min=0 length.defl=20 height.defl=10
-    export function rectangle(xPosition: number, yPosition: number, length: number, height: number, rotation: number = 0, lift = false): void {
-        lowerPen();
+    export function rectangle(xPosition: number, yPosition: number, length: number, height: number, rotation: number = 0, lift = true): void {
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
         const l = length * stepsPerMM;
         const h = height * stepsPerMM;
         moveHeadTo(origin.x, origin.y);
+        lowerPen();
         moveHeadTo(origin.x + l, origin.y);
         moveHeadTo(origin.x + l, origin.y + h);
         moveHeadTo(origin.x, origin.y + h);
@@ -441,7 +456,7 @@ namespace tegneRobot {
         if (lift) {
             liftPen();
         }
-        serialLog("Finished rectangle");
+        //serialLog("Finished rectangle");
 
     }
 
@@ -457,8 +472,7 @@ namespace tegneRobot {
     //% block="Circle|centerX %x|centerY %y|radius %r|penLifted %lift" icon="\uf1db" blockGap=8
     //% x.min=0 x.max=120 y.min=0 y.max=100 r.min=3 r.max=50
     //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 r.defl=3
-    export function circle(centerX: number, centerY: number, r: number, lift = false): void {
-        lowerPen();
+    export function circle(centerX: number, centerY: number, r: number, lift = true): void {
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: centerX * stepsPerMM, y: centerY * stepsPerMM };
         const segment_length = 2;
@@ -470,6 +484,8 @@ namespace tegneRobot {
         const radius = Math.ceil(r * stepsPerMM);
         let x0 = origin.x + radius;
         let y0 = origin.y
+        moveHeadTo(x0, y0);
+        lowerPen();
 
         // Run for loop of n line segments.
         for (let i = 0; i < n; i++) {
@@ -498,7 +514,8 @@ namespace tegneRobot {
     */
     //% block="Triangle|x1 %x1|y1 %y1|x2 %x2|y2 %y2|x3 %x3|y3 %y3|rotation %rotation |penLifted %lift" blockGap=8
     //% x1.min=0, x2.min=0, x3.min=0, y1.min=0 y2.min=0 y3.min=0
-    export function triangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, rotation: number = 0, lift = false): void {
+    export function triangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, rotation: number = 0, lift = true): void {
+        showStatusIcon();
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const positions = { 
             x1: x1 * stepsPerMM, 
@@ -536,7 +553,7 @@ namespace tegneRobot {
     * Webpage exports JSON with double quotes which are escaped automatically by MakeCode editor.
     */
     //% block="SVGArr|SVG Array %svgArr |penLifted %lift" blockGap=8
-    export function svg2(svgArr: SvgArray, lift = false): void {
+    export function svg2(svgArr: SvgArray, lift = true): void {
         serialLog("Draws SVG");
         /*
         svgArr.forEach(arr => {
@@ -671,7 +688,7 @@ namespace tegneRobot {
     * Webpage exports JSON with double quotes which are escaped automatically by MakeCode editor.
     */
     //% block="SVG|SVG string %svgString |penLifted %lift" blockGap=8
-    export function svg(svgString: string, lift = false): void {
+    export function svg(svgString: string, lift = true): void {
         const stepsPerMM = 5000 / 62.0;
         let svgArr: (any | (string | number))[][] = JSON.parse(svgString);
         // Run through array
@@ -762,31 +779,6 @@ namespace tegneRobot {
             }
             
         }
-
-        if (lift) {
-            liftPen();
-        }
-        serialLog("Finished SVG drawing");
-        serialLog("current pos: " + machine.currentPosition.x + "," + machine.currentPosition.y);
-
-        basic.pause(500);
-    }
-
-    /**
-    * Draws the SVG from a text-string of coordinates.
-    * @param svgString - Bezier curves on this format:
-    */
-    //% block="SVG CoordinateString|SVG string %svgString |penLifted %lift" blockGap=8
-    export function svgString(svgString: string, lift = false): void {
-        const stepsPerMM = 5000 / 62.0;
-        // Run through array
-        let lastCoordinates: number[] = [];
-        let coordinates: number[] = [];
-        let n_segments = 1;
-        let curveLength = 0;
-        let x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number;
-        
-        
 
         if (lift) {
             liftPen();
