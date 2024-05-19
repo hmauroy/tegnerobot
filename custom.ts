@@ -50,6 +50,9 @@ namespace tegneRobot {
         pulseHigh: true,
         nextXStep: 0,
         nextYStep: 0,
+        servoPulseWidth: 1200,
+        previousServoPulse: 0,
+        servoPulseHigh: false,
     };
 
 
@@ -131,33 +134,53 @@ namespace tegneRobot {
 
 
         while (draw.isDrawing) {
-            if (draw.pulseHigh) {
-                //draw.previousTime = micros();
-                //draw.previousTime = millis();
-                draw.pulseHigh = !draw.pulseHigh; // Flips logic.
-                //pins.digitalWritePin(DigitalPin.P13, 0);
-                //pins.digitalWritePin(DigitalPin.P15, 0);
-                pinStates.stepperX = 0;
-                pinStates.stepperY = 0;
-                stepSteppers();
-            }
-            else {
-                //draw.previousTime = micros();
-                //draw.previousTime = millis();
+            if (micros() - draw.previousTime >= draw.pulseInterval) {
 
-                // Turns puls on or off. NB! Only 1 pulse/pixel.
-                pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
-                pinStates.stepperY = Math.abs(draw.nextYStep);
-                draw.pulseHigh = !draw.pulseHigh; // flips logic
-                //pins.digitalWritePin(DigitalPin.P13, 1);
-                //pins.digitalWritePin(DigitalPin.P15, 1);
-                //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
-                stepSteppers();
+                if (draw.pulseHigh) {
+                    draw.previousTime = micros();
+                    //draw.previousTime = millis();
+                    draw.pulseHigh = !draw.pulseHigh; // Flips logic.
+                    //pins.digitalWritePin(DigitalPin.P13, 0);
+                    //pins.digitalWritePin(DigitalPin.P15, 0);
+                    pinStates.stepperX = 0;
+                    pinStates.stepperY = 0;
+                    stepSteppers();
+                }
+                else {
+                    draw.previousTime = micros();
+                    //draw.previousTime = millis();
 
-                // Calculate next step while we wait for next update.
-                draw.isDrawing = runBresenham();
+                    // Turns puls on or off. NB! Only 1 pulse/pixel.
+                    pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
+                    pinStates.stepperY = Math.abs(draw.nextYStep);
+                    draw.pulseHigh = !draw.pulseHigh; // flips logic
+                    //pins.digitalWritePin(DigitalPin.P13, 1);
+                    //pins.digitalWritePin(DigitalPin.P15, 1);
+                    //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+                    stepSteppers();
+
+                    // Calculate next step while we wait for next update.
+                    draw.isDrawing = runBresenham();
+                }
+
+                // Servo pulses
+                if (micros() - draw.previousServoPulse >= draw.servoPulseWidth) {
+                    draw.previousServoPulse = micros();
+                    if (draw.servoPulseHigh) {
+                        pins.digitalWritePin(DigitalPin.P0, 0);
+                        draw.servoPulseHigh = false;
+                    }
+                    else {
+                        pins.digitalWritePin(DigitalPin.P0, 1);
+                        draw.servoPulseHigh = true;
+                    }
+                }
             }
-            control.waitMicros(draw.pulseInterval);
+            //control.waitMicros(draw.pulseInterval);
+            // Read different pins for inputs like A,B-buttons, accelerometer for emergency stop.
+            // readDrawingBotSensors();
+            // Do a small pause to prevent running too often
+            control.waitMicros(10);
 
         } // END while (isDrawing)
 
@@ -241,19 +264,26 @@ namespace tegneRobot {
         0;
     }
 
+    /*
+    * ~1.0 millisecond pulse all right
+    * ~1.5 millisecond pulse center
+    * ~2.0 millisecond pulse all left
+    */
     //% block="Lift pen"  icon="\uf204" blockGap=8
     function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
         //serialLog("Pen lifted.")
-        servos.P0.setAngle(75);
-        basic.pause(350);
+        //servos.P0.setAngle(75);
+        draw.servoPulseWidth = 1400;
+        basic.pause(500);
     }
 
     //% block="Lower pen"  icon="\uf204" blockGap=8
     function lowerPen(): void {
         //% Lowers the pen by moving the servo past middle position.
         //serialLog("Pen lowered.")
-        servos.P0.setAngle(100);
+        //servos.P0.setAngle(100);
+        draw.servoPulseWidth = 1600;
         basic.pause(100);
     }
 
@@ -365,6 +395,10 @@ namespace tegneRobot {
         basic.showString("Done!");
         showOkIcon();
         homeHead();
+    }
+
+    function readDrawingBotSensors() {
+        // TODO: Read different pins for inputs like A,B-buttons, accelerometer for emergency stop.
     }
 
 
