@@ -318,7 +318,13 @@ namespace tegneRobot {
                     control.raiseEvent(startEvent, startEventValue);
                     pins.digitalWritePin(DigitalPin.P11, 1);
                     isWaiting = false;
-                    // Enable pin skrus på for stepper-motor.
+                    // Enable pin turns on for stepper-drivers.
+                    // Enable detection of acceleration of 3G
+                    input.onGesture(Gesture.ThreeG, function () {
+                        pca_register = 0
+                        draw.isDrawing = false;
+                        basic.showIcon(IconNames.Sad)
+                    });
                 }
                 // Blink the display
                 if (millis() - lastTime >= 1000) {
