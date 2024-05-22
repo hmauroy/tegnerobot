@@ -73,7 +73,8 @@ namespace tegneRobot {
          */
         liftPen();
         moveHeadTo(0, 0);
-        servos.P0.stop();
+        ledOff();    // sends number 32 to i2c slave.
+        //servos.P0.stop();
     }
 
     /**
@@ -246,20 +247,20 @@ namespace tegneRobot {
     * ~2.0 millisecond pulse all left
     */
     //% block="Lift pen"  icon="\uf204" blockGap=8
-    function liftPen(): void {
+    export function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
         //serialLog("Pen lifted.")
         //servos.P0.setAngle(75);
-        sendNumberPCA(1);
-        basic.pause(1000);
+        ledON();    // sends number 4 to i2c slave.
+        basic.pause(250);
     }
 
     //% block="Lower pen"  icon="\uf204" blockGap=8
-    function lowerPen(): void {
+    export function lowerPen(): void {
         //% Lowers the pen by moving the servo past middle position.
         //serialLog("Pen lowered.")
         //servos.P0.setAngle(100);
-        sendNumberPCA(0);
+        ledOff();    // sends number 32 to i2c slave.
         //servos.P0.stop();
         basic.pause(100);
     }
@@ -300,6 +301,9 @@ namespace tegneRobot {
         //serial.writeLine("RAM size: " + control.ramSize() + " bits = " + control.ramSize() / 1024000 + " kB");
         // Sets button B to HIGH
         pins.digitalWritePin(DigitalPin.P11, 1);
+        // Initialize PCA9557
+        i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
+        ledOff();    // sends number 32 to i2c slave to turn off servo
         basic.showLeds(`
         . . # . .
         . . . # .
@@ -314,8 +318,6 @@ namespace tegneRobot {
                 if (pins.digitalReadPin(DigitalPin.P11) === 0) {
                     // Turn OFF B-button setting it HIGH
                     pins.digitalWritePin(DigitalPin.P11, 1);
-                    // Initialize PCA9557
-                    i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
                     isWaiting = false;
                     // Enable pin turns on for stepper-drivers.
 
@@ -418,13 +420,6 @@ namespace tegneRobot {
         return receivedData;
     }
 
-    /*
-    * Send a number to PCA9557_ADDR
-    */
-    function sendNumberPCA(number: number) {
-        // Send the number to slave.
-        pins.i2cWriteNumber(PCA9557_ADDR, number, NumberFormat.UInt8LE, false);
-    }
 
     /*
     * Internal function to construct a string from I2C-communication.
@@ -861,7 +856,7 @@ namespace tegneRobot {
     /**
     * Draws the SVG from SD-card
     */
-    //% block="SVG SD card |penLifted %lift" blockGap=8
+    //% block="SVG (SD-card) |penLifted %lift" blockGap=8
     export function svgSdCard(lift = true): void {
         const stepsPerMM = 5000 / 62.0;
         let lastCoordinates: number[] = [];
@@ -880,6 +875,15 @@ namespace tegneRobot {
 
             if (line.length === 0) {
                 serialLog("Empty data returned");
+                if (line === "EOF") {
+                    if (lift) {
+                        liftPen();
+                    }
+                    serialLog("Finished SVG drawing from SD-card");
+                    serialLog("current pos: " + machine.currentPosition.x + "," + machine.currentPosition.y);
+
+                    basic.pause(500);
+                }
                 continue;
             }
 

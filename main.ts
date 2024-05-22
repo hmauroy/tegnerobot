@@ -1,53 +1,31 @@
 tegneRobot.startDrawing()
-let xverdi = 20
-let yverdi = 20
-let radius = 10
-for (let index = 0; index < 5; index++) {
-    tegneRobot.circle(
-    xverdi,
-    xverdi,
-    radius,
+for (let index = 0; index < 3; index++) {
+    tegneRobot.square(
+    0,
+    0,
+    10,
+    0,
     true
     )
-    xverdi += 10
-    yverdi += 5
-    radius += 2
-}
-xverdi = 20
-for (let index = 0; index < 5; index++) {
-    tegneRobot.circle(
-    xverdi,
-    xverdi,
-    radius,
+    tegneRobot.square(
+    10,
+    10,
+    10,
+    0,
+    false
+    )
+    tegneRobot.square(
+    30,
+    30,
+    10,
+    0,
     true
     )
-    xverdi += 5
-    yverdi += 10
-    radius += 2
+    tegneRobot.circle(
+    10,
+    40,
+    15,
+    true
+    )
 }
-tegneRobot.triangle(
-0,
-0,
-80,
-50,
-30,
-80,
-0,
-true
-)
-tegneRobot.square(
-0,
-0,
-80,
-0,
-true
-)
-tegneRobot.rectangle(
-5,
-40,
-80,
-15,
-0,
-true
-)
 tegneRobot.endDrawing()
