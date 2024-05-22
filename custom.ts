@@ -18,12 +18,7 @@ namespace tegneRobot {
     * Read more at https://makecode.microbit.org/blocks/custom
     */
 
-    enum MyEnum {
-        //% block="one"
-        One,
-        //% block="two"
-        Two,
-    }
+    let pca_register = 0;
 
 
     const machine = {
@@ -315,16 +310,19 @@ namespace tegneRobot {
                 control.waitMicros(10000);
                 // Detects press of button B when it is pulled LOW
                 if (pins.digitalReadPin(DigitalPin.P11) === 0) {
-                    control.raiseEvent(startEvent, startEventValue);
+                    // Turn OFF B-button setting it HIGH
                     pins.digitalWritePin(DigitalPin.P11, 1);
+                    // Initialize PCA9557
+                    i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
                     isWaiting = false;
                     // Enable pin turns on for stepper-drivers.
+
                     // Enable detection of acceleration of 3G
                     input.onGesture(Gesture.ThreeG, function () {
-                        pca_register = 0
                         draw.isDrawing = false;
                         basic.showIcon(IconNames.Sad)
                     });
+                    control.raiseEvent(startEvent, startEventValue);
                 }
                 // Blink the display
                 if (millis() - lastTime >= 1000) {
@@ -355,13 +353,7 @@ namespace tegneRobot {
 
     //% block="Show OK icon" icon="\uf204" blockGap=8
     export function showOkIcon() {
-        basic.showLeds(`
-        . . . . #
-        . . . . #
-        # . . # .
-        . # . # .
-        . . # . .
-        `,500);
+        basic.showIcon(IconNames.Yes, 500);
     }
 
     /*
@@ -887,23 +879,32 @@ namespace tegneRobot {
 
             if (type === "M") {
                 // Handle 'M' type data
-                let value1 = parseFloat(parts[1]);
-                let value2 = parseFloat(parts[2]);
+                let x = parseFloat(parts[1]);
+                let y = parseFloat(parts[2]);
 
-                serialLog("M " + value1 + "," + value2);
+                serialLog("M " + x + "," + y);
+
+                x = x * stepsPerMM;
+                y = y * stepsPerMM;
+                liftPen();
+                moveHeadTo(x, y);
+                lowerPen();
 
 
             } 
             else if (type === "C") {
                 // Handle 'C' type data
-                x0 = parseFloat(parts[1]);
-                y0 = parseFloat(parts[2]);
-                x2 = parseFloat(parts[3]);
-                y2 = parseFloat(parts[4]);
-                x3 = parseFloat(parts[5]);
-                y3 = parseFloat(parts[6]);
+                x0 = parseFloat(parts[1]) * stepsPerMM;
+                y0 = parseFloat(parts[2]) * stepsPerMM;
+                x2 = parseFloat(parts[3]) * stepsPerMM;
+                y2 = parseFloat(parts[4]) * stepsPerMM;
+                x3 = parseFloat(parts[5]) * stepsPerMM;
+                y3 = parseFloat(parts[6]) * stepsPerMM;
 
-                serialLog("C" + x0 + "," + y0);
+                serialLog("C " + x3 + "," + y3);
+                // Simple move to end point
+                moveHeadTo(x3, y3);
+
             }
             else if (type === "L") {
                 // Handle 'L' type data
@@ -914,7 +915,7 @@ namespace tegneRobot {
                 serialLog("Error");
             }
 
-            basic.pause(500);            
+            //basic.pause(500);            
         }
 
     }

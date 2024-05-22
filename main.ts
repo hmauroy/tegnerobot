@@ -1,3 +1,25 @@
-i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
-let pca_register = 0
-tegneRobot.svgSdCard(false)
+tegneRobot.startDrawing()
+tegneRobot.svgSdCard(true)
+tegneRobot.circle(
+50,
+40,
+30,
+true
+)
+tegneRobot.circle(
+50,
+55,
+15,
+true
+)
+tegneRobot.triangle(
+0,
+0,
+30,
+30,
+0,
+30,
+0,
+true
+)
+tegneRobot.endDrawing()
