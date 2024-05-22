@@ -1,31 +1,3 @@
 tegneRobot.startDrawing()
-for (let index = 0; index < 3; index++) {
-    tegneRobot.square(
-    0,
-    0,
-    10,
-    0,
-    true
-    )
-    tegneRobot.square(
-    10,
-    10,
-    10,
-    0,
-    false
-    )
-    tegneRobot.square(
-    30,
-    30,
-    10,
-    0,
-    true
-    )
-    tegneRobot.circle(
-    10,
-    40,
-    15,
-    true
-    )
-}
+tegneRobot.svgSdCard(false)
 tegneRobot.endDrawing()

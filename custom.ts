@@ -73,8 +73,8 @@ namespace tegneRobot {
          */
         liftPen();
         moveHeadTo(0, 0);
-        ledOff();    // sends number 32 to i2c slave.
-        //servos.P0.stop();
+        //ledOff();    // sends number 32 to i2c slave.
+        servos.P0.stop();
     }
 
     /**
@@ -250,19 +250,19 @@ namespace tegneRobot {
     export function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
         //serialLog("Pen lifted.")
-        //servos.P0.setAngle(75);
-        ledON();    // sends number 4 to i2c slave.
-        basic.pause(250);
+        servos.P0.setAngle(75);
+        //ledON();    // sends number 4 to i2c slave.
+        basic.pause(300);
     }
 
     //% block="Lower pen"  icon="\uf204" blockGap=8
     export function lowerPen(): void {
         //% Lowers the pen by moving the servo past middle position.
         //serialLog("Pen lowered.")
-        //servos.P0.setAngle(100);
-        ledOff();    // sends number 32 to i2c slave.
+        servos.P0.setAngle(100);
+        //ledOff();    // sends number 32 to i2c slave.
         //servos.P0.stop();
-        basic.pause(100);
+        basic.pause(200);
     }
 
     export function increaseSpeed() {
