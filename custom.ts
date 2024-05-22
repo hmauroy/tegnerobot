@@ -415,12 +415,13 @@ namespace tegneRobot {
     * Request data from Arduino    
     */
     //% block "Request Data from Arduino"
-    export function requestData(): void {
+    function requestData(): string {
         // Request 32 bytes from the slave device
         pins.i2cWriteNumber(PCA9557_ADDR, 0, NumberFormat.UInt8LE, true)
         let receivedData = i2cReadString(PCA9557_ADDR, 32, NumberFormat.UInt8LE)
 
-        serialLog(receivedData);
+        //serialLog(receivedData);
+        return receivedData;
 
     }
 
@@ -433,6 +434,7 @@ namespace tegneRobot {
 
         for (let i = 0; i < maxLength; i++) {
             let charCode = buf.getNumber(NumberFormat.UInt8LE, i)
+            //serialLog("" + charCode);
             if (charCode == delimiter || charCode == 0) {
                 break
             }
@@ -853,6 +855,68 @@ namespace tegneRobot {
         serialLog("current pos: " + machine.currentPosition.x + "," + machine.currentPosition.y);
 
         basic.pause(500);
+    }
+
+    /**
+    * Draws the SVG from SD-card
+    */
+    //% block="SVG SD card |penLifted %lift" blockGap=8
+    export function svgSdCard(lift = true): void {
+        const stepsPerMM = 5000 / 62.0;
+        let lastCoordinates: number[] = [];
+        let coordinates: number[] = [];
+        let n_segments = 1;
+        let curveLength = 0;
+        let x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number;
+        let isReadingSD = true;
+        let line = "";
+        while (isReadingSD) {
+            line = requestData();           
+            
+            // Run through the line and extract commands and coordinates.
+            // Split the data into parts by commas
+            let parts = line.split(",");
+
+            if (line.length === 0) {
+                serialLog("Empty data returned");
+                continue;
+            }
+
+            // Check the first part to determine the type
+            let type = parts[0];
+
+            if (type === "M") {
+                // Handle 'M' type data
+                let value1 = parseFloat(parts[1]);
+                let value2 = parseFloat(parts[2]);
+
+                serialLog("M " + value1 + "," + value2);
+
+
+            } 
+            else if (type === "C") {
+                // Handle 'C' type data
+                x0 = parseFloat(parts[1]);
+                y0 = parseFloat(parts[2]);
+                x2 = parseFloat(parts[3]);
+                y2 = parseFloat(parts[4]);
+                x3 = parseFloat(parts[5]);
+                y3 = parseFloat(parts[6]);
+
+                serialLog("C" + x0 + "," + y0);
+            }
+            else if (type === "L") {
+                // Handle 'L' type data
+                serialLog("L");
+            }
+            else {
+                // Handle unexpected type
+                serialLog("Error");
+            }
+
+            basic.pause(500);            
+        }
+
     }
 
 
