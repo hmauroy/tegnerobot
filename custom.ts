@@ -249,7 +249,8 @@ namespace tegneRobot {
     function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
         //serialLog("Pen lifted.")
-        servos.P0.setAngle(75);
+        //servos.P0.setAngle(75);
+        sendNumberPCA(1);
         basic.pause(1000);
     }
 
@@ -257,7 +258,8 @@ namespace tegneRobot {
     function lowerPen(): void {
         //% Lowers the pen by moving the servo past middle position.
         //serialLog("Pen lowered.")
-        servos.P0.setAngle(100);
+        //servos.P0.setAngle(100);
+        sendNumberPCA(0);
         //servos.P0.stop();
         basic.pause(100);
     }
@@ -414,7 +416,14 @@ namespace tegneRobot {
 
         //serialLog(receivedData);
         return receivedData;
+    }
 
+    /*
+    * Send a number to PCA9557_ADDR
+    */
+    function sendNumberPCA(number: number) {
+        // Send the number to slave.
+        pins.i2cWriteNumber(PCA9557_ADDR, number, NumberFormat.UInt8LE, false);
     }
 
     /*
