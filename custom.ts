@@ -475,7 +475,7 @@ namespace tegneRobot {
     * @param rotation - rotation of square calculated by rotating around center point calculated by averaging all 4 corners. #TODO: not implemented yet. 
     */
     //% block="Square|upper left Xpos %xPosition|upper left Ypos %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
-    //% xPosition.min=0 yPosition.min=0 lengthOfSide.defl=10
+    //% xPosition.min=0 yPosition.min=0 lengthOfSide.defl=10 lift.defl=true
     export function square(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = true): void {
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
@@ -501,7 +501,7 @@ namespace tegneRobot {
     * @param rotation - rotation of square calculated by rotating around center point calculated by averaging all 4 corners. #TODO: not implemented yet. 
     */
     //% block="Rectangle|upper left Xpos %xPosition|upper left Ypos %yPosition| length %length| height %height| rotation %rotation |penLifted %lift" blockGap=8
-    //% xPosition.min=0 yPosition.min=0 length.defl=20 height.defl=10
+    //% xPosition.min=0 yPosition.min=0 length.defl=20 height.defl=10 lift.defl=true
     export function rectangle(xPosition: number, yPosition: number, length: number, height: number, rotation: number = 0, lift = true): void {
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
@@ -531,7 +531,7 @@ namespace tegneRobot {
     //% help=circle/draw weight=77
     //% block="Circle|centerX %x|centerY %y|radius %r|penLifted %lift" icon="\uf1db" blockGap=8
     //% x.min=0 x.max=120 y.min=0 y.max=100 r.min=3 r.max=50
-    //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 r.defl=3
+    //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 r.defl=3 lift.defl=true
     export function circle(centerX: number, centerY: number, r: number, lift = true): void {
         const stepsPerMM = Math.ceil(5000 / 62.0);
         const origin = { x: centerX * stepsPerMM, y: centerY * stepsPerMM };
@@ -866,6 +866,7 @@ namespace tegneRobot {
     * Draws the SVG from SD-card
     */
     //% block="SVG (SD-card) |penLifted %lift" blockGap=8
+    //% lift.defl=true
     export function svgSdCard(lift = true): void {
         const stepsPerMM = 5000 / 62.0;
         let lastCoordinates: number[] = [];
