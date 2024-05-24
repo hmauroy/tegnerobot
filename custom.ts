@@ -78,15 +78,28 @@ namespace tegneRobot {
     }
 
     /**
-    * Move head to xoordinate
-    * @param xPosition - Coordinate on X axis in pixel coordinates. Float is accepted as input.
-    * @param yPosition - Coordinate on y axis in pixel coordinates
+    * Move head to xoordinate in absolute millimeters
+    * @param xPosition - Coordinate on X axis in millimeters. Float is accepted as input.
+    * @param yPosition - Coordinate on y axis in millimeters.
     */
     //%help = moveHeadTo / draw weight = 77
     //% block="Move Head To|xCoordinate %xPosition|yCoordinate %yPosition" blockGap=8
     //% xPosition.min=0 yPosition.min=0
     //% xPosition.fieldOptions.precision=1 yPosition.fieldOptions.precision=1 
-    export function moveHeadTo(xPosition: number, yPosition: number) {
+    export function moveHeadToMM(xPosition: number, yPosition: number) {
+        const stepsPerMM = Math.ceil(5000 / 62.0);
+        let x = xPosition * stepsPerMM;
+        let y = yPosition * stepsPerMM;
+        moveHeadTo(x,y);
+    }
+
+    /**
+    * Move head to xoordinate in pixel space
+    * @param xPosition - Coordinate on X axis in pixel coordinates. Float is accepted as input.
+    * @param yPosition - Coordinate on y axis in pixel coordinates
+    */
+    // The real moveHeadTo function.
+    function moveHeadTo(xPosition: number, yPosition: number) {
         draw.targetPoint.x = Math.round(xPosition);
         draw.targetPoint.y = Math.round(yPosition);
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
@@ -249,9 +262,7 @@ namespace tegneRobot {
     //% block="Lift pen"  icon="\uf204" blockGap=8
     export function liftPen(): void {
         //% Lifts the pen by moving the servo "upwards"
-        //serialLog("Pen lifted.")
         servos.P0.setAngle(75);
-        //ledON();    // sends number 4 to i2c slave.
         basic.pause(300);
     }
 
@@ -260,8 +271,6 @@ namespace tegneRobot {
         //% Lowers the pen by moving the servo past middle position.
         //serialLog("Pen lowered.")
         servos.P0.setAngle(100);
-        //ledOff();    // sends number 32 to i2c slave.
-        //servos.P0.stop();
         basic.pause(200);
     }
 
