@@ -11,15 +11,15 @@ namespace tegneRobot {
 
     /**
     * Created by BG8 2024 UiT
+    * Bachelor thesis for Datateknologi, 2024-May-27
+    * "Utvikling av software for Tegnerobot"
+    * 
     * Henrik Mauroy, hmauroy@gmail.com
     * Oliver Sokol
     * Mads Hansen
-    * Use this file to define custom functions and blocks.
-    * Read more at https://makecode.microbit.org/blocks/custom
     */
 
     let pca_register = 0;
-
 
     const machine = {
         currentPosition: { x: 0, y: 0 },
@@ -34,8 +34,6 @@ namespace tegneRobot {
         dirY: 0
     };
 
-
-
     export const draw = {
         pulseInterval: 400,
         penDown: false,
@@ -46,7 +44,6 @@ namespace tegneRobot {
         nextXStep: 0,
         nextYStep: 0,
     };
-
 
     export const bresenham = {
         err: 0,
@@ -73,7 +70,6 @@ namespace tegneRobot {
          */
         liftPen();
         moveHeadTo(0, 0);
-        //ledOff();    // sends number 32 to i2c slave.
         servos.P0.stop();
     }
 
@@ -105,11 +101,6 @@ namespace tegneRobot {
         bresenham.dx = Math.abs(draw.targetPoint.x - machine.currentPosition.x);
         bresenham.dy = -Math.abs(draw.targetPoint.y - machine.currentPosition.y); // NB! Negative value!
         bresenham.err = bresenham.dx + bresenham.dy;
-        //let realDx = draw.targetPoint.x - machine.currentPosition.x;
-        //let realDy = draw.targetPoint.y - machine.currentPosition.y;
-        //serialLog("target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
-        //serialLog("" + draw.targetPoint.x + "," + draw.targetPoint.y);
-        //serialLog("dx, dy: " + realDx + "," + realDy);
 
         if (machine.currentPosition.x < draw.targetPoint.x) {
             bresenham.sx = 1;
@@ -132,9 +123,6 @@ namespace tegneRobot {
             pinStates.dirY = 0;
         }
 
-        //serialLog("dirx: " + bresenham.sx);
-        //serialLog("diry: " + bresenham.sy);
-
         // Initializes the steps.
         draw.isDrawing = runBresenham(); // Updates global variables nextXStep, nextYStep to either +1, -1 or 0 for a step or not.
 
@@ -143,32 +131,25 @@ namespace tegneRobot {
             
             if (draw.pulseHigh) {
                 draw.previousTime = micros();
-                //draw.previousTime = millis();
                 draw.pulseHigh = !draw.pulseHigh; // Flips logic.
-                //pins.digitalWritePin(DigitalPin.P13, 0);
-                //pins.digitalWritePin(DigitalPin.P15, 0);
                 pinStates.stepperX = 0;
                 pinStates.stepperY = 0;
                 stepSteppers();
             }
             else {
                 draw.previousTime = micros();
-                //draw.previousTime = millis();
 
                 // Turns puls on or off. NB! Only 1 pulse/pixel.
                 pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
                 pinStates.stepperY = Math.abs(draw.nextYStep);
                 draw.pulseHigh = !draw.pulseHigh; // flips logic
-                //pins.digitalWritePin(DigitalPin.P13, 1);
-                //pins.digitalWritePin(DigitalPin.P15, 1);
-                //serialLog("current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
                 stepSteppers();
 
                 // Calculate next step while we wait for next update.
                 draw.isDrawing = runBresenham();
             }
             control.waitMicros(draw.pulseInterval);
-            // Read different pins for inputs like A,B-buttons, accelerometer for emergency stop.
+            // TODO: Read different pins for inputs like A,B-buttons, accelerometer for emergency stop.
             // readDrawingBotSensors();
             
 
@@ -181,8 +162,6 @@ namespace tegneRobot {
     function runBresenham(): boolean {
         // Calculates steps in x and y directions. 0, -1 or 1
         // Updates global variables dx, dy, and error variable err.
-        //serialLog("Bresenham current x,y: " + machine.currentPosition.x + "," + machine.currentPosition.y);
-        //serialLog("Target x,y: " + draw.targetPoint.x + "," + draw.targetPoint.y);
         bresenham.err2 = 2 * bresenham.err;
         draw.nextXStep = 0;
         draw.nextYStep = 0;
@@ -216,31 +195,19 @@ namespace tegneRobot {
 
     /**
      * Logic calculates if x-stepper and y-stepper should run.
-     * If so, each function is called individually to update the positions
-     * of the drawing head by updating the "pinStates"-object.
+     * If so, positioning of the drawing head is stored by updating the "pinStates"-object.
      * For each pulse the information about pin states should be 
      * sent over I2C to the PCA9557 chip as one 8-bit number.
-
-        Using function inside pins.cpp
-        void digitalWritePin(DigitalPin name, int value) {
-            PINOP(setDigitalValue(value));
-        }
-        HIGH = Mot Klokka
-        LOW = Med Klokka
      */
     //% help=stepSteppers/draw weight=77
     //% block="Step steppers"  icon="\uf204" blockGap=8
     export function stepSteppers() {
-        //serialLog("stepperX: " + pinStates.stepperX + ", stepperY: " + pinStates.stepperY);
         // Read from pinStates object and write using digitalWrite()
         pins.digitalWritePin(DigitalPin.P13, pinStates.stepperX);
         pins.digitalWritePin(DigitalPin.P14, pinStates.dirX);
         pins.digitalWritePin(DigitalPin.P15, pinStates.stepperY);
         pins.digitalWritePin(DigitalPin.P16, pinStates.dirY);
-
     }
-
-
     export function serialLog(text: string) {
         serial.writeLine(text);
     }
@@ -269,7 +236,6 @@ namespace tegneRobot {
     //% block="Lower pen"  icon="\uf204" blockGap=8
     export function lowerPen(): void {
         //% Lowers the pen by moving the servo past middle position.
-        //serialLog("Pen lowered.")
         servos.P0.setAngle(100);
         basic.pause(200);
     }
@@ -311,7 +277,6 @@ namespace tegneRobot {
         pins.digitalWritePin(DigitalPin.P11, 1);
         // Initialize PCA9557
         i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
-        ledOff();    // sends number 32 to i2c slave to turn off servo
         basic.showLeds(`
         . . # . .
         . . . # .
@@ -387,7 +352,7 @@ namespace tegneRobot {
         // TODO: Read different pins for inputs like A,B-buttons, accelerometer for emergency stop.
     }
 
-
+    // Configuration for PCA9557 chip
     let PCA9557_ADDR = 24
     let CONFIGURATION_MODE = 3
     let PIN_CONFIGURATION = 219
@@ -412,15 +377,13 @@ namespace tegneRobot {
     }
 
     /*
-    * Request data from Arduino    
+    * Request data from Arduino if SD-card is used.  
     */
     //% block "Request Data from Arduino"
     function requestData(): string {
         // Request 32 bytes from the slave device
         pins.i2cWriteNumber(PCA9557_ADDR, 0, NumberFormat.UInt8LE, true)
         let receivedData = i2cReadString(PCA9557_ADDR, 32, NumberFormat.UInt8LE)
-
-        //serialLog(receivedData);
         return receivedData;
     }
 
@@ -431,10 +394,8 @@ namespace tegneRobot {
     function i2cReadString(address: number, maxLength: number, delimiter: number = 0): string {
         let receivedData = ""
         let buf = pins.i2cReadBuffer(address, maxLength, false)
-
         for (let i = 0; i < maxLength; i++) {
             let charCode = buf.getNumber(NumberFormat.UInt8LE, i)
-            //serialLog("" + charCode);
             if (charCode == delimiter || charCode == 0) {
                 break
             }
@@ -610,13 +571,6 @@ namespace tegneRobot {
     //% block="SVGArr|SVG Array %svgArr |penLifted %lift" blockGap=8
     export function svg2(svgArr: SvgArray, lift = true): void {
         serialLog("Draws SVG");
-        /*
-        svgArr.forEach(arr => {
-            arr.forEach(val => {
-                serialLog("" + val);
-            });
-        });
-        */
         const stepsPerMM = 5000 / 62.0;
         // Run through array
         let lastCoordinates: SvgElement[] = [];
