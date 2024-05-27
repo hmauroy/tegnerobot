@@ -307,7 +307,6 @@ namespace tegneRobot {
         let displayOn = true;
         servos.P0.stop();
         serial.writeLine("Initiated drawing robot!");
-        //serial.writeLine("RAM size: " + control.ramSize() + " bits = " + control.ramSize() / 1024000 + " kB");
         // Sets button B to HIGH
         pins.digitalWritePin(DigitalPin.P11, 1);
         // Initialize PCA9557
@@ -328,13 +327,9 @@ namespace tegneRobot {
                     // Turn OFF B-button setting it HIGH
                     pins.digitalWritePin(DigitalPin.P11, 1);
                     isWaiting = false;
-                    // Enable pin turns on for stepper-drivers.
+                    // TODO: Enable pin turns on for stepper-drivers.
 
-                    // Enable detection of acceleration of 3G
-                    input.onGesture(Gesture.ThreeG, function () {
-                        draw.isDrawing = false;
-                        basic.showIcon(IconNames.Sad)
-                    });
+                    
                     control.raiseEvent(startEvent, startEventValue);
                 }
                 // Blink the display
