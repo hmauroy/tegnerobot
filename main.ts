@@ -1,7 +1,7 @@
 tegneRobot.startDrawing()
-let x = 60
-let y = 60
-let radius = 30
+let x = 50
+let y = 50
+let radius = 10
 for (let index = 0; index < 3; index++) {
     tegneRobot.circle(
     x,
@@ -9,6 +9,6 @@ for (let index = 0; index < 3; index++) {
     radius,
     false
     )
-    radius += 10
+    radius += 5
 }
 tegneRobot.endDrawing()
