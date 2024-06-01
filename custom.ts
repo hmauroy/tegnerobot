@@ -74,7 +74,7 @@ namespace tegneRobot {
     }
 
     /**
-    * Move head to xoordinate in absolute millimeters
+    * Move head to xy-coordinate in absolute millimeters
     * @param xPosition - Coordinate on X axis in millimeters. Float is accepted as input.
     * @param yPosition - Coordinate on y axis in millimeters.
     */
@@ -90,7 +90,7 @@ namespace tegneRobot {
     }
 
     /**
-    * Move head to xoordinate in pixel space
+    * Move head to xy-coordinate in pixel space
     * @param xPosition - Coordinate on X axis in pixel coordinates. Float is accepted as input.
     * @param yPosition - Coordinate on y axis in pixel coordinates
     */
@@ -289,13 +289,18 @@ namespace tegneRobot {
                 control.waitMicros(10000);
                 // Detects press of button B when it is pulled LOW
                 if (pins.digitalReadPin(DigitalPin.P11) === 0) {
-                    // Turn OFF B-button setting it HIGH
-                    pins.digitalWritePin(DigitalPin.P11, 1);
+                    // Turn OFF button B as debounce.
+                    pins.digitalWritePin(DigitalPin.P11, 0);
+                    // Turn ON A-button setting it HIGH. Will now be used to lower speed.
+                    pins.digitalWritePin(DigitalPin.P5, 1);
                     isWaiting = false;
-                    // TODO: Enable pin turns on for stepper-drivers.
-
+                    // TODO: Enable-pin turns on for stepper-drivers.
                     
                     control.raiseEvent(startEvent, startEventValue);
+                }
+                if (pins.digitalReadPin(DigitalPin.P5) === 0) {
+                    serialLog("Button A");
+                    pins.digitalWritePin(DigitalPin.P5, 0);
                 }
                 // Blink the display
                 if (millis() - lastTime >= 1000) {
