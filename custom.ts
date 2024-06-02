@@ -858,6 +858,7 @@ namespace tegneRobot {
                 // Handle 'M' type data
                 let x = parseFloat(parts[1]);
                 let y = parseFloat(parts[2]);
+                lastCoordinates = [x, y];
 
                 serialLog("M " + x + "," + y);
 
@@ -870,22 +871,66 @@ namespace tegneRobot {
 
             } 
             else if (type === "C") {
-                // Handle 'C' type data
-                x0 = parseFloat(parts[1]) * stepsPerMM;
-                y0 = parseFloat(parts[2]) * stepsPerMM;
-                x2 = parseFloat(parts[3]) * stepsPerMM;
-                y2 = parseFloat(parts[4]) * stepsPerMM;
-                x3 = parseFloat(parts[5]) * stepsPerMM;
-                y3 = parseFloat(parts[6]) * stepsPerMM;
+                // Handle 'C'
+                // Cubic bezier
+                x0 = lastCoordinates[0];
+                y0 = lastCoordinates[1];
+                x1 = parseFloat(parts[1]);
+                y1 = parseFloat(parts[2]);
+                x2 = parseFloat(parts[3]);
+                y2 = parseFloat(parts[4]);
+                x3 = parseFloat(parts[5]);
+                y3 = parseFloat(parts[6]);
 
-                serialLog("C " + x3 + "," + y3);
-                // Simple move to end point
-                moveHeadTo(x3, y3);
+                let drawCoords: (number | number)[][] = [];
+                lastCoordinates = [x3, y3];
+                // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
+                curveLength = pythagoras(coordinates[6] - coordinates[0], coordinates[7] - coordinates[1]);
+
+                n_segments = Math.ceil(curveLength / 2);
+                //n_segments = 30;
+                //serialLog("n_segments: " + n_segments);
+                // Calculate each point along bezier curve.
+                // http://rosettacode.org/wiki/Cubic_bezier_curves#C
+                for (let k = 0; k < n_segments; k++) {
+                    let t = k / n_segments;
+                    let a = Math.pow((1.0 - t), 3);
+                    let b = 3.0 * t * Math.pow((1.0 - t), 2);
+                    let c = 3.0 * Math.pow(t, 2) * (1.0 - t);
+                    let d = Math.pow(t, 3);
+
+                    let x = a * x0 + b * x1 + c * x2 + d * x3;
+                    let y = a * y0 + b * y1 + c * y2 + d * y3;
+
+                    x = x * stepsPerMM;
+                    y = y * stepsPerMM;
+
+                    //serialLog("" + x + "," + y);
+                    //drawCoords.push([x, y]);
+                    moveHeadTo(x, y);
+
+                    serialLog("" + x + "," + y);
+                    //drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
+                }
+
+                serialLog("C " + x0 + "," + y0 + "," + x1 + "," + y1 + "," + x2 + "," + y2 + "," + x3 + "," + y3);
 
             }
             else if (type === "L") {
                 // Handle 'L' type data
                 serialLog("L");
+                // Move to start of L(ine)
+                //liftPen();
+                let x = parseFloat(parts[1]) * stepsPerMM;
+                let y = parseFloat(parts[2]) * stepsPerMM;
+                moveHeadTo(x, y);
+                // Draw the L(ine)
+                //lowerPen();
+                x = parseFloat(parts[3]) * stepsPerMM;
+                y = parseFloat(parts[4])* stepsPerMM;
+                moveHeadTo(x, y);
+
+                lastCoordinates = [ parseFloat(parts[3]), parseFloat(parts[4]) ];
             }
             else {
                 // Handle unexpected type
