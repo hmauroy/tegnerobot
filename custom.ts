@@ -831,7 +831,7 @@ namespace tegneRobot {
         let isReadingSD = true;
         let line = "";
         while (isReadingSD) {
-            line = requestData();           
+            line = requestData();        
             
             // Run through the line and extract commands and coordinates.
             // Split the data into parts by commas
@@ -855,7 +855,7 @@ namespace tegneRobot {
             let type = parts[0];
 
             if (type === "M") {
-                // Handle 'M' type data
+                // Handle M(ove) command
                 let x = parseFloat(parts[1]);
                 let y = parseFloat(parts[2]);
                 lastCoordinates = [x, y];
@@ -885,7 +885,8 @@ namespace tegneRobot {
                 let drawCoords: (number | number)[][] = [];
                 lastCoordinates = [x3, y3];
                 // Calculate approximate length of segment and divide bezier curve into 2mm long segments.
-                curveLength = pythagoras(coordinates[6] - coordinates[0], coordinates[7] - coordinates[1]);
+                // dx = x3 - x0, dy = y3 - y0
+                curveLength = pythagoras(x3 - x0, y3 - y0);
 
                 n_segments = Math.ceil(curveLength / 2);
                 //n_segments = 30;
@@ -909,7 +910,7 @@ namespace tegneRobot {
                     //drawCoords.push([x, y]);
                     moveHeadTo(x, y);
 
-                    serialLog("" + x + "," + y);
+                    //serialLog("" + x + "," + y);
                     //drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
                 }
 
@@ -917,8 +918,7 @@ namespace tegneRobot {
 
             }
             else if (type === "L") {
-                // Handle 'L' type data
-                serialLog("L");
+                // Handle L(ine) command.
                 // Move to start of L(ine)
                 //liftPen();
                 let x = parseFloat(parts[1]) * stepsPerMM;
@@ -929,6 +929,7 @@ namespace tegneRobot {
                 x = parseFloat(parts[3]) * stepsPerMM;
                 y = parseFloat(parts[4])* stepsPerMM;
                 moveHeadTo(x, y);
+                serialLog("L " + parseFloat(parts[1]) + "," + parseFloat(parts[2]) + "," + parseFloat(parts[3]) + "," + parseFloat(parts[4]));
 
                 lastCoordinates = [ parseFloat(parts[3]), parseFloat(parts[4]) ];
             }
