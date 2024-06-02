@@ -31,7 +31,16 @@
             <div>Blur factor <input type="range" id="rngBlur" min="1" max="99" value="3" step="1" /><span id="txtBlur">9</span>  </div>
             <div>Treshold factor <input type="range" id="rngThresh" min="2" max="99" value="2" step="1" /><span id="txtThresh">9</span></div>
             <div>Turd size <input type="range" id="rngTurdsize" min="0" max="100" value="8" step="1" /><span id="txtTurd">8</span></div>
-            <div><input type="button" id="btnUpdate" value="Update" /></div>
+            <div>
+                <input type="button" id="btnUpdate" value="Update" />
+                <label for="chkEdgeDetection">No edge detection</label>
+                <input type="checkbox" id="chkEdgeDetection">
+                <label for="chkFillPath">Filled path</label>
+                <input type="checkbox" id="chkFillPath">
+            </div>
+            <div>
+                
+            </div>
             <div><input type="button" id="btnSVG" value="Create SVG" /></div>
         </div>
     </div>
@@ -125,7 +134,7 @@
                 src = cv.imread(imgElement);
                 // 1) color to gray
                 cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-                applyFilters();
+                //applyFilters();
                 //gray.delete();
                 //medianBlurred.delete();
                 //thresholded.delete();
@@ -148,7 +157,7 @@
                 if (blur_value <= 3) {
                     blur_value = 3;
                 }
-            }
+            }      
             let thresh_value = parseInt(Math.round(threshold_factor*width*0.005)); // blur value is around 1-2 % of image width
             if (thresh_value % 2 == 0) {
                 thresh_value -= 1
@@ -168,9 +177,17 @@
 
             // Apply adaptive thresholding to create a binary image
             // 3) adaptive threshold
-            cv.adaptiveThreshold(medianBlurred, thresholded, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, blockSize = thresh_value, C = 2);
-
-            opencv2image(thresholded);
+            // Only do thresholding to find edges if not checkbox is checked.
+            let checkbox = document.getElementById("chkEdgeDetection");
+            if (checkbox.checked) {
+                console.log("No edge detection if binary image.")
+                opencv2image(gray);
+            }
+            else {
+                cv.adaptiveThreshold(medianBlurred, thresholded, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, blockSize = thresh_value, C = 2);
+                opencv2image(thresholded);
+            }
+            
 
 
         }
@@ -239,8 +256,16 @@
             // Process the image and show SVG
             let drawingWidth = document.getElementById("rngDrawingWidth").value;
             let scaleFactor = drawingWidth / width;  // E.g. 100mm / 650px = 0,153 mm/px
+            // Check if SVG should be curve or filled path.
+            let fillPath = document.getElementById("chkFillPath");
+            let svg;
             Potrace.process(function () {
-                let svg = Potrace.getSVG(1,"curve");    // scale=1, We want the same size as the image displayed.
+                if (fillPath.checked) {
+                    svg = Potrace.getSVG(1);    // scale=1, We want the same size as the image displayed.
+                }
+                else {
+                    svg = Potrace.getSVG(1,"curve");    // scale=1, We want the same size as the image displayed.
+                }
                 document.getElementById("svgOutput").innerHTML = svg;
                 document.getElementById("svgWindow").style.visibility = "visible";
             });
@@ -449,9 +474,10 @@
 
         function clearSvgWindow() {
             let svgDiv = document.getElementById("svgOutput");
-            while (svgDiv.firstChild) {
-              svgDiv.removeChild(svgDiv.firstChild);
-            }
+            svgDiv.innerHTML = "";
+            //while (svgDiv.firstChild) {
+              //svgDiv.removeChild(svgDiv.firstChild);
+            //}
         }
 
         function liftPen() {

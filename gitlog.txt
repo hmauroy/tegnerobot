@@ -1,0 +1,1222 @@
+commit 540f6c44e0e99de61c471a578cce5eb97d4c1991
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 27 16:18:55 2024 +0200
+
+    Added some files for testing.
+
+commit b48a4dc31d63cff825fa8082dff49558ff6ae8b8
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 27 16:18:33 2024 +0200
+
+    Some commenting and removal of unused code.
+
+commit 68820c242b246f61684259cf5e74bb796114a831
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 25 00:40:13 2024 +0200
+
+    Fixed Lifted not default true for some blocks.
+
+commit 9ddf27fe5087cb9d2c6f3c106c71381a6219b2d7
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 24 23:24:23 2024 +0200
+
+    Restore '5/24/2024, 11:22:27 PM Calibration code for axis-calibration.'
+
+commit 173eabe96741d7e2b92d2113b59d7f09cbdfada7
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 24 23:22:58 2024 +0200
+
+    Restore '5/24/2024, 11:14:37 PM Calibration for repetition analysis.'
+
+commit 6d2b5e273b9ed20b3e42215d0ac7eb53037f1dce
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 24 23:22:27 2024 +0200
+
+    Calibration code for axis-calibration.
+
+commit a922033a8607c2d4c440d4eb5fa5a530f099e689
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 24 23:14:37 2024 +0200
+
+    Calibration for repetition analysis.
+
+commit 672c16127fb7b42d914d62ef319fd110e0ad5be6
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu May 23 10:30:48 2024 +0200
+
+    Test code for fysikk 1 students
+
+commit 18c52ca31dec04246084011843ad7dfe939b209c
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 22 22:20:02 2024 +0200
+
+    SVG-test bg8b.txt
+
+commit 5efdea91c05ced08a60bb7379dee308c60765079
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 22 20:27:44 2024 +0200
+
+    Test drawing with squares and circle being drawn with and without lift in between.
+
+commit 7f64b880d56bfd48da36176ba20ad5d923cf88a9
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 22 19:18:38 2024 +0200
+
+    Test program that draws a lot of geometric objects.
+
+commit b61b5c8287ffb2668e4d3a6cdead2eba6f3c5033
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 22 16:43:49 2024 +0200
+
+    Draws from SD-card by simplifying bezier curves by only moving to the last point.
+
+commit fb8ae5869e20176a4b851d864224bb59b40d28c1
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 22 12:52:07 2024 +0200
+
+    Reads data from SD-card every 500 ms and displays what type.
+
+commit 9504502a103d173795e57ceaa91930e2570303f3
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 22 12:07:22 2024 +0200
+
+    Implemented i2c read from sd card.
+
+commit 3c9cb9182d401c6acb6452485a1b289a87b0a6c3
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 22 12:04:36 2024 +0200
+
+    La til dokumentasjon av koder for I2C for å hente data fra ekstern Arduino.
+
+commit d1407a87829567a521cd6bda66d676224ef85093
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 22 01:31:30 2024 +0200
+
+    Acceptance criteria tests. Detection of 3G acceleration works inside program, but not implemented which variable that should pause the whole drawing. Should pause immediately.
+
+commit 243646c02774e307ab1cd802b379d0b05389e11b
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 19 23:37:34 2024 +0200
+
+    Draws astronaut with 1000 ms wait after each liftPen().
+
+commit 5036f3dd6eed22589e71df2b99862c9cd185827f
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 19 23:36:48 2024 +0200
+
+    Test drawing to check accuracy. Rectangle, triangle and two circles inside each other.
+
+commit 862d9937bcb8219d02151b5ce21683c71e193f26
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 19 23:16:03 2024 +0200
+
+    Increased pause after pen lift to stabilize the timers. Now it does not skip steps while moving from one rectangle to the start of another.
+
+commit 43c8f0e4ee97295ea478df0972b6cb9be619830d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 19 23:07:15 2024 +0200
+
+    Implemented servo-pulses together with stepper-pulses. Poor result. Servo jitters back and forth.
+
+commit 59c371d6ea55b087540aa980ef627afd0d539c27
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 19 22:30:08 2024 +0200
+
+    Draws astronaut using svg String input, WITH PEN LIFTER!
+
+commit e1bbfe5ddaed52a07459b3b9a1834cdbb0d7e1ea
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 19 22:05:35 2024 +0200
+
+    Inserted small pause before lifting pen. Turns off servo after home head.
+
+commit 0d410ac9436b34b7c239f8efecde4a0b82fc5c6c
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 19 16:04:19 2024 +0200
+
+    Implemented servo lift. It becomes messed up when lifting right before moveHeadTo() due to timings conflicts :(
+
+commit 8876e31496faee475bc88d5a877b31bd6b21c50f
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 15 12:07:39 2024 +0200
+
+    Created svg-array text file from La Linea image "Streken".
+
+commit 890d53f17e1c1cd83df2252d5a47d78f8fb8e65e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 15 11:59:17 2024 +0200
+
+    Created block for ending drawing which shows message and homes head.
+
+commit e44a199f00ccc222e9f27e097f3f3bb635ffb410
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu May 9 22:20:04 2024 +0200
+
+    Added several text files with svg images as bezier functions.
+
+commit ce179e136e2c768460b62cc3a5aedb580a95249e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu May 9 22:19:40 2024 +0200
+
+    Started new SVG-block for string of coordinates to save space.
+
+commit eae25cb3dc065c008eaee5f158097ad716779819
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu May 9 19:48:27 2024 +0200
+
+    Update custom.ts with correvt pin number for button b
+
+commit d2bd56505a124ffdaa8cf4a27467543f81322571
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu May 9 19:44:11 2024 +0200
+
+    Blinking arrow at startupe.
+
+commit 07739cd14d02e382ff05354ebca3798c6936acff
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 14:56:27 2024 +0200
+
+    Draws Victor the baby in low resolution. Drawings as arrays MUST take up less than some value in RAM to be able to draw.
+
+commit b2cd96f37bfa18482c8e70edd9744e3a1abc8c4b
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 14:45:55 2024 +0200
+
+    More efficient drawing when calculating points along bezier curve.
+
+commit 815238ed5abf7e0b85a18cc1fa6caef609720685
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 13:30:15 2024 +0200
+
+    Fixed L-command ins SvgArray-block.
+
+commit 49f06de7e980f578dad91ee27f754009f59e21c3
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 12:55:10 2024 +0200
+
+    SvgArray parses Array fine. Draws BG8_team 50 mm wide with few details.
+
+commit 317e24393bdcbe07c0b365dfda239e5c18984c90
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 12:40:05 2024 +0200
+
+    Rewritten SvgArray to get proper type definitions.
+
+commit a5ab23164aa6b3c4273add233d0e12bd6bd20648
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 11:54:55 2024 +0200
+
+    Created a new SVG block that takes a 2D-array as input in stead of JSON-string.
+
+commit a1b614a15ba56c0ebf31e23b5b807ff87ff40661
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 11:27:06 2024 +0200
+
+    Packed startup code into a block "Start drawings wait for button B"
+
+commit 4ae679f2114c44e1c4f22c7ddca0626ab5ca0522
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 11:12:03 2024 +0200
+
+    Inserted symbols to indicate status in LED matrix.
+
+commit efaa67e2833fca3a41a4e6188fe24d939b611434
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 10:53:09 2024 +0200
+
+    B button triggers an interrupt routine. Waits until button is pressed before starting.
+
+commit 78e5bb40cfe72c42386b3e87234f4b6477bf1927
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 8 09:46:29 2024 +0200
+
+    Blocks the code from running until B-button is pressed. Also it prints RAM-size to console.
+
+commit 55b0452ef1ad95fae0a4a9c00b707ec56a991c6a
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue May 7 20:33:29 2024 +0200
+
+    Started logic for button as starting signal.
+
+commit e5011fd5e0c2fa2cd7528a6e61d9963fb78e394e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue May 7 14:15:59 2024 +0200
+
+    Edit square block to indicate that xpos and ypos are for upper left corner.
+
+commit bd1d25d02e4ccc203f2cff717e07955a26a6f77c
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue May 7 14:12:58 2024 +0200
+
+    Finalized rectangle block.
+
+commit ab33c00f1e90c59e92c5d4715508b828071076fe
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue May 7 14:07:49 2024 +0200
+
+    Started making block for rectangle.
+
+commit 4f60d19da9d836ce2f17072026249a8f9c95fae2
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue May 7 01:03:02 2024 +0200
+
+    Added svg files as JSON text files.
+
+commit 2df705d9dcab07fdd07305c2c7bdd347b9076872
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue May 7 00:58:53 2024 +0200
+
+    Draws an astronaut.
+
+commit ad3abff4a0266bb4a8fc6ec1b4b521afcf0d9dc6
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue May 7 00:34:06 2024 +0200
+
+    n segments for bezier curves is calculated by difference in length between start and end points.
+
+commit 63c46403c7e395b096e2d6ad80f747a4c76de965
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue May 7 00:32:23 2024 +0200
+
+    Finally: Draws a simple bezier curve.
+
+commit 748252b7ac729eff09ff158ce45fdeef76a2d5e3
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 23:53:06 2024 +0200
+
+    Bresenham is calculating wrong directions for x-axis?
+
+commit aa89e76b6f4ab57e61121c5678e21d6e34e5a4a3
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 23:33:34 2024 +0200
+
+    Debugging svg. Points are calculated wrongly with De Casteljau's algorithm
+
+commit 4da3994f3c0d59628add31671d0b95b63fad9b3f
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 22:33:24 2024 +0200
+
+    Removed debugging, pulsewidth 300 us. SVG drawing.
+
+commit 1492a8f74e26a084a36c7a463530d16e7eff6d6b
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 22:30:24 2024 +0200
+
+    Inserted svg of circle.png which was only 14 kB. The program runs in micro:bit v2.
+
+commit fffb80b59307b245ff8dbd66310b7968c560d714
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 22:15:40 2024 +0200
+
+    Create donut-image as bezier-text. It is 32 kB big!
+
+commit fa3c76c4af5f1b223935d8341b501c5cce2db592
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 22:08:21 2024 +0200
+
+    Inserted small test sequence from SVG. Tested on microbit V2 ok. 400us pulsewidth.
+
+commit 2761507475b9c073f781694a2aab16080c99674d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 18:59:22 2024 +0200
+
+    SVG-block is ready to draw, but program memory is too small for the JSON-text :(
+
+commit ed313583c54a1007c020926744b3ff350a4d8fce
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 18:43:16 2024 +0200
+
+    Bezier curves are divided into points along curve based on how many 2mm segments fits between start and end point.
+
+commit 5edafec0cff12ee192b152bd9151e4ef3b3463d8
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 16:16:24 2024 +0200
+
+    Bezier to points along curve implemented. But it is in two arrays. Need fixing.
+
+commit f8fffac9ef4c62bbd9e07ebc9b1fb63c58ef352d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 16:07:17 2024 +0200
+
+    Calculates length of each bezier segment to find number of points along curve.
+
+commit 107dc71de648a7b0059149cb6db6ae107f3c3f3e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 15:45:50 2024 +0200
+
+    L segment is now being parsed.
+
+commit d396c1e40e737c94427d84e6a1366444ba820dbf
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 15:41:52 2024 +0200
+
+    SVG-block parses M and C-segments from input JSON-string.
+
+commit 92c86587df5e53a1d280f18de5e1cd21da8e0dd8
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 15:23:55 2024 +0200
+
+    Edit beziers.txt to see each C segment on each line.
+
+commit b52c4843de188057522b207b97b80f25f6b71c3b
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 15:23:25 2024 +0200
+
+    Looping over bezier-arrays picking out C-sequences.
+
+commit 5c6d545e44cbd56114abc5f0277c1b2c071b9fba
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:55:59 2024 +0200
+
+    Created a test file containing beziers for a full SVG.
+
+commit 42bc1053526caee8c6be8fbe37b14acd0da94245
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:54:12 2024 +0200
+
+    Merge files from image-to-svg.
+
+commit 4887341fceba40736b3870312a2181ed221b7b20
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:50:13 2024 +0200
+
+    Started SVG block
+
+commit b33a514542829fa7a2d84d9bf15b483f0887f474
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:46:04 2024 +0200
+
+    Maximum safe speed is 50 us pulse width. Due to computation delays, this is not real pulse width. 100 us looks ok.
+
+commit 69860089aa07ff496d4726c96b670d03e5f94144
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:40:21 2024 +0200
+
+    Increased speed with pulseInterval 100 us. Quite quick!
+
+commit 1f0d985465394cd5e99141d8ba86823b34c9a180
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:38:00 2024 +0200
+
+    Removed checking button press inside while(isDrawing), not enough processing power.
+
+commit a527b750d7aca054246588e9151899e440030a81
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:33:15 2024 +0200
+
+    Button inputs testing inside while(isDrawing) loop.
+
+commit f896fd24973026c92e3a88ce129cb4b3d193487c
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:22:58 2024 +0200
+
+    Implemented triangle defined by 3 corners.
+
+commit 9351212eb4eb508e77c5130fe9c466a3ce290e08
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 13:01:41 2024 +0200
+
+    Changed description blocks and lifts pen when homing head.
+
+commit 63f16c669ad6dce936a27b6418d4b1b68d54d479
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 12:58:17 2024 +0200
+
+    Edit default values and min/max values for GUI circle and square blocks.
+
+commit 28d94943a4bb39176230713e8e6ab5b2fb0c8b96
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 12:42:19 2024 +0200
+
+    Added potrace.js to pxt.json to upload it to MakeCode.
+
+commit 8c9b3c32a8554919bf8c6b9db67e989bfb5ffff1
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 12:40:10 2024 +0200
+
+    edit pxt.json
+
+commit 01b9e82090c900bae23a58d626275d7c1352b01a
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 12:37:36 2024 +0200
+
+    Working block programming with Arduino-port.
+
+commit 7bffddcaa44b4c7c3288ecee405adfcc0ae275d1
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon May 6 12:30:30 2024 +0200
+
+    Updated custom.ts with Arduino-port. Deleted all code in main.ts.
+
+commit 01c2d30489c6c1751d52a70ecf49fa1657ccdb6e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 17:29:28 2024 +0200
+
+    Updated test figure: 2 circles 1 square.
+
+commit 2a224fddfc47d3fb1269d734dbd59bc88c7dc711
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 12:26:56 2024 +0200
+
+    Restore '5/5/2024, 1:10:00 AM Pulselength 800 us manages to draw circles and run bresenham at an angle.'
+
+commit 0b7f4dd84ce32d1721fa1b46ca97dfa049ca9e89
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 12:06:47 2024 +0200
+
+    Restore '5/5/2024, 12:29:32 AM Running drawFigureStack() in a manual loop. Stutters like hell :('
+
+commit 3b47d77b1c76c172637dfbbf23d29f35f83c9a41
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 01:10:00 2024 +0200
+
+    Pulselength 800 us manages to draw circles and run bresenham at an angle.
+
+commit 2a3cfcd576b098e246dd9641a053c2c260143a6d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 00:53:31 2024 +0200
+
+    Removed button inputs, original timer-event logic.
+
+commit 944e6a0139e80db4c9ba6f1d963a97e3f4c3067e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 00:51:20 2024 +0200
+
+    Restore '5/5/2024, 12:20:21 AM Draws 2 circles on top of each other and one square around upper circle.'
+
+commit a18c82473191f4b55c23495a01f6509f987cf84f
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 00:47:57 2024 +0200
+
+    Restore '5/5/2024, 12:20:21 AM Draws 2 circles on top of each other and one square around upper circle.'
+
+commit e21926f23b8695f22a1d45e2af18d747fc5d31d6
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 00:41:13 2024 +0200
+
+    Removed button inputs.
+
+commit 009eaafae8413b44ecce940dad2d0b1b4c6da5bb
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 00:36:10 2024 +0200
+
+    Increased pulse interval.
+
+commit ffda455b7a9cacec616fa1e29ee3d4f8bf4458f3
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 00:29:32 2024 +0200
+
+    Running drawFigureStack() in a manual loop. Stutters like hell :(
+
+commit c7b355911941672346a1b0cb608260b8b551b57c
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 00:20:21 2024 +0200
+
+    Draws 2 circles on top of each other and one square around upper circle.
+
+commit 93a9d2ed7571df3e8f458b36afb7a0528b11c58e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun May 5 00:12:13 2024 +0200
+
+    drawCircle normalized to mm, added info about each object for debug printing.
+
+commit b71d08c144dad9de47586c5a5d6c3cdf9c3e0209
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 4 23:41:51 2024 +0200
+
+    Working drawCircle but using pixels as sizes and coordinates.
+
+commit 473aec7e8788e1e7a9f4fc929b9e87dd72b8f90e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 4 16:50:25 2024 +0200
+
+    drawCircle is not behaving great. Draws multiple small squares. directions are wrong.
+
+commit f8ca3cfe23fbfbbcb0eb7aa742f25f3d72207f25
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 4 16:06:51 2024 +0200
+
+    Working code with correct directions. Draws 3 squares inside one bigger square.
+
+commit b68111afcc63fb25fefbbb0fa2a64a2fac65e62e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 4 15:19:09 2024 +0200
+
+    Fixed bad event driven stepping by using stepSteppers() and pinStates object as intended.
+
+commit 06bef4fa27df9691102a425d3647088e89831a5d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 4 14:58:45 2024 +0200
+
+    Inserted debug in direction change.
+
+commit 06255435ff2dc6658981bd342fb45efc16e16abd
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 4 14:51:45 2024 +0200
+
+    Changed drawSquare to an easier path to debug.
+
+commit 6be2297ad337d1848ff7dd137ce7038b7279912d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 4 14:45:16 2024 +0200
+
+    Removed manual extra wait time in mainloop. Did not work well.
+
+commit e81c7581fa8a7dd0c53c665e312c752722cf1921
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat May 4 10:45:11 2024 +0200
+
+    Normalized parameters for drawSquare to convert from mm to steps.
+
+commit 8328f3af46501855d4fcdeefaca60b095f4116ad
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 23:46:58 2024 +0200
+
+    Changed to millis() function to "save" space :p
+
+commit 3f74fa84b0f43e596bb6aee2c948e471d910ca9d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 23:46:03 2024 +0200
+
+    Bugfix: Number of indices for a square is now set for draw-object on initialiation.
+
+commit 2c55047f1c91d6d36873b8a0c2be1f86481da633
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 23:31:57 2024 +0200
+
+    Added more debug to serial monitor.
+
+commit 0cd461f49eaa272f3e7b494620a3d46adc7c58e1
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 23:20:17 2024 +0200
+
+    Bugfix: machine.currentPosition updates, rounds half length of square.
+
+commit c090226c0624a45baa765d12336ac69ea12d8622
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 22:56:33 2024 +0200
+
+    Mainloop has a small 100 us delay to lower the amount of work needed to process.
+
+commit e6211ec6c86ed5c25b64425ecb317c6f8b9631f1
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 22:35:32 2024 +0200
+
+    Implemented mainLoop() to run faster than basic.Forever() to run drawFigureStack()
+
+commit 94da2ccbaf82e2f5dd2be6ee17364d46c500a49d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 22:10:33 2024 +0200
+
+    Got the loop to be running equal to mainLoop() for simulator.
+
+commit 88f6c7a3b87370873e2231f9adeb646c51b0dc79
+Merge: e88c1f9 facb729
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 17:41:46 2024 +0200
+
+    Merge branch 'master' into svg
+
+commit e88c1f964894331ef0be8264891e43d26c011635
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 17:36:27 2024 +0200
+
+    Started a new svg/bezier parser where input is 3D-array.
+
+commit facb729d5e2e1eebd47770bfed33defdbdfd879d
+Author: Lawftyg <mymsnadressis@hotmail.com>
+Date:   Fri May 3 14:46:14 2024 +0200
+
+    fix error
+
+commit e22835703122742f4378b3a0cf7016a5ff5299f4
+Author: Lawftyg <mymsnadressis@hotmail.com>
+Date:   Fri May 3 14:39:37 2024 +0200
+
+    update custom.ts with relevant code
+
+commit 5e81459305f66739474ee54d406ff21c7ff72bfe
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 13:31:06 2024 +0200
+
+    Edit pxt.json to include image-to-svg html webpage.
+
+commit 4bacbba1ae3ddb74aa4d971c609a7afd3d443f14
+Merge: e8c3a01 c966f08
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 13:23:34 2024 +0200
+
+    Merge branch 'svg' of https://github.com/hmauroy/tegnerobot into svg
+
+commit e8c3a0170d6506f0fa1fa9073c087ca8df34d239
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 13:21:45 2024 +0200
+
+    Edit potrace_bg8.js to return an array of arrays each representing either M, C or L segments. JSON format. Adjusted src image size to smaller for
+    developing.
+
+commit c966f08dd8ad21a04a98711a03eb34010247d72d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 11:55:56 2024 +0200
+
+    Inserted serial-comms.
+
+commit 702b913311fe8915abb88a3c03ff7e5209abc631
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri May 3 11:30:53 2024 +0200
+
+    Update pxt.json, main.blocks, main.ts
+
+commit 8341b1c871d153d65901b773012b086f822253ab
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu May 2 14:53:45 2024 +0200
+
+    Image-to-svg: Adjusted potrace.js to return only the bezier-paths and not a complete svg text-file. Easier to process later as an array.
+
+commit 1df862df5eb75f7fdc1df8dfe30f4bca7fe9dee7
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu May 2 14:30:29 2024 +0200
+
+    Added einstein-svg as no-fill svg.
+
+commit a2b5693401d12784b35a7958da96f12220c6b590
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 1 23:02:36 2024 +0200
+
+    image-to-svg now has larger input images, 70vw. This results in much larger canvas. Canvas is hidden until filters
+    are applied. Turd-size was set wrongly to a static value of 8. Fixed this to use turd-size from slider.
+
+commit b9d22df7b147a45f951c67c2f6d0b9d4b490c341
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 1 22:40:54 2024 +0200
+
+    Created two svg-files without fill, only stroke="black". Looks cool!
+
+commit 05d46f07e1ec628709be29c194cad04b61834db2
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 1 08:36:52 2024 +0200
+
+    Inserted a SVG-string from image-to-svg webpage. No problems :)
+
+commit 78fc71a2f8d15c2bf2951874c372730053b4607b
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 1 08:31:21 2024 +0200
+
+    Complete image-to-drawing is working! SVG-parser spits out all bezier control points in a list in a textarea that can be copied from.
+
+commit c15a88996c401659910884b35f6ff1d19b8fb7e0
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed May 1 07:59:32 2024 +0200
+
+    SVG-parser is working. Output is xy-coordinates with codes indicating Move commands and move coordinate plus up/down for the pen.
+
+commit e182cbc4dbe98c1ef6c4a37db5cd288b52fd83de
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue Apr 30 16:02:47 2024 +0200
+
+    SVG parser is working. Need to fix how to stop gracefully at the end of the last C bezier.
+
+commit f6bc58e290b6c1d1ce43c651d46a6327760fbe0e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 29 22:22:11 2024 +0200
+
+    SVG-parser can parse at least the first bezier curve from potrace.js output. Need to convert each bezier into xy-coordinates.
+
+commit 44882803df1dc2b6d8448fdbdcff9b3bc231044e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 29 14:19:45 2024 +0200
+
+    Creates a new canvas window for each time update image is being run, but still warning about potrace reading from
+    canvas may degrade performance :(
+
+commit 6c8a081b562caed5830755d4bb6b36ef05d6f4d6
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Apr 28 21:50:21 2024 +0200
+
+    Potrace.js is reading from canvas multiple times resulting in warning, and user needs to tap the createSVG-button twice...
+
+commit f1413da22aa846eb4c8e6911a15d81f2ea36ed82
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Apr 28 21:11:30 2024 +0200
+
+    Transfer to blob from canvas still results in warning message.
+
+commit 23668a22a00757cf94e7fa195f95e4de8beee12d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Apr 28 15:11:41 2024 +0200
+
+    Working prototype image to svg with adjustable filters. Need to address canvas.toDataURL() which gives a silent warning in the background...
+
+commit 3a6eb4a70c5814385311c4ced6f0833f92ff5a38
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Apr 27 22:52:16 2024 +0200
+
+    Created sliders for image filters.
+
+commit 6641a7ff2c647b561a2c465e579faa51b072bb4b
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Apr 27 21:55:30 2024 +0200
+
+    Created opencv example.
+
+commit 34d326a67b302e649e57b9d940329166df4c1dab
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri Apr 26 23:14:01 2024 +0200
+
+    Added speed control using buttons, switched from pin 8/9 to 13/14 due to LED conflicts.
+
+commit 8ebd8ecff11e45e15f26098c7808208641eb5e33
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Apr 25 21:06:43 2024 +0200
+
+    Added attribute to potrace.js.
+
+commit 645aff5aa723a2b6a4fdd5c3c930720522816931
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed Apr 24 23:22:14 2024 +0200
+
+    Implemented Henriks image to svg in html and javascript using chatGPT4. Working prototype.
+
+commit 013ef884dbb6b3a4dbb810d85a881f9be6236f97
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 20:25:33 2024 +0200
+
+    Created crude stepper sequency 100 steps in each direction for both axis.
+
+commit 4b5e963c0889b68f00b5ec8dc8e90365bbef57b5
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 20:17:42 2024 +0200
+
+    Changed values in setPinStates to primitive number types.
+
+commit 6292b064a96959c9fd48832338b15a91e61cb8a5
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 20:09:46 2024 +0200
+
+    Added block function to set pinStates. Can be used for crude stepper motor control.
+
+commit bee3430cb0604c0fa8905a14f8b1f40b37266e68
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 20:00:20 2024 +0200
+
+    Removed duplicates due to merge screw up.
+
+commit 4c635700401bafd46f10951ab385df351cee0af0
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 19:57:00 2024 +0200
+
+    Added bresenham_TVA.css as css file for bresenham.html.
+
+commit 87dd77f3c744ac6a120d1d2bc6dcd5b1a27846f8
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 19:27:51 2024 +0200
+
+    Fixed some merge screw ups
+
+commit 15988baad9c2ee0b12d884326f1d8353fa9b5045
+Merge: 69798d3 b31ecd4
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 19:26:54 2024 +0200
+
+    Merge branch 'master' into microbit-stepper
+
+commit b31ecd4100ed3d672b969d59de80569ed830b424
+Merge: 1d6a59e 193a6b9
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 19:23:33 2024 +0200
+
+    Merge branch 'master' into tva
+
+commit 69798d38712c8572a353a0f6917f3e8428b7be94
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 19:22:12 2024 +0200
+
+    Added digitalWrite() to stepSteppers() to control the pins on microbit.
+
+commit 1d6a59e3a4cbd0759034f126091189c7567237a5
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 19:09:13 2024 +0200
+
+    Created TVA colors for Bresenham line algorithm test page.
+
+commit 193a6b90fcd1a6fbce90882516bd78d59c3d10cc
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 16:59:06 2024 +0200
+
+    Cleaned up code. Not finished cleaning yet.
+
+commit 58c445295398fcb0fbea4c61915c6566a7e7e81c
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 16:49:51 2024 +0200
+
+    Removed continousServo library, added Servo library.
+
+commit 136314ccfdd09ab7e5fbf0bd2744a887a33f774b
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Apr 22 16:48:11 2024 +0200
+
+    Added constant object holding the state of the control pins
+
+commit e4f7f21a7b89a5bb6468e802601a2ee6671c9913
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Apr 18 20:56:50 2024 +0200
+
+    Adjusted html and css for Bresenham line drawing example page to look like a green monochrome monitor.
+
+commit 581bcc2159a305b8f84d6c8124db011261fd5108
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Apr 14 14:38:22 2024 +0200
+
+    sine_curve_animation: Added code to take points of a curve and plot them rotated around center of the
+    curve. Animation is performed to see the effects clearly.
+
+commit c9647538307ce2ffaa0e22d5075f304ef66d763c
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Apr 13 22:46:58 2024 +0200
+
+    read_svg.py now has equal axis when plotting. Included a new pretty Bezier curve.
+
+commit 2b0c6208096643d84fe6d8c826fc68d74cb562ff
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Apr 13 16:10:08 2024 +0200
+
+    read_svg.py is working. Coordinates are generated for a given string of path data. e.g. c 16 1 1 4 3 16 15 11 to draw cubic Bezier from (16,1) to (15,11) using control points in between (1,4) and (3,16).
+
+commit fec6bd8afc78a8927c90817d5c7f4963a595a5a7
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Apr 13 16:06:02 2024 +0200
+
+    Added a html-file to show how a triangle is rotated around its own z-axis while using animation. Added read_svg.py to try parsing svg-files.
+
+commit 34be863566dc8d0c6ef02f30fb3e72d6c7e330ae
+Merge: 789cd1b aa9eabe
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Apr 6 14:52:12 2024 +0200
+
+    Merge branch 'sprint1' of https://github.com/hmauroy/tegnerobot into sprint1
+
+commit 789cd1bb97c646212e29f31ac79ae9daf64d457a
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Apr 6 14:51:25 2024 +0200
+
+    Added a lot of debuggin-files and plots to trace circle-movement using python-plotting.
+
+commit aa9eabec816b8d95ccfddc83daea12ffb7603725
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Apr 6 14:51:03 2024 +0200
+
+    custom.ts: Verified that circle-block has nice menu-rendering with centerX etc.
+
+commit 475eda46e94edc9239abe1e519b3a7c15c8965db
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Mar 30 15:44:55 2024 +0100
+
+    Edit of several of the bezier-curve html-pages. Bezier:bresenham.html draws on 8000x8000 canvas to emulate Tegnerobot :) Looks good.
+
+commit 5af44fc65bbc2d860c08b4d8f6391a6679b34f17
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Mar 30 09:32:54 2024 +0100
+
+    Added several html-pages with JS written by chatGPT3.5 for bresenhams circle and approximating bezier curves.
+
+commit 4f4381c8c2cc29d48d82ed82d3603f09aceaf90d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 16:17:24 2024 +0100
+
+    Added more files to pxt.json.
+
+commit 33b7480e8633d6c6d3d6fd0342414ee30099a2d9
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 16:15:12 2024 +0100
+
+    Added bresenham.js in pxt.json.
+
+commit 07ca999683375f45ca50bafe3e3e585b08057bd5
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 16:13:28 2024 +0100
+
+    Edit documentation bresenham.js.
+
+commit 0a93529408486aad5ba470018aaa9465866cb5fa
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 13:12:07 2024 +0100
+
+    edit gitignore
+
+commit 487bea52162e7a250edb7021513915a336cd4982
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 13:11:37 2024 +0100
+
+    Remove .DS_Store from everywhere
+
+commit 1c894de8a7f5a347aa80b30e6cd8d9bc49058af7
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 13:07:20 2024 +0100
+
+    Edit gitignore. Should be much more advanced...
+
+commit 2304ec52b838cf8e8914d5194c06425dbe0cf885
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 13:05:51 2024 +0100
+
+    Adjusted grid to be 20x20 with large 20 px pixels.
+
+commit 0a1b48b444cb0bb1b23f5507bff52687aadf221e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 10:29:01 2024 +0100
+
+    Deleted console.log in custom.ts.
+
+commit 7719814a6b74871194cc3fc19544bda004ecf1b9
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 10:27:17 2024 +0100
+
+    Added Bresenhams line algorithm to custom.ts. It's a starting point.
+
+commit 538eeeeec30be675cc75453d77a12a325fc0965b
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 10:21:19 2024 +0100
+
+    Deleted TS-version of bresenham. Not used when developing.
+
+commit 87b75cab337a297f352d7badddfc3c61df493142
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 10:18:10 2024 +0100
+
+    Implemented bresenham's line algorithm with a small html-page showing a table as drawing
+    canvas.
+
+commit d737aa79bd42c6084e1791eb2394c7a5c819c29e
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 07:49:59 2024 +0100
+
+    Initial commit for sprint1.
+
+commit fe54aff4c42fe156aeca11df63c372c364d6b7e4
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 28 07:39:48 2024 +0100
+
+    Startet bresenham.ts to play with line algorithms.
+
+commit 540c388a912ff8aecd6623ca43617da876c6cbeb
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Mar 25 20:58:26 2024 +0100
+
+    Direct while loop in startup to do i2c calls using wait(us) for timing.
+
+commit 6befcf9113286dec032e0a30a4968ab99fdd9d21
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Mar 25 20:40:04 2024 +0100
+
+    Testing wait(us) with i2c-code for turning leds on and off.
+
+commit ebd3c2fa303a29da365fe27a294589c16b494b14
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Mar 25 13:52:38 2024 +0100
+
+    Direct while loop to run pulses. Not testet yet.
+
+commit fbe2ef167796a4b308eb5de8577c872fea58f8b1
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Mon Mar 25 07:18:12 2024 +0100
+
+    Tested timings for pause-function: Not good at all :( Not a consistent pattern of pulses.
+
+commit 8ce2af87e95cc32212b85b7f042636e4a58f3612
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Mar 23 20:31:42 2024 +0100
+
+    Created global buffer, pca_buffer, to save time in dynamically  recreating a buffer for each i2c write.
+
+commit b17c6b8d555b4801317d633f7fa8d8bf41193408
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri Mar 22 23:26:55 2024 +0100
+
+    Created pause function with microsecond resolution.
+
+commit 3f9c7ce043bd1c04d2d737cd24d1dfeb973f4deb
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri Mar 22 22:06:07 2024 +0100
+
+    Finally a working i2c communication with PCA9557 chip :)
+
+commit 01c61d87fcf60dde583da5514a6f2917053f7638
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri Mar 22 21:41:42 2024 +0100
+
+    Created program setting register, then reading register.
+
+commit f7e5192d0d99551933e9922fb47902ef4945d336
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri Mar 22 21:33:01 2024 +0100
+
+    wrote manual setreg() using bme280 library as inspiration.
+
+commit 800941b1c62bdd4d66078133d32f622e0008e698
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri Mar 22 20:59:55 2024 +0100
+
+    Probably a working code, true for all repeated writes.
+
+commit a1021ade7d3b0e67b4af4bc36a98733a36da5215
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Fri Mar 22 11:38:24 2024 +0100
+
+    Changed logic inside loop.
+
+commit 3e8ba3aab6f7f482f49cbe9012f074979c0cca63
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed Mar 20 22:48:34 2024 +0100
+
+    Working i2c communication from micro:bit to Arduino.
+
+commit 36e1a8ce1445124e8f34f3f9e9957cda24d4f1f2
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed Mar 20 22:46:01 2024 +0100
+
+    Working I2C from micro:bit to Arduino
+
+commit fb6c1d2fe66f18fe0ede9dc5ca2450293fa2161a
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed Mar 20 16:38:04 2024 +0100
+
+    Tried code for scanning I2C-address. No luck connecting to PCA9557 :(
+
+commit 46a45a8994737c0272626080f1ebd866b641c8f0
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Wed Mar 20 13:07:04 2024 +0100
+
+    Working code to communicate over I2C using P1 and P2 between micro:bit and arduino.
+
+commit ba8d8105620048a637066a5ea0a32f25fe9e78ea
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue Mar 19 18:53:54 2024 +0100
+
+    chatGPT port of Arduino code. Does not work either. Need to check another sensor that gives data back more easily.
+
+commit 41daceb90a310f26b205f8ee230d09b0b78c20a9
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue Mar 19 18:49:59 2024 +0100
+
+    Added some pause between i2c writes.
+
+commit fa74509ebc4a8a3331dc70a1fd2d3d8c277b3d9a
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue Mar 19 18:45:25 2024 +0100
+
+    Restore '3/19/2024, 4:54:03 PM Code to turn on and off LEDs using PCA9557 expander chip. Must use micro:bit V2!'
+
+commit f5d0fcbfcb72d67abac4ba46e628533dfe4468ef
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue Mar 19 16:54:03 2024 +0100
+
+    Code to turn on and off LEDs using PCA9557 expander chip. Must use micro:bit V2!
+
+commit 2c940b2f76b6a9cc97cb1128ace73d3975b43d58
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Tue Mar 19 16:51:25 2024 +0100
+
+    Added comments for how I2C is configured for PCA9557 io expander.
+
+commit a8f478d4835caa290d529ff842ffe19d48c2255a
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 21:32:22 2024 +0100
+
+    Testing to see if i2c is rerouted through pins 1 and 2.
+
+commit 55178e630b9c0f17b642a6e8e1cf4e4f9e68d149
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 20:09:47 2024 +0100
+
+    Testing i2c comms on pin 1 and 2 using i2c reroute.
+
+commit 2556590101ea77db3d0a24650e47113fe5bc52ff
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 12:02:41 2024 +0100
+
+    Included I2C Reroute extension: from here: https://github.com/bsiever/microbit-pxt-i2cpins.git
+
+commit 869c7fee352924752ea83ae94f60598060de6d40
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 11:57:29 2024 +0100
+
+    Removed i2c reroute source code. Need to import it probably via MakeCode.
+
+commit 8376e587dfd835aed76d83ba08c0253ce1a89845
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 11:35:43 2024 +0100
+
+    Testing if icluding i2c reroute directly into code base works.
+
+commit d08c3b50bc57111ad4892097f03fbb0b7596dc9d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 11:34:19 2024 +0100
+
+    Update pxt.json, main.blocks
+
+commit 9e9860bd410e54c57e8cede0683942ca27499d11
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 11:30:53 2024 +0100
+
+    Messed up merge pull etc. removed i2c reroute.
+
+commit 4408b704abc88af25d5c72fa219135f6f4d7eaed
+Merge: f66bc31 f014105
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 11:29:39 2024 +0100
+
+    Merge branch 'stepper-driver' of https://github.com/hmauroy/tegnerobot into stepper-driver
+
+commit f66bc314ac465ecf0182347f2b5447ca6beab3b3
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sun Mar 17 11:27:54 2024 +0100
+
+    Testing if i2c Reroute can be included by simply inserting the code in github.
+
+commit f01410588adf9d26801c4614d950f7fbe38553bb
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Sat Mar 16 16:57:27 2024 +0100
+
+    Included I2C reroute  from Air:bit source code.
+
+commit f22ef0b4bc7b03cb9c01e6a067bfb005697d3644
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 14 22:30:50 2024 +0100
+
+    Added funtion to return number of microseconds since power-on.
+
+commit 7d0a5654a4f836b00b0e610cc05a8f3e0bc8fcb3
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 14 22:12:15 2024 +0100
+
+    Updated runSteppers() with some more code.
+
+commit 723f2b3a3eb0f976c539c7ce31fd3e245c65ac0d
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 14 22:05:29 2024 +0100
+
+    Update pxt.json
+
+commit 917b5f16e21a95d0c7f56dfdb58b599d1e306d79
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 14 21:53:36 2024 +0100
+
+    Created runSteppers(). Not finished.
+
+commit 9ed1ba858782e5d4307063a95b7bbfabc29b9e65
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 14 21:43:55 2024 +0100
+
+    Update pxt.json
+
+commit aebd084f838db4e065894423e76aec5e6cba7296
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 14 21:36:57 2024 +0100
+
+    Initial files for MakeCode project
+
+commit 810b1fd4b7afd398fccc1dca4a4e864bca102989
+Author: hmauroy <hmauroy@gmail.com>
+Date:   Thu Mar 14 21:36:50 2024 +0100
+
+    Initialize empty repo

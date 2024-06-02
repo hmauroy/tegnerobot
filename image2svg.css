@@ -24,8 +24,8 @@ body {
 }
 #canvasWindow {
     position: absolute;
-    top: 190px;
-    left: 5px;
+    top: 185px;
+    left: 9px;
     visibility: hidden;
 }
 #svgWindow {
