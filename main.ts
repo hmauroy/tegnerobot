@@ -1,3 +1,2 @@
 tegneRobot.startDrawing()
-tegneRobot.svgSdCard(true)
-tegneRobot.endDrawing()
+tegneRobot.svg("", false)

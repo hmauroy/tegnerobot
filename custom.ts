@@ -61,17 +61,81 @@ namespace tegneRobot {
         false,
     }
 
-    //% help=HomeHead/draw weight=77
-    //% block="Home Head"  icon="\uf204" blockGap=8
-    export function homeHead() {
-        /*
-         * Moves head to 0,0 (upper left corner).
-         * Moves steppers too much into negative direction.
-         */
-        liftPen();
-        moveHeadTo(0, 0);
+    /*
+    *   Starting block for DrawingRobot programs.
+    *   1) Reroutes I2C-pins to P1 and P2.
+    *   2) Setup button B to listen for button press.
+    *   3) Setup control.raiseEvent() to start on button press. Then wait.
+    *   4) Blink an arrow in the LED display while waiting for button press.
+    */
+    //% block="Start drawings: Move head to upper left, push button B"  icon="\uf204" blockGap=8
+    export function startDrawing() {
+        let isWaiting = true;
+        let startEvent = 1;
+        let startEventValue = 1;
+        let lastTime = input.runningTime();
+        let displayOn = true;
         servos.P0.stop();
+        serial.writeLine("Initiated drawing robot!");
+        // Sets button B to HIGH
+        pins.digitalWritePin(DigitalPin.P11, 1);
+        // Initialize PCA9557
+        i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
+        basic.showLeds(`
+        . . # . .
+        . . . # .
+        # # # # #
+        . . . # .
+        . . # . .
+        `);
+        control.runInParallel(function () {
+            while (isWaiting) {
+                control.waitMicros(10000);
+                // Detects press of button B when it is pulled LOW
+                if (pins.digitalReadPin(DigitalPin.P11) === 0) {
+                    // Turn OFF button B as debounce.
+                    pins.digitalWritePin(DigitalPin.P11, 0);
+                    // Turn ON A-button setting it HIGH. Will now be used to lower speed.
+                    pins.digitalWritePin(DigitalPin.P5, 1);
+                    isWaiting = false;
+                    // TODO: Enable-pin turns on for stepper-drivers. 
+                    // Nice to have to prevent damage to motor gearbox if user 
+                    // rotates motors while holding torque is on.
+
+                    control.raiseEvent(startEvent, startEventValue);
+                }
+                if (pins.digitalReadPin(DigitalPin.P5) === 0) {
+                    serialLog("Button A");
+                    pins.digitalWritePin(DigitalPin.P5, 0);
+                }
+                // Blink the display
+                if (millis() - lastTime >= 1000) {
+                    lastTime = input.runningTime();
+                    if (displayOn) {
+                        basic.clearScreen();
+                    }
+                    else {
+                        basic.showLeds(`
+                    . . # . .
+                    . . . # .
+                    # # # # #
+                    . . . # .
+                    . . # . .
+                    `);
+                    }
+                    displayOn = !displayOn;
+                }
+            }
+        })
+        // Here we halt the program by waiting for event.
+        control.waitForEvent(startEvent, startEventValue);
+        showOkIcon();
+        liftPen();
+        basic.pause(500);
+        showStatusIcon();
     }
+
+    
 
     /**
     * Move head to xy-coordinate in absolute millimeters
@@ -221,6 +285,18 @@ namespace tegneRobot {
         0;
     }
 
+    //% help=HomeHead/draw weight=77
+    //% block="Home Head"  icon="\uf204" blockGap=8
+    export function homeHead() {
+        /*
+         * Moves head to 0,0 (upper left corner).
+         * Moves steppers too much into negative direction.
+         */
+        liftPen();
+        moveHeadTo(0, 0);
+        servos.P0.stop();
+    }
+
     /*
     * ~1.0 millisecond pulse all right
     * ~1.5 millisecond pulse center
@@ -264,70 +340,7 @@ namespace tegneRobot {
         return input.runningTime();
     }
 
-    //% block="Start drawings: Move head to upper left, push button B"  icon="\uf204" blockGap=8
-    export function startDrawing() {
-        let isWaiting = true;
-        let startEvent = 1;
-        let startEventValue = 1;
-        let lastTime = input.runningTime();
-        let displayOn = true;
-        servos.P0.stop();
-        serial.writeLine("Initiated drawing robot!");
-        // Sets button B to HIGH
-        pins.digitalWritePin(DigitalPin.P11, 1);
-        // Initialize PCA9557
-        i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
-        basic.showLeds(`
-        . . # . .
-        . . . # .
-        # # # # #
-        . . . # .
-        . . # . .
-        `);
-        control.runInParallel(function () {
-            while (isWaiting) {
-                control.waitMicros(10000);
-                // Detects press of button B when it is pulled LOW
-                if (pins.digitalReadPin(DigitalPin.P11) === 0) {
-                    // Turn OFF button B as debounce.
-                    pins.digitalWritePin(DigitalPin.P11, 0);
-                    // Turn ON A-button setting it HIGH. Will now be used to lower speed.
-                    pins.digitalWritePin(DigitalPin.P5, 1);
-                    isWaiting = false;
-                    // TODO: Enable-pin turns on for stepper-drivers.
-                    
-                    control.raiseEvent(startEvent, startEventValue);
-                }
-                if (pins.digitalReadPin(DigitalPin.P5) === 0) {
-                    serialLog("Button A");
-                    pins.digitalWritePin(DigitalPin.P5, 0);
-                }
-                // Blink the display
-                if (millis() - lastTime >= 1000) {
-                    lastTime = input.runningTime();
-                    if (displayOn) {
-                        basic.clearScreen();
-                    }
-                    else {
-                       basic.showLeds(`
-                    . . # . .
-                    . . . # .
-                    # # # # #
-                    . . . # .
-                    . . # . .
-                    `); 
-                    }
-                    displayOn = !displayOn;
-                }
-            }
-        })
-        // Here we halt the program by waiting for event.
-        control.waitForEvent(startEvent, startEventValue);
-        showOkIcon();
-        liftPen();
-        basic.pause(500);
-        showStatusIcon();
-    }
+    
 
     //% block="Show OK icon" icon="\uf204" blockGap=8
     export function showOkIcon() {
