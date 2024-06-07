@@ -31,7 +31,9 @@ namespace tegneRobot {
         stepperX: 0,
         dirX: 0,
         stepperY: 0,
-        dirY: 0
+        dirY: 0,
+        btnA: 0,
+        btnB: 1,
     };
 
     export const draw = {
@@ -40,9 +42,11 @@ namespace tegneRobot {
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
         previousTime: 0,
+        pulseCount: 0, 
         pulseHigh: true,
         nextXStep: 0,
         nextYStep: 0,
+        isCheckingButtons: false,
     };
 
     export const bresenham = {
@@ -93,20 +97,19 @@ namespace tegneRobot {
                 control.waitMicros(10000);
                 // Detects press of button B when it is pulled LOW
                 if (pins.digitalReadPin(DigitalPin.P11) === 0) {
+                    /* Commented out. Need to keep button B alive.
                     // Turn OFF button B as debounce.
-                    pins.digitalWritePin(DigitalPin.P11, 0);
+                    pins.digitalWritePin(DigitalPin.P11, pinStates.btnB);
+                    */
                     // Turn ON A-button setting it HIGH. Will now be used to lower speed.
-                    pins.digitalWritePin(DigitalPin.P5, 1);
+                    pinStates.btnA = 1;
+                    pins.digitalWritePin(DigitalPin.P5, pinStates.btnA);
                     isWaiting = false;
                     // TODO: Enable-pin turns on for stepper-drivers. 
                     // Nice to have to prevent damage to motor gearbox if user 
                     // rotates motors while holding torque is on.
 
                     control.raiseEvent(startEvent, startEventValue);
-                }
-                if (pins.digitalReadPin(DigitalPin.P5) === 0) {
-                    serialLog("Button A");
-                    pins.digitalWritePin(DigitalPin.P5, 0);
                 }
                 // Blink the display
                 if (millis() - lastTime >= 1000) {
@@ -192,29 +195,36 @@ namespace tegneRobot {
 
 
         while (draw.isDrawing) {
-            
-            if (draw.pulseHigh) {
-                draw.previousTime = micros();
-                draw.pulseHigh = !draw.pulseHigh; // Flips logic.
-                pinStates.stepperX = 0;
-                pinStates.stepperY = 0;
-                stepSteppers();
-            }
-            else {
-                draw.previousTime = micros();
+            if (micros() - draw.previousTime >= draw.pulseInterval) {
+                if (draw.pulseHigh) {
+                    draw.previousTime = micros();
+                    draw.pulseHigh = !draw.pulseHigh; // Flips logic.
+                    pinStates.stepperX = 0;
+                    pinStates.stepperY = 0;
+                    stepSteppers();
+                }
+                else {
+                    draw.previousTime = micros();
 
-                // Turns puls on or off. NB! Only 1 pulse/pixel.
-                pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
-                pinStates.stepperY = Math.abs(draw.nextYStep);
-                draw.pulseHigh = !draw.pulseHigh; // flips logic
-                stepSteppers();
+                    // Turns puls on or off. NB! Only 1 pulse/pixel.
+                    pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
+                    pinStates.stepperY = Math.abs(draw.nextYStep);
+                    draw.pulseHigh = !draw.pulseHigh; // flips logic
+                    draw.pulseCount += 1;   // Counts to N pulses to do checks of buttons and sensors.
+                    stepSteppers();
 
-                // Calculate next step while we wait for next update.
-                draw.isDrawing = runBresenham();
+                    // Calculate next step while we wait for next update.
+                    draw.isDrawing = runBresenham();
+                }
+                //control.waitMicros(draw.pulseInterval);
+                // TODO: Read different pins for inputs like A,B-buttons, accelerometer for emergency stop.
+                // readDrawingBotSensors();
+                if (draw.pulseCount == 15) {
+                    draw.pulseCount = 0;
+                    checkButtonStates();
+                    buttonsLogic();
+                }
             }
-            control.waitMicros(draw.pulseInterval);
-            // TODO: Read different pins for inputs like A,B-buttons, accelerometer for emergency stop.
-            // readDrawingBotSensors();
             
 
         } // END while (isDrawing)
@@ -274,6 +284,38 @@ namespace tegneRobot {
     }
     export function serialLog(text: string) {
         serial.writeLine(text);
+    }
+
+    //% block="Read buttons states"
+    export function checkButtonStates() {
+        draw.isCheckingButtons = true;
+        pinStates.btnA = pins.digitalReadPin(DigitalPin.P5);
+        pinStates.btnB = pins.digitalReadPin(DigitalPin.P11);
+    }
+
+    function buttonsLogic() {
+        if (pinStates.btnA === 1 && pinStates.btnB === 1 && draw.isCheckingButtons) {
+            // PAUSE drawing
+            // TODO: Debounce!
+            pinStates.btnA = 0;
+            pinStates.btnB = 0;
+            startDrawing();
+        }
+        else if (pinStates.btnA === 1) {
+            draw.pulseInterval += 100;
+            if (draw.pulseInterval >= 2000) {
+                draw.pulseInterval = 2000;
+            }
+        }
+        else if (pinStates.btnB === 1) {
+            draw.pulseInterval -= 100;
+            if (draw.pulseInterval <= 200) {
+                draw.pulseInterval = 200;
+            }
+        }
+        else {
+            draw.isCheckingButtons = false;
+        }
     }
 
     //% blockId="setI2CPins" block="set i2c data to %sdaPin and clock to %sclPin|"
