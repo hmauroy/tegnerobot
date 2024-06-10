@@ -21,9 +21,15 @@ namespace tegneRobot {
 
     let pca_register = 0;
 
+    /*
+    * xCalibration is calculated from length of 5000 steps along x-axis.
+    * yCalibration is calculated from length of 5000 steps along y-axis.
+    */
     const machine = {
         currentPosition: { x: 0, y: 0 },
         direction: { x: 1, y: 1 },
+        xCalibration: Math.ceil(5000 / 64.6),
+        yCalibration: Math.ceil(5000 / 62.0),
     };
 
     const pinStates = {
@@ -150,9 +156,8 @@ namespace tegneRobot {
     //% xPosition.min=0 yPosition.min=0
     //% xPosition.fieldOptions.precision=1 yPosition.fieldOptions.precision=1 
     export function moveHeadToMM(xPosition: number, yPosition: number) {
-        const stepsPerMM = Math.ceil(5000 / 62.0);
-        let x = xPosition * stepsPerMM;
-        let y = yPosition * stepsPerMM;
+        let x = xPosition * machine.xCalibration;
+        let y = yPosition * machine.yCalibration;
         moveHeadTo(x,y);
     }
 
@@ -317,6 +322,7 @@ namespace tegneRobot {
             draw.isCheckingButtons = false;
         }
     }
+
 
     //% blockId="setI2CPins" block="set i2c data to %sdaPin and clock to %sclPin|"
     //% shim=i2crr::setI2CPins
@@ -493,14 +499,13 @@ namespace tegneRobot {
     //% block="Square|upper left Xpos %xPosition|upper left Ypos %yPosition| length of side %lengthOfSide| rotation %rotation |penLifted %lift" blockGap=8
     //% xPosition.min=0 yPosition.min=0 lengthOfSide.defl=10 lift.defl=true
     export function square(xPosition: number, yPosition: number, lengthOfSide: number, rotation: number = 0, lift = true): void {
-        const stepsPerMM = Math.ceil(5000 / 62.0);
-        const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
-        const size = lengthOfSide * stepsPerMM;
+        const origin = { x: xPosition * machine.xCalibration, y: yPosition * machine.yCalibration };
+        const size = { x: lengthOfSide * machine.xCalibration, y: lengthOfSide * machine.yCalibration }
         moveHeadTo(origin.x, origin.y);
         lowerPen();
-        moveHeadTo(origin.x + size, origin.y);
-        moveHeadTo(origin.x + size, origin.y + size);
-        moveHeadTo(origin.x, origin.y + size);
+        moveHeadTo(origin.x + size.x, origin.y);
+        moveHeadTo(origin.x + size.x, origin.y + size.y);
+        moveHeadTo(origin.x, origin.y + size.y);
         moveHeadTo(origin.x, origin.y);
         if (lift) {
             liftPen();
@@ -519,10 +524,9 @@ namespace tegneRobot {
     //% block="Rectangle|upper left Xpos %xPosition|upper left Ypos %yPosition| length %length| height %height| rotation %rotation |penLifted %lift" blockGap=8
     //% xPosition.min=0 yPosition.min=0 length.defl=20 height.defl=10 lift.defl=true
     export function rectangle(xPosition: number, yPosition: number, length: number, height: number, rotation: number = 0, lift = true): void {
-        const stepsPerMM = Math.ceil(5000 / 62.0);
-        const origin = { x: xPosition * stepsPerMM, y: yPosition * stepsPerMM };
-        const l = length * stepsPerMM;
-        const h = height * stepsPerMM;
+        const origin = { x: xPosition * machine.xCalibration, y: yPosition * machine.yCalibration };
+        const l = length * machine.xCalibration;
+        const h = height * machine.yCalibration;
         moveHeadTo(origin.x, origin.y);
         lowerPen();
         moveHeadTo(origin.x + l, origin.y);
@@ -549,15 +553,15 @@ namespace tegneRobot {
     //% x.min=0 x.max=120 y.min=0 y.max=100 r.min=3 r.max=50
     //% x.fieldOptions.precision=1 y.fieldOptions.precision=1 r.defl=3 lift.defl=true
     export function circle(centerX: number, centerY: number, r: number, lift = true): void {
-        const stepsPerMM = Math.ceil(5000 / 62.0);
-        const origin = { x: centerX * stepsPerMM, y: centerY * stepsPerMM };
+        const origin = { x: centerX * machine.xCalibration, y: centerY * machine.yCalibration };
         const segment_length = 2;
         const n_segments = (2 * Math.PI * r) / segment_length;
         const n = Math.ceil(n_segments);
         const d_theta = 2 * Math.PI / n;
         let theta = 0;
 
-        const radius = Math.ceil(r * stepsPerMM);
+        // Radius uses average of the calibration. Have not come up with any better way.
+        const radius = Math.ceil(r * (machine.xCalibration + machine.yCalibration)/2);
         let x0 = origin.x + radius;
         let y0 = origin.y
         moveHeadTo(x0, y0);
@@ -592,14 +596,13 @@ namespace tegneRobot {
     //% x1.min=0, x2.min=0, x3.min=0, y1.min=0 y2.min=0 y3.min=0 lift.defl=true
     export function triangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, rotation: number = 0, lift = true): void {
         showStatusIcon();
-        const stepsPerMM = Math.ceil(5000 / 62.0);
         const positions = { 
-            x1: x1 * stepsPerMM, 
-            y1: y1 * stepsPerMM,
-            x2: x2 * stepsPerMM,
-            y2: y2 * stepsPerMM,
-            x3: x3 * stepsPerMM,
-            y3: y3 * stepsPerMM
+            x1: x1 * machine.xCalibration, 
+            y1: y1 * machine.yCalibration,
+            x2: x2 * machine.xCalibration,
+            y2: y2 * machine.yCalibration,
+            x3: x3 * machine.xCalibration,
+            y3: y3 * machine.yCalibration
             };
         moveHeadTo(positions.x1, positions.y1);
         lowerPen();
@@ -631,7 +634,6 @@ namespace tegneRobot {
     //% block="SVGArr|SVG Array %svgArr |penLifted %lift" blockGap=8
     export function svg2(svgArr: SvgArray, lift = true): void {
         serialLog("Draws SVG");
-        const stepsPerMM = 5000 / 62.0;
         // Run through array
         let lastCoordinates: SvgElement[] = [];
         let coordinates: SvgElement[] = [];
@@ -644,8 +646,8 @@ namespace tegneRobot {
                     // Absolute move
                     serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
 
-                    let x = svgArr[i][j + 1] * stepsPerMM;
-                    let y = svgArr[i][j + 2] * stepsPerMM;
+                    let x = svgArr[i][j + 1] * machine.xCalibration;
+                    let y = svgArr[i][j + 2] * machine.yCalibration;
                     liftPen();
                     moveHeadTo(x,y);
                     lowerPen();
@@ -696,8 +698,8 @@ namespace tegneRobot {
                         let x = a * x0 + b * x1 + c * x2 + d * x3;
                         let y = a * y0 + b * y1 + c * y2 + d * y3;
 
-                        x = x * stepsPerMM;
-                        y = y * stepsPerMM;
+                        x = x * machine.xCalibration;
+                        y = y * machine.yCalibration;
 
                         //serialLog("" + x + "," + y);
                         //drawCoords.push([x, y]);
@@ -725,13 +727,13 @@ namespace tegneRobot {
                     serial.writeLine("");
                     // Move to start of L(ine)
                     //liftPen();
-                    let x = svgArr[i][j + 1] * stepsPerMM;
-                    let y = svgArr[i][j + 2] * stepsPerMM;
+                    let x = svgArr[i][j + 1] * machine.xCalibration;
+                    let y = svgArr[i][j + 2] * machine.yCalibration;
                     moveHeadTo(x,y);
                     // Draw the L(ine)
                     //lowerPen();
-                    x = svgArr[i][j + 1] * stepsPerMM;
-                    y = svgArr[i][j + 2] * stepsPerMM;
+                    x = svgArr[i][j + 1] * machine.xCalibration;
+                    y = svgArr[i][j + 2] * machine.yCalibration;
                     moveHeadTo(x, y);
                     
                     lastCoordinates = [svgArr[i][j + 3], svgArr[i][j + 4]];
@@ -758,7 +760,6 @@ namespace tegneRobot {
     */
     //% block="SVG|SVG string %svgString |penLifted %lift" blockGap=8
     export function svg(svgString: string, lift = true): void {
-        const stepsPerMM = 5000 / 62.0;
         let svgArr: (any | (string | number))[][] = JSON.parse(svgString);
         // Run through array
         let lastCoordinates: number[] = [];
@@ -773,8 +774,8 @@ namespace tegneRobot {
                     //serialLog("M " + svgArr[i][j + 1] + "," + svgArr[i][j+2]);
                     lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
                     coordinates = [];
-                    let x = svgArr[i][j + 1] * stepsPerMM;
-                    let y = svgArr[i][j + 2] * stepsPerMM;
+                    let x = svgArr[i][j + 1] * machine.xCalibration;
+                    let y = svgArr[i][j + 2] * machine.yCalibration;
                     liftPen();
                     moveHeadTo(x, y);
                     lowerPen();
@@ -822,15 +823,15 @@ namespace tegneRobot {
                         let x = a * x0 + b * x1 + c * x2 + d * x3;
                         let y = a * y0 + b * y1 + c * y2 + d * y3;
 
-                        x = x * stepsPerMM;
-                        y = y * stepsPerMM;
+                        x = x * machine.xCalibration;
+                        y = y * machine.yCalibration;
 
                         //serialLog("" + x + "," + y);
                         //drawCoords.push([x, y]);
                         moveHeadTo(x, y);
 
                         serialLog("" + x + "," + y);
-                        //drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
+                        //drawCoords.push([x * machine.xCalibration, y * machine.yCalibration]);
                     }
 
                     /*
@@ -877,7 +878,6 @@ namespace tegneRobot {
     //% block="SVG (SD-card) |penLifted %lift" blockGap=8
     //% lift.defl=true
     export function svgSdCard(lift = true): void {
-        const stepsPerMM = 5000 / 62.0;
         let lastCoordinates: number[] = [];
         let coordinates: number[] = [];
         let n_segments = 1;
@@ -917,8 +917,8 @@ namespace tegneRobot {
 
                 serialLog("M " + x + "," + y);
 
-                x = x * stepsPerMM;
-                y = y * stepsPerMM;
+                x = x * machine.xCalibration;
+                y = y * machine.yCalibration;
                 liftPen();
                 moveHeadTo(x, y);
                 lowerPen();
@@ -958,15 +958,15 @@ namespace tegneRobot {
                     let x = a * x0 + b * x1 + c * x2 + d * x3;
                     let y = a * y0 + b * y1 + c * y2 + d * y3;
 
-                    x = x * stepsPerMM;
-                    y = y * stepsPerMM;
+                    x = x * machine.xCalibration;
+                    y = y * machine.yCalibration;
 
                     //serialLog("" + x + "," + y);
                     //drawCoords.push([x, y]);
                     moveHeadTo(x, y);
 
                     //serialLog("" + x + "," + y);
-                    //drawCoords.push([x * stepsPerMM, y * stepsPerMM]);
+                    //drawCoords.push([x * machine.xCalibration, y * machine.yCalibration]);
                 }
 
                 serialLog("C " + x0 + "," + y0 + "," + x1 + "," + y1 + "," + x2 + "," + y2 + "," + x3 + "," + y3);
@@ -976,13 +976,13 @@ namespace tegneRobot {
                 // Handle L(ine) command.
                 // Move to start of L(ine)
                 //liftPen();
-                let x = parseFloat(parts[1]) * stepsPerMM;
-                let y = parseFloat(parts[2]) * stepsPerMM;
+                let x = parseFloat(parts[1]) * machine.xCalibration;
+                let y = parseFloat(parts[2]) * machine.yCalibration;
                 moveHeadTo(x, y);
                 // Draw the L(ine)
                 //lowerPen();
-                x = parseFloat(parts[3]) * stepsPerMM;
-                y = parseFloat(parts[4])* stepsPerMM;
+                x = parseFloat(parts[3]) * machine.xCalibration;
+                y = parseFloat(parts[4]) * machine.yCalibration;
                 moveHeadTo(x, y);
                 serialLog("L " + parseFloat(parts[1]) + "," + parseFloat(parts[2]) + "," + parseFloat(parts[3]) + "," + parseFloat(parts[4]));
 
