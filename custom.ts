@@ -43,7 +43,7 @@ namespace tegneRobot {
     };
 
     export const draw = {
-        pulseInterval: 400,
+        pulseInterval: 500,
         penDown: false,
         isDrawing: true,
         targetPoint: { x: 0, y: 0 },
@@ -53,6 +53,8 @@ namespace tegneRobot {
         nextXStep: 0,
         nextYStep: 0,
         isCheckingButtons: false,
+        buttonsCheckCnt: 0,
+        speed: 5,
     };
 
     export const bresenham = {
@@ -90,7 +92,7 @@ namespace tegneRobot {
         // Sets button B to HIGH
         pins.digitalWritePin(DigitalPin.P11, 1);
         // Initialize PCA9557
-        i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
+        //i2crr.setI2CPins(DigitalPin.P1, DigitalPin.P2)
         basic.showLeds(`
         . . # . .
         . . . # .
@@ -107,6 +109,9 @@ namespace tegneRobot {
                     // Turn OFF button B as debounce.
                     pins.digitalWritePin(DigitalPin.P11, pinStates.btnB);
                     */
+                    // Resets buttons states.
+                    pinStates.btnB = 1;
+                    pins.digitalWritePin(DigitalPin.P11, pinStates.btnB);
                     // Turn ON A-button setting it HIGH. Will now be used to lower speed.
                     pinStates.btnA = 1;
                     pins.digitalWritePin(DigitalPin.P5, pinStates.btnA);
@@ -202,6 +207,7 @@ namespace tegneRobot {
         while (draw.isDrawing) {
             if (micros() - draw.previousTime >= draw.pulseInterval) {
                 if (draw.pulseHigh) {
+                    //basic.showNumber(0);
                     draw.previousTime = micros();
                     draw.pulseHigh = !draw.pulseHigh; // Flips logic.
                     pinStates.stepperX = 0;
@@ -210,6 +216,7 @@ namespace tegneRobot {
                 }
                 else {
                     draw.previousTime = micros();
+                    //basic.showNumber(1);
 
                     // Turns puls on or off. NB! Only 1 pulse/pixel.
                     pinStates.stepperX = Math.abs(draw.nextXStep); // Absolute value because nextXStep can be +1/-1 or 0.
@@ -293,34 +300,60 @@ namespace tegneRobot {
 
     //% block="Read buttons states"
     export function checkButtonStates() {
-        draw.isCheckingButtons = true;
-        pinStates.btnA = pins.digitalReadPin(DigitalPin.P5);
-        pinStates.btnB = pins.digitalReadPin(DigitalPin.P11);
+        draw.buttonsCheckCnt += 1;
+        // Debounce buttons every 625 check of buttons state to prevent multiple clicks.
+        if (draw.buttonsCheckCnt <= 625) {
+            draw.isCheckingButtons = false;
+            draw.buttonsCheckCnt = 0;
+        }
+        // Debounce if buttons are already being checked.
+        if (!draw.isCheckingButtons) {
+            draw.isCheckingButtons = true;
+            pinStates.btnA = pins.digitalReadPin(DigitalPin.P5);
+            pinStates.btnB = pins.digitalReadPin(DigitalPin.P11);
+            // Lifts the buttons up to HIGH. Seems like buttons are latching in locked state???
+            pins.digitalWritePin(DigitalPin.P11, 1);
+            pins.digitalWritePin(DigitalPin.P5, 1);
+        }
+        
     }
 
     function buttonsLogic() {
-        if (pinStates.btnA === 1 && pinStates.btnB === 1 && draw.isCheckingButtons) {
-            // PAUSE drawing
-            // TODO: Debounce!
-            pinStates.btnA = 0;
-            pinStates.btnB = 0;
-            startDrawing();
-        }
-        else if (pinStates.btnA === 1) {
-            draw.pulseInterval += 100;
-            if (draw.pulseInterval >= 2000) {
-                draw.pulseInterval = 2000;
+        if (draw.isCheckingButtons) {
+            if (pinStates.btnA === 0 && pinStates.btnB === 0) {
+                // PAUSE drawing
+                startDrawing();
             }
-        }
-        else if (pinStates.btnB === 1) {
-            draw.pulseInterval -= 100;
-            if (draw.pulseInterval <= 200) {
-                draw.pulseInterval = 200;
+            else if (pinStates.btnA === 0) {
+                draw.pulseInterval += 100;
+                draw.speed -= 1;
+                if (draw.speed <= 0) {
+                    draw.speed = 0;
+                }
+                serialLog("" + pinStates.btnA + "," + pinStates.btnB);
+                basic.showNumber(draw.speed);
+                //basic.showNumber(draw.speed);
+                if (draw.pulseInterval >= 2000) {
+                    draw.pulseInterval = 2000;
+                }
             }
+            else if (pinStates.btnB === 0) {
+                draw.pulseInterval -= 100;
+                draw.speed += 1;
+                if (draw.speed >= 9) {
+                    draw.speed = 9;
+                }
+                serialLog("" + pinStates.btnA + "," + pinStates.btnB);
+                basic.showNumber(draw.speed);
+                if (draw.pulseInterval <= 200) {
+                    draw.pulseInterval = 200;
+                }
+            }
+
         }
-        else {
-            draw.isCheckingButtons = false;
-        }
+        // Resets button states.
+        pinStates.btnA = 1;
+        pinStates.btnB = 1;
     }
 
 
