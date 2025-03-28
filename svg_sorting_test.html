@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG sorter</title>
+    <style>
+      textarea {
+        width: 80vw; /* 80% of viewport width */
+        height: 40vh; /* 40% of viewport height */
+        display: block; /* Ensure it's a block-level element */
+        margin: 20px auto; /* Add some margin for spacing */
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Bezier Curve Sorter</h2>
+    <textarea
+      id="inputData"
+      placeholder="Enter SVG-like Bezier path data"
+    ></textarea>
+    <br />
+    <button id="sortBtn">Sort</button>
+    <div id="resultDiv"></div>
+    <script>
+      // Fetch data and process it
+      document.addEventListener("DOMContentLoaded", function () {
+        const textarea = document.getElementById("inputData");
+        const sortButton = document.getElementById("sortBtn");
+        const resultDiv = document.getElementById("resultDiv"); // Container to display the sorted text
+
+        sortButton.addEventListener("click", function () {
+          const text = textarea.value;
+          if (text.trim() === "") {
+            alert("Please enter some text in the textarea.");
+            return;
+          }
+
+          resultDiv.innerHTML = sortSvgCurves(textarea.value);
+        });
+      });
+    </script>
+    <script src="svg_sorting.js"></script>
+  </body>
+</html>

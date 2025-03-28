@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Optimized Even-Odd Rule with SVG Paths</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      svg {
+        border: 1px solid black;
+        background: #f9f9f9;
+      }
+      .scanline {
+        stroke: red;
+        stroke-width: 1;
+        opacity: 0.6;
+      }
+      .crossing {
+        fill: blue;
+        stroke: black;
+        stroke-width: 1;
+      }
+      .filled {
+        fill: rgba(0, 255, 0, 0.3);
+        stroke: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Optimized Even-Odd Rule Scanline Animation</h2>
+    <p>Enhanced scanline algorithm using browser-inspired optimizations.</p>
+
+    <svg id="canvas" width="500" height="500" viewBox="0 0 500 500">
+      <path
+        id="path-shape"
+        d="M100,100 L400,150 L350,400 L150,350 Z 
+           M180,180 L370,200 L320,350 L180,320 Z"
+        fill="black"
+        fill-rule="evenodd"
+        stroke="black"
+        stroke-width="3"
+      />
+    </svg>
+    <br />
+    <button onclick="startAnimation()">Start Animation</button>
+
+    <script>
+      const pathElement = document.getElementById("path-shape");
+      const svg = document.getElementById("canvas");
+
+      // Precompute path segments for efficiency (inspired by browser path caching)
+      const pathSegments = precomputePathSegments();
+
+      function startAnimation() {
+        let y = 90;
+        let interval = setInterval(() => {
+          if (y > 410) {
+            clearInterval(interval);
+            return;
+          }
+          drawScanline(y);
+          y += 10;
+        }, 200);
+      }
+
+      // Precompute path segments to avoid redundant calculations
+      function precomputePathSegments() {
+        const segments = [];
+        const pathData = pathElement
+          .getAttribute("d")
+          .split(/[\s,]+/)
+          .join(" ");
+        let commands = pathData.match(/[MLZ][^MLZ]*/g) || [];
+        let currentPoint = { x: 0, y: 0 };
+        let startPoint = null;
+
+        commands.forEach((cmd) => {
+          const type = cmd[0];
+          const coords = cmd.slice(1).trim().split(/\s+/).map(Number);
+
+          if (type === "M") {
+            currentPoint = { x: coords[0], y: coords[1] };
+            startPoint = { ...currentPoint };
+          } else if (type === "L") {
+            const nextPoint = { x: coords[0], y: coords[1] };
+            segments.push({ start: { ...currentPoint }, end: nextPoint });
+            currentPoint = nextPoint;
+          } else if (type === "Z") {
+            segments.push({ start: { ...currentPoint }, end: startPoint });
+            currentPoint = startPoint;
+          }
+        });
+
+        return segments;
+      }
+
+      function drawScanline(y) {
+        // Draw the scanline across the SVG
+        const scanline = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line"
+        );
+        scanline.setAttribute("x1", 50);
+        scanline.setAttribute("x2", 450);
+        scanline.setAttribute("y1", y);
+        scanline.setAttribute("y2", y);
+        scanline.setAttribute("class", "scanline");
+        svg.appendChild(scanline);
+
+        // Get intersections using optimized segment-based approach
+        const intersections = getPathIntersections(y);
+        intersections.sort((a, b) => a - b);
+
+        // Visualize intersection points
+        intersections.forEach((x) => {
+          const circle = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+          );
+          circle.setAttribute("cx", x);
+          circle.setAttribute("cy", y);
+          circle.setAttribute("r", "5");
+          circle.setAttribute("class", "crossing");
+          svg.appendChild(circle);
+        });
+
+        // Apply even-odd rule efficiently
+        for (let i = 0; i < intersections.length; i += 2) {
+          if (i + 1 < intersections.length) {
+            const rect = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "rect"
+            );
+            rect.setAttribute("x", intersections[i]);
+            rect.setAttribute("y", y - 5);
+            rect.setAttribute("width", intersections[i + 1] - intersections[i]);
+            rect.setAttribute("height", 10);
+            rect.setAttribute("class", "filled");
+            svg.appendChild(rect);
+          }
+        }
+      }
+
+      // Optimized intersection detection using precomputed segments
+      function getPathIntersections(y) {
+        const crossings = [];
+
+        pathSegments.forEach((segment) => {
+          const { start, end } = segment;
+
+          // Check if the scanline crosses this segment
+          if ((start.y <= y && end.y > y) || (start.y > y && end.y <= y)) {
+            // Calculate intersection point using linear interpolation
+            const t = (y - start.y) / (end.y - start.y);
+            const xIntersect = start.x + t * (end.x - start.x);
+
+            // Filter out edge cases where intersection is at segment endpoint
+            if (t > 0 && t < 1) {
+              crossings.push(xIntersect);
+            } else if (t === 0 || t === 1) {
+              // Handle endpoint intersections carefully to avoid duplicates
+              const isTopEndpoint =
+                (t === 0 && start.y < end.y) || (t === 1 && end.y < start.y);
+              if (isTopEndpoint) crossings.push(xIntersect);
+            }
+          }
+        });
+
+        return crossings;
+      }
+    </script>
+  </body>
+</html>

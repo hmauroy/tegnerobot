@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bezier Curve Plotter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+      }
+      textarea {
+        width: 80%;
+        height: 100px;
+      }
+      canvas {
+        border: 1px solid black;
+        margin-top: 10px;
+      }
+      #legend {
+        margin-top: 10px;
+        text-align: left;
+        display: inline-block;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 2px 0;
+      }
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Bezier Curve Plotter</h2>
+    <textarea
+      id="inputData"
+      placeholder="Enter SVG-like Bezier path data"
+    ></textarea>
+    <br />
+    <button onclick="drawPaths()">Draw</button>
+    <br />
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div id="legend"></div>
+
+    <script>
+      function generateColorPalette() {
+        const colorPalette = [];
+        const intensity = 50; // Set a fixed intensity for all colors
+
+        for (let i = 0; i < 60; i++) {
+          let hue = (i * 6) % 360; // Change the hue by 6 degrees per step
+          let complementaryHue = (hue + 180) % 360; // Get the complementary hue
+
+          // Create colors in HSL format with fixed intensity
+          let color1 = `hsl(${hue}, 100%, ${intensity}%)`;
+          let color2 = `hsl(${complementaryHue}, 100%, ${intensity}%)`;
+
+          colorPalette.push(color1, color2);
+        }
+        return colorPalette;
+      }
+
+      const colorPalette = generateColorPalette();
+      let colorIndex = 0;
+
+      function getRandomColor() {
+        let color = colorPalette[colorIndex % colorPalette.length];
+        colorIndex++;
+        return color;
+      }
+
+      function normalizePaths(paths, width, height) {
+        let minX = Infinity,
+          minY = Infinity,
+          maxX = -Infinity,
+          maxY = -Infinity;
+
+        paths.forEach((path) => {
+          for (let i = 1; i < path.length; i++) {
+            if (
+              typeof path[i] === "number" &&
+              typeof path[i + 1] === "number"
+            ) {
+              minX = Math.min(minX, path[i]);
+              minY = Math.min(minY, path[i + 1]);
+              maxX = Math.max(maxX, path[i]);
+              maxY = Math.max(maxY, path[i + 1]);
+            }
+          }
+        });
+
+        const scaleX = width / (maxX - minX);
+        const scaleY = height / (maxY - minY);
+        const scale = Math.min(scaleX, scaleY);
+
+        return paths.map((path) => {
+          let newPath = [];
+          for (let i = 0; i < path.length; i++) {
+            if (typeof path[i] === "string") {
+              newPath.push(path[i]);
+            } else {
+              newPath.push((path[i] - minX) * scale);
+            }
+          }
+          return newPath;
+        });
+      }
+
+      function drawPaths() {
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const legend = document.getElementById("legend");
+        legend.innerHTML = "";
+
+        const input = document.getElementById("inputData").value;
+        let paths;
+        try {
+          paths = JSON.parse(input);
+        } catch (e) {
+          alert("Invalid JSON input");
+          return;
+        }
+
+        // Merges the paths with matching start and end points for the former curve.
+        function mergeBezierCurves(pathData) {
+          // Parse the input path data into individual curve segments
+          const segments = parseSVGPathData(pathData);
+          const mergedSegments = [];
+
+          for (let i = 0; i < segments.length; i++) {
+            if (i === 0) {
+              // Always add the first segment
+              mergedSegments.push(segments[i]);
+              continue;
+            }
+
+            const prevSegment = mergedSegments[mergedSegments.length - 1];
+            const currentSegment = segments[i];
+
+            // Check if curves can be merged (same start/end coordinates)
+            if (canMergeCurves(prevSegment, currentSegment)) {
+              // Merge the curves
+              const mergedCurve = mergeCurves(prevSegment, currentSegment);
+              // Replace the last segment with the merged curve
+              mergedSegments[mergedSegments.length - 1] = mergedCurve;
+            } else {
+              // If curves can't be merged, add the current segment
+              mergedSegments.push(currentSegment);
+            }
+          }
+
+          // Convert merged segments back to path data
+          return constructPathData(mergedSegments);
+        }
+
+        function parseSVGPathData(pathData) {
+          const segments = [];
+          const regex = /([MLCQAZ])([^MLCQAZ]*)/gi;
+          let match;
+
+          while ((match = regex.exec(pathData)) !== null) {
+            const command = match[1];
+            const params = match[2].trim().split(/\s+/).map(parseFloat);
+
+            segments.push({
+              type: command,
+              params: params,
+            });
+          }
+
+          return segments;
+        }
+
+        function canMergeCurves(segment1, segment2) {
+          // Only merge cubic curves (C command)
+          if (segment1.type !== "C" || segment2.type !== "C") return false;
+
+          // Check if the end of the first curve matches the start of the second curve
+          const curve1End = {
+            x: segment1.params[4],
+            y: segment1.params[5],
+          };
+
+          const curve2Start = {
+            x: segment2.params[0],
+            y: segment2.params[1],
+          };
+
+          // Allow small floating-point imprecisions
+          return (
+            Math.abs(curve1End.x - curve2Start.x) < 1e-6 &&
+            Math.abs(curve1End.y - curve2Start.y) < 1e-6
+          );
+        }
+
+        function mergeCurves(segment1, segment2) {
+          // Merge two cubic Bézier curves
+          const c1x1 = segment1.params[0];
+          const c1y1 = segment1.params[1];
+          const c1x2 = segment1.params[2];
+          const c1y2 = segment1.params[3];
+          const x1 = segment1.params[4];
+          const y1 = segment1.params[5];
+
+          const c2x1 = segment2.params[0];
+          const c2y1 = segment2.params[1];
+          const c2x2 = segment2.params[2];
+          const c2y2 = segment2.params[3];
+          const x2 = segment2.params[4];
+          const y2 = segment2.params[5];
+
+          // Create a new merged curve segment
+          return {
+            type: "C",
+            params: [c1x1, c1y1, c2x2, c2y2, x2, y2],
+          };
+        }
+
+        function constructPathData(segments) {
+          return segments
+            .map((segment) => segment.type + segment.params.join(" "))
+            .join("");
+        }
+
+        // Example usage:
+        const inputPath =
+          "M18.1 0.3 C18.1 0.5 18.2 1.1 18.3 1.6 C18.4 2.1 18.5 3 18.6 3.5 C18.7 4 18.7 4.5 18.7 4.6";
+        const mergedPath = mergeBezierCurves(inputPath);
+        console.log(mergedPath);
+
+        paths = normalizePaths(paths, canvas.width, canvas.height);
+
+        paths.forEach((path, index) => {
+          let color = getRandomColor();
+          ctx.strokeStyle = color;
+          ctx.beginPath();
+          for (let i = 0; i < path.length; i++) {
+            const cmd = path[i];
+            if (cmd === "M") {
+              ctx.moveTo(path[i + 1], path[i + 2]);
+              i += 2;
+            } else if (cmd === "C") {
+              ctx.bezierCurveTo(
+                path[i + 1],
+                path[i + 2],
+                path[i + 3],
+                path[i + 4],
+                path[i + 5],
+                path[i + 6]
+              );
+              i += 6;
+            } else if (cmd === "L") {
+              ctx.lineTo(path[i + 1], path[i + 2]);
+              i += 2;
+            }
+          }
+          ctx.stroke();
+
+          // Add legend item
+          let legendItem = document.createElement("div");
+          legendItem.classList.add("legend-item");
+          legendItem.innerHTML = `<div class='legend-color' style='background:${color};'></div> Path ${
+            index + 1
+          }`;
+          legend.appendChild(legendItem);
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG Path Parser and Filling Demo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      .canvas-container {
+        border: 1px solid #ccc;
+        margin: 20px 0;
+      }
+      canvas {
+        display: block;
+        background: #f9f9f9;
+      }
+      .button-group {
+        margin: 15px 0;
+      }
+      button {
+        padding: 8px 16px;
+        margin-right: 10px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      .explanation {
+        background: #f5f5f5;
+        padding: 15px;
+        border-left: 4px solid #4caf50;
+      }
+      #benchmarkResult {
+        font-weight: bold;
+        margin-top: 10px;
+        color: #333;
+      }
+      select {
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SVG Path Parser and Filling Demo</h1>
+    <div class="explanation">
+      <p>
+        This demo demonstrates the SVG Path Parser that converts SVG path
+        commands into flattened point arrays that can be filled using an
+        efficient path filling algorithm. The parser supports:
+      </p>
+      <ul>
+        <li><strong>M/m:</strong> Move to (absolute/relative)</li>
+        <li><strong>L/l:</strong> Line to (absolute/relative)</li>
+        <li><strong>C/c:</strong> Cubic Bézier curves (absolute/relative)</li>
+        <li><strong>Z/z:</strong> Close path</li>
+      </ul>
+      <p>
+        The parser flattens complex shapes including curves into simple point
+        arrays that can be efficiently filled using scanline algorithms.
+      </p>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="fillCanvas" width="700" height="600"></canvas>
+    </div>
+
+    <div class="button-group">
+      <select id="pathSelect">
+        <option value="simple">Simple Star & Pentagon</option>
+        <option value="complex">Complex SVG Path</option>
+      </select>
+      <button id="startBtn">Start Animation</button>
+      <button id="fillOnlyBtn">Fill Only (No Animation)</button>
+      <button id="benchmarkBtn">Run Benchmark</button>
+    </div>
+
+    <div id="benchmarkResult"></div>
+
+    <div class="explanation">
+      <h3>How It Works</h3>
+      <p>The SVG Path Parser:</p>
+      <ol>
+        <li>Parses SVG path commands into a sequence of points</li>
+        <li>Flattens cubic Bézier curves using adaptive subdivision</li>
+        <li>Handles multiple subpaths and closed paths</li>
+        <li>Produces point arrays compatible with the filling algorithm</li>
+      </ol>
+      <p>The filling algorithm then:</p>
+      <ol>
+        <li>Processes the points using an Active Edge Table (AET)</li>
+        <li>Fills between intersection points using the even-odd rule</li>
+        <li>Efficiently renders complex shapes with holes</li>
+      </ol>
+      <p>
+        Try switching between the simple pentagon/star example and the more
+        complex SVG path to see how the parser handles different shapes.
+      </p>
+    </div>
+
+    <!-- Reference to the efficient path filling algorithm -->
+    <script src="efficient-path-filling-combined_incomplete.js"></script>
+
+    <!-- Initialize the demo -->
+    <script>
+      // Wait for DOM to be fully loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if required classes are loaded
+        if (
+          typeof SVGPathParser === "undefined" ||
+          typeof PathFiller === "undefined"
+        ) {
+          alert("Required script files are missing or not loaded correctly.");
+          return;
+        }
+
+        // Initialize the demo
+        initDemo();
+      });
+    </script>
+  </body>
+</html>

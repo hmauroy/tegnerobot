@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Efficient Path Filling Algorithm</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      .canvas-container {
+        border: 1px solid #ccc;
+        margin: 20px 0;
+      }
+      canvas {
+        display: block;
+        background: #f9f9f9;
+      }
+      .button-group {
+        margin: 15px 0;
+      }
+      button {
+        padding: 8px 16px;
+        margin-right: 10px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      .explanation {
+        background: #f5f5f5;
+        padding: 15px;
+        border-left: 4px solid #4caf50;
+      }
+      #benchmarkResult {
+        font-weight: bold;
+        margin-top: 10px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Efficient Path Filling Algorithm Demo</h1>
+    <div class="explanation">
+      <p>
+        This demo shows an efficient implementation of the even-odd fill rule
+        for SVG paths, using techniques similar to those in browser rendering
+        engines:
+      </p>
+      <ul>
+        <li>
+          <strong>Active Edge Table (AET):</strong> Tracks only edges that cross
+          the current scanline
+        </li>
+        <li>
+          <strong>Edge Buckets:</strong> Pre-sorts edges by their starting
+          Y-coordinate
+        </li>
+        <li>
+          <strong>Analytical Intersection:</strong> Calculates exact
+          intersection points mathematically
+        </li>
+        <li>
+          <strong>Scanline Algorithm:</strong> Processes the image line by line
+          with optimal data structures
+        </li>
+      </ul>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="fillCanvas" width="500" height="400"></canvas>
+    </div>
+
+    <div class="button-group">
+      <button id="startBtn">Start Animation</button>
+      <button id="fillOnlyBtn">Fill Only (No Animation)</button>
+      <button id="benchmarkBtn">Run Benchmark</button>
+    </div>
+
+    <div id="benchmarkResult"></div>
+
+    <div class="explanation">
+      <h3>How It Works</h3>
+      <p>For each horizontal scanline from top to bottom:</p>
+      <ol>
+        <li>
+          Add new edges that start at this scanline height (from edge buckets)
+        </li>
+        <li>Remove edges that end before this scanline</li>
+        <li>
+          Calculate x-coordinates where each active edge intersects the scanline
+        </li>
+        <li>Sort intersections from left to right</li>
+        <li>Fill between pairs of intersections (even-odd rule)</li>
+      </ol>
+      <p>The algorithm achieves efficiency by:</p>
+      <ul>
+        <li>
+          Only processing edges that could potentially intersect the current
+          scanline
+        </li>
+        <li>Pre-sorting edges into "buckets" by their starting y-coordinate</li>
+        <li>
+          Using mathematical interpolation rather than sampling for
+          intersections
+        </li>
+        <li>Maintaining sorted active edges for faster processing</li>
+      </ul>
+    </div>
+
+    <script src="efficient-path-filling.js"></script>
+  </body>
+</html>

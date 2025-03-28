@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Even-Odd Rule with SVG Paths</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      svg {
+        border: 1px solid black;
+        background: #f9f9f9;
+      }
+      .scanline {
+        stroke: red;
+        stroke-width: 1;
+        opacity: 0.6;
+      }
+      .crossing {
+        fill: blue;
+        stroke: black;
+        stroke-width: 1;
+      }
+      .filled {
+        fill: rgba(0, 255, 0, 0.3);
+        stroke: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Even-Odd Rule Scanline Animation (Using Paths)</h2>
+    <p>
+      This animation shows how scanlines determine filled areas using the
+      even-odd rule.
+    </p>
+
+    <svg id="canvas" width="500" height="500" viewBox="0 0 500 500">
+      <!-- Complex shape defined with a path (Even-Odd fill rule applied) -->
+      <path
+        id="path-shape"
+        d="M100,100 L400,150 L350,400 L150,350 Z 
+                                 M180,180 L370,200 L320,350 L180,320 Z"
+        fill="black"
+        fill-rule="evenodd"
+        stroke="black"
+        stroke-width="3"
+      />
+    </svg>
+    <br />
+    <button onclick="startAnimation()">Start Animation</button>
+
+    <script>
+      const pathElement = document.getElementById("path-shape");
+      const svg = document.getElementById("canvas");
+
+      function startAnimation() {
+        let y = 90; // Start above the path
+        let interval = setInterval(() => {
+          if (y > 410) {
+            clearInterval(interval);
+            return;
+          } // Stop after passing the shape
+
+          drawScanline(y);
+          y += 10; // Move scanline down
+        }, 200);
+      }
+
+      function drawScanline(y) {
+        // Draw scanline
+        let scanline = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "line"
+        );
+        scanline.setAttribute("x1", 50);
+        scanline.setAttribute("x2", 450);
+        scanline.setAttribute("y1", y);
+        scanline.setAttribute("y2", y);
+        scanline.setAttribute("class", "scanline");
+        svg.appendChild(scanline);
+
+        // Get path intersections with scanline
+        let intersections = getPathIntersections(y);
+        intersections.sort((a, b) => a - b); // Sort x-coordinates
+
+        // Draw intersection points
+        intersections.forEach((x) => {
+          let circle = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+          );
+          circle.setAttribute("cx", x);
+          circle.setAttribute("cy", y);
+          circle.setAttribute("r", "5");
+          circle.setAttribute("class", "crossing");
+          svg.appendChild(circle);
+        });
+
+        // Apply even-odd rule: fill between odd-numbered crossings
+        for (let i = 0; i < intersections.length; i += 2) {
+          if (i + 1 < intersections.length) {
+            let rect = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "rect"
+            );
+            rect.setAttribute("x", intersections[i]);
+            rect.setAttribute("y", y - 5);
+            rect.setAttribute("width", intersections[i + 1] - intersections[i]);
+            rect.setAttribute("height", 10);
+            rect.setAttribute("class", "filled");
+            svg.appendChild(rect);
+          }
+        }
+      }
+
+      function getPathIntersections(y) {
+        let crossings = [];
+        let pathLength = pathElement.getTotalLength();
+        let prevPoint = null;
+
+        for (let i = 0; i <= pathLength; i += 2) {
+          // Sample along the path
+          let point = pathElement.getPointAtLength(i);
+
+          if (prevPoint && prevPoint.y > y !== point.y > y) {
+            let xIntersect =
+              prevPoint.x +
+              ((y - prevPoint.y) * (point.x - prevPoint.x)) /
+                (point.y - prevPoint.y);
+            crossings.push(xIntersect);
+          }
+          prevPoint = point;
+        }
+
+        return crossings;
+      }
+    </script>
+  </body>
+</html>

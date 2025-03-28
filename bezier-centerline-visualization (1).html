@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bézier Centerline Visualization</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .control-panel {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f5f5f5;
+        border-radius: 5px;
+      }
+      .visualization {
+        border: 1px solid #ddd;
+        background: #f9f9f9;
+        margin-top: 20px;
+        overflow: hidden;
+      }
+      svg {
+        width: 100%;
+        height: 500px;
+        background: white;
+      }
+      .area-path {
+        fill: rgba(100, 149, 237, 0.2);
+        stroke: cornflowerblue;
+        stroke-width: 1;
+      }
+      .centerline {
+        fill: none;
+        stroke: red;
+        stroke-width: 2;
+      }
+      button {
+        padding: 8px 16px;
+        background: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+        font-size: 14px;
+      }
+      button:hover {
+        background: #3367d6;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+        font-family: monospace;
+        margin-bottom: 10px;
+      }
+      .legend {
+        display: flex;
+        margin-top: 10px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+      }
+      .legend-color {
+        width: 20px;
+        height: 10px;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Bézier Curve to Centerline Converter</h1>
+    <div class="control-panel">
+      <h3>Input SVG Path Data</h3>
+      <textarea id="pathData">
+[["M",46,2.8,"C",41.1,3,36,4.2,31.2,6.2,"C",31,6.2,30.1,6.6,29.2,7.1,"C",23.2,9.9,18.4,13.6,13.8,18.8,"C",11.4,21.5,8.3,26.6,6.8,30,"C",6.5,30.7,6.2,31.5,6.1,31.8,"C",5.5,33.2,4.5,36.5,4,38.8,"C",3.3,42.6,3.1,44.5,3.1,48.3,"C",3.1,53.3,3.7,57.2,5.1,61.9,"C",6.7,67.3,10,73.3,13.5,77.5,"C",14.1,78.1,17.1,81.3,17.3,81.5,"C",17.4,81.5,18,82.1,18.7,82.7,"C",25.5,88.7,33.8,92.4,43.1,93.5,"C",48.7,94.3,55.7,93.7,60.8,92.2,"C",61.5,92,62.3,91.8,62.5,91.7,"C",63,91.6,63.4,91.4,63.9,91.2,"C",64.1,91.2,64.8,90.9,65.5,90.6,"C",67.2,90,70.7,88.2,72.4,87.2,"C",75.5,85.2,77.9,83.3,80.8,80.5,"C",83.4,77.8,84.6,76.4,86.5,73.5,"C",88.4,70.6,89.3,68.9,90.9,65.2,"C",91.5,63.7,92,62.1,92.7,59.6,"C",95.1,50.6,94.5,41,91.2,32.1,"C",90.9,31.5,90.7,30.8,90.6,30.5,"C",89.8,28.3,86.8,23.2,84.9,20.7,"C",81.8,16.7,76.4,11.7,73.2,9.9,"C",73,9.8,72.4,9.5,71.8,9.1,"C",64.4,4.6,55.1,2.3,46,2.8],["M",54.8,7,"C",59.9,8,63.6,9.1,66.1,10.3,"C",67.4,11,69.8,12.3,70.5,12.7,"C",73,14.3,73,14.3,75.9,16.8,"C",76.7,17.4,77.6,18.2,78,18.6,"C",79.9,20.6,82.5,23.8,83.5,25.3,"C",83.7,25.7,84.1,26.5,84.4,26.9,"C",87.1,31.2,89,36.5,89.9,42.2,"C",90.3,44.7,90.4,50,90.2,52.1,"C",89.7,55.5,89.4,57.4,88.6,60.1,"C",87.5,64,85.9,67.6,83.3,71.5,"C",82.2,73.2,81.9,73.5,80.3,75.4,"C",78.2,77.9,75.9,80,73.2,82.1,"C",70.9,83.8,66.9,86,64.4,87,"C",63.8,87.2,63.2,87.5,63,87.5,"C",62.5,87.7,62.1,87.9,61.6,88,"C",61.4,88.1,60.6,88.3,60,88.5,"C",58.6,88.8,55.7,89.5,53.8,89.8,"C",51.9,90.1,47.3,90.2,45,90,"C",36.9,89.3,29.7,86.5,23.5,81.8,"C",15.3,75.7,9.5,66.6,7.6,56.8,"C",5.9,48.1,6.8,39.3,10.2,31.7,"C",14,22.9,20.1,16.2,28.5,11.5,"C",32.4,9.4,35.7,8.2,40.5,7.2,"C",43.8,6.6,45,6.5,49.2,6.5,"C",52.4,6.6,53.1,6.6,54.8,7]]</textarea>
+      <button id="processButton">Process Bézier Areas</button>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: cornflowerblue"></div>
+          <span>Original Area</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: red"></div>
+          <span>Centerline</span>
+        </div>
+      </div>
+    </div>
+    <div class="visualization">
+      <svg
+        id="visualizationSvg"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="xMidYMid meet"
+      ></svg>
+    </div>
+
+    <script>
+      /**
+       * Converts SVG path data that traces an area into centerlines
+       * @param {Array} pathData - Array of path commands (M, L, C, etc.)
+       * @returns {Array} - New path data representing centerlines
+       */
+      function convertAreaToCenterline(pathData) {
+        // Process each path separately
+        return pathData.map(path => {
+          const points = [];
+          let currentX = 0;
+          let currentY = 0;
+          
+          // Extract all control points and endpoints from the path
+          for (let i = 0; i < path.length; i++) {
+            const cmd = path[i];
+            
+            if (cmd === "M") {
+              currentX = path[i + 1];
+              currentY = path[i + 2];
+              points.push({ x: currentX, y: currentY });
+              i += 2;
+            } 
+            else if (cmd === "L") {
+              currentX = path[i + 1];
+              currentY = path[i + 2];
+              points.push({ x: currentX, y: currentY });
+              i += 2;
+            } 
+            else if (cmd === "C") {
+              // For cubic bezier, we have 3 points: 2 control points and the end point
+              const cp1x = path[i + 1];
+              const cp1y = path[i + 2];
+              const cp2x = path[i + 3];
+              const cp2y = path[i + 4];
+              const endX = path[i + 5];
+              const endY = path[i + 6];
+              
+              // Sample points along the bezier curve
+              const samplePoints = sampleBezier(
+                currentX, currentY,
+                cp1x, cp1y,
+                cp2x, cp2y,
+                endX, endY,
+                10 // Number of samples
+              );
+              
+              points.push(...samplePoints);
+              
+              currentX = endX;
+              currentY = endY;
+              i += 6;
+            }
+          }
+          
+          // Find the opposite sides of the area
+          const { side1, side2 } = identifyOpposingSides(points);
+          
+          // Generate centerline between the opposing sides
+          const centerline = generateCenterline(side1, side2);
+          
+          // Convert centerline points to SVG path format
+          return pointsToSvgPath(centerline);
+        });
+      }
+
+      /**
+       * Sample points along a cubic bezier curve
+       */
+      function sampleBezier(x0, y0, x1, y1, x2, y2, x3, y3, numSamples) {
+        const points = [];
+        
+        for (let i = 0; i <= numSamples; i++) {
+          const t = i / numSamples;
+          
+          // Cubic Bezier formula
+          const cx = 3 * (x1 - x0);
+          const bx = 3 * (x2 - x1) - cx;
+          const ax = x3 - x0 - cx - bx;
+          
+          const cy = 3 * (y1 - y0);
+          const by = 3 * (y2 - y1) - cy;
+          const ay = y3 - y0 - cy - by;
+          
+          const xt = ax * Math.pow(t, 3) + bx * Math.pow(t, 2) + cx * t + x0;
+          const yt = ay * Math.pow(t, 3) + by * Math.pow(t, 2) + cy * t + y0;
+          
+          points.push({ x: xt, y: yt });
+        }
+        
+        return points;
+      }
+
+      /**
+       * Identify opposing sides of the area
+       * This is a simplified approach - in real applications, more 
+       * sophisticated algorithms would be used
+       */
+      function identifyOpposingSides(points) {
+        // Calculate centroid
+        const centroid = calculateCentroid(points);
+        
+        // Sort points by angle from centroid
+        const sortedPoints = [...points].sort((a, b) => {
+          const angleA = Math.atan2(a.y - centroid.y, a.x - centroid.x);
+          const angleB = Math.atan2(b.y - centroid.y, b.x - centroid.x);
+          return angleA - angleB;
+        });
+        
+        // Split into two halves
+        const halfLength = Math.floor(sortedPoints.length / 2);
+        const side1 = sortedPoints.slice(0, halfLength);
+        const side2 = sortedPoints.slice(halfLength);
+        
+        return { side1, side2 };
+      }
+
+      /**
+       * Calculate the centroid of a set of points
+       */
+      function calculateCentroid(points) {
+        let sumX = 0;
+        let sumY = 0;
+        
+        for (const point of points) {
+          sumX += point.x;
+          sumY += point.y;
+        }
+        
+        return {
+          x: sumX / points.length,
+          y: sumY / points.length
+        };
+      }
+
+      /**
+       * Generate a centerline between two sets of points
+       */
+      function generateCenterline(side1, side2) {
+        const centerline = [];
+        
+        // Find matching pairs of points from each side
+        const step1 = side1.length / Math.min(side1.length, side2.length);
+        const step2 = side2.length / Math.min(side1.length, side2.length);
+        
+        const numPoints = Math.min(side1.length, side2.length);
+        
+        for (let i = 0; i < numPoints; i++) {
+          const index1 = Math.floor(i * step1);
+          const index2 = Math.floor(i * step2);
+          
+          const point1 = side1[index1];
+          const point2 = side2[index2];
+          
+          // The centerline point is the midpoint between the two side points
+          centerline.push({
+            x: (point1.x + point2.x) / 2,
+            y: (point1.y + point2.y) / 2
+          });
+        }
+        
+        return centerline;
+      }
+
+      /**
+       * Convert an array of points to SVG path format
+       */
+      function pointsToSvgPath(points) {
+        if (points.length === 0) return [];
+        
+        const path = ["M", points[0].x, points[0].y];
+        
+        for (let i = 1; i < points.length; i++) {
+          path.push("L", points[i].x, points[i].y);
+        }
+        
+        return path;
+      }
+
+      /**
+       * Convert SVG path data array to SVG path string
+       */
+      function pathDataToSvgString(pathData) {
+        let svgString = '';
+        
+        for (let i = 0; i < pathData.length; i++) {
+          if (typeof pathData[i] === 'string') {
+            svgString += pathData[i] + ' ';
+          } else {
+            svgString += pathData[i] + ' ';
+          }
+        }
+        
+        return svgString;
+      }
+
+      /**
+       * Render SVG paths and centerlines
+       */
+      function renderSvg(svgData, centerlines) {
+        const svg = document.getElementById('visualizationSvg');
+        
+        // Clear existing content
+        svg.innerHTML = '';
+        
+        // Determine bounds for viewBox adjustment
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        
+        svgData.forEach(path => {
+          for (let i = 0; i < path.length; i++) {
+            if (typeof path[i] !== 'string') {
+              if (i % 2 === 1) { // X coordinate
+                minX = Math.min(minX, path[i]);
+                maxX = Math.max(maxX, path[i]);
+              } else if (i % 2 === 0 && i > 0) { // Y coordinate
+                minY = Math.min(minY, path[i]);
+                maxY = Math.max(maxY, path[i]);
+              }
+            }
+          }
+        });
+        
+        // Add padding
+        const padding = 5;
+        minX -= padding;
+        minY -= padding;
+        maxX += padding;
+        maxY += padding;
+        
+        // Set viewBox
+        svg.setAttribute('viewBox', `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
+        
+        // Render original paths
+        svgData.forEach(path => {
+          const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          pathElement.setAttribute('d', pathDataToSvgString(path));
+          pathElement.setAttribute('class', 'area-path');
+          svg.appendChild(pathElement);
+        });
+        
+        // Render centerlines
+        centerlines.forEach(centerline => {
+          const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          pathElement.setAttribute('d', pathDataToSvgString(centerline));
+          pathElement.setAttribute('class', 'centerline');
+          svg.appendChild(pathElement);
+        });
+      }
+
+      /**
+       * Process the SVG data when button is clicked
+       */
+      document.getElementById('processButton').addEventListener('click', function() {
+        try {
+          // Get SVG data from textarea
+          const svgDataText = document.getElementById('pathData').value;
+          const svgData = JSON.parse(svgDataText);
+          
+          // Convert to centerlines
+          const centerlines = convertAreaToCenterline(svgData);
+          
+          // Render the results
+          renderSvg(svgData, centerlines);
+        } catch (error) {
+          console.error('Error processing SVG data:', error);
+          alert('Error processing SVG data. Please check the format.');
+        }
+      });
+
+      // Initial processing on page load
+      window.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('processButton').click();
+      });
+    </script>
+  </body>
+</html>

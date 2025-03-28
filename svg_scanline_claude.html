@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Scanline Fill Algorithm</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      svg {
+        border: 1px solid black;
+        background: #f9f9f9;
+      }
+      .scanline {
+        stroke: red;
+        stroke-width: 1;
+        opacity: 0.3;
+      }
+      .crossing {
+        fill: blue;
+        stroke: black;
+        stroke-width: 3;
+      }
+      .filled {
+        fill: rgba(0, 255, 0, 0.3);
+        stroke: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Advanced Scanline Fill Algorithm</h2>
+    <p>Optimized path intersection and filling</p>
+
+    <svg id="canvas" width="600" height="600" viewBox="200 0 600 400">
+      <!-- Path will be dynamically created -->
+    </svg>
+    <br />
+    <button onclick="startAnimation()">Start Animation</button>
+
+    <script>
+      // Utility function to convert custom path format to SVG path string
+      function convertPathToSVG(pathData) {
+        let svgPath = "";
+        for (let i = 0; i < pathData.length; i++) {
+          const segment = pathData[i];
+          svgPath += segment[0]; // Command (M, C, L, etc.)
+
+          // Add coordinates
+          for (let j = 1; j < segment.length; j++) {
+            svgPath += " " + segment[j];
+          }
+        }
+        return svgPath;
+      }
+
+      // Advanced Scanline Fill Algorithm
+      class ScanlineFiller {
+        constructor(pathData) {
+          this.svg = document.getElementById("canvas");
+
+          // Create path element dynamically
+          this.pathElement = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          this.pathElement.setAttribute("fill", "none");
+          this.pathElement.setAttribute("fill-rule", "evenodd");
+          this.pathElement.setAttribute("stroke", "black");
+          this.pathElement.setAttribute("stroke-width", "5");
+          this.pathElement.setAttribute("d", convertPathToSVG(pathData));
+          this.svg.appendChild(this.pathElement);
+
+          // Precompute path data for performance optimization
+          this.pathData = this.preprocessPath();
+        }
+
+        // Preprocess path to create an optimized representation with smaller step
+        preprocessPath() {
+          const pathLength = this.pathElement.getTotalLength();
+          const segments = [];
+          let prevPoint = null;
+
+          // Reduce step size to 1 for more precise sampling
+          for (let i = 0; i <= pathLength; i += 1) {
+            const point = this.pathElement.getPointAtLength(i);
+
+            if (prevPoint) {
+              segments.push({
+                x1: prevPoint.x,
+                y1: prevPoint.y,
+                x2: point.x,
+                y2: point.y,
+              });
+            }
+            prevPoint = point;
+          }
+
+          return segments;
+        }
+
+        // Improved intersection detection using line segment algorithm
+        findIntersections(y) {
+          const intersections = [];
+
+          // Use ray-casting algorithm for precise intersection
+          for (const segment of this.pathData) {
+            // Check if scanline intersects the segment
+            if (segment.y1 > y !== segment.y2 > y) {
+              // Calculate precise x-coordinate of intersection
+              const t = (y - segment.y1) / (segment.y2 - segment.y1);
+              const xIntersect = segment.x1 + t * (segment.x2 - segment.x1);
+              intersections.push(xIntersect);
+            }
+          }
+
+          return intersections.sort((a, b) => a - b);
+        }
+
+        // Render scanline with optimized fill
+        renderScanline(y) {
+          const intersections = this.findIntersections(y);
+          const scanline = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "line"
+          );
+
+          // Draw scanline
+          scanline.setAttribute("x1", 0);
+          scanline.setAttribute("x2", 600);
+          scanline.setAttribute("y1", y);
+          scanline.setAttribute("y2", y);
+          scanline.setAttribute("class", "scanline");
+          this.svg.appendChild(scanline);
+
+          /*
+          // Visualize intersections
+          intersections.forEach((x) => {
+            const circle = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "circle"
+            );
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            circle.setAttribute("r", "3");
+            circle.setAttribute("class", "crossing");
+            this.svg.appendChild(circle);
+          });
+          */
+
+          // Apply even-odd fill rule with optimized rendering
+          for (let i = 0; i < intersections.length; i += 2) {
+            if (i + 1 < intersections.length) {
+              const rect = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "rect"
+              );
+              rect.setAttribute("x", intersections[i]);
+              rect.setAttribute("y", y - 3);
+              rect.setAttribute(
+                "width",
+                intersections[i + 1] - intersections[i]
+              );
+              rect.setAttribute("height", 6);
+              rect.setAttribute("class", "filled");
+              this.svg.appendChild(rect);
+            }
+          }
+        }
+      }
+
+      // Animation controller with smaller vertical step
+      function startAnimation() {
+        function multiply2DArray(arr, factor) {
+          return arr.map((row) =>
+            row.map((element) =>
+              typeof element === "string" && ["M", "C", "L"].includes(element)
+                ? element
+                : element * factor
+            )
+          );
+        }
+        // Example path data in the specified format
+        let pathData = [
+          [
+            "M",
+            79.7,
+            16.3,
+            "C",
+            78.1,
+            16.7,
+            76.9,
+            17.4,
+            75.6,
+            18.7,
+            "C",
+            71.5,
+            22.6,
+            71.3,
+            28.2,
+            75.2,
+            32.3,
+            "C",
+            77,
+            34.2,
+            79,
+            35.2,
+            81.5,
+            35.3,
+            "C",
+            86.1,
+            35.6,
+            90.4,
+            32.4,
+            91.6,
+            27.8,
+            "C",
+            92.1,
+            25.8,
+            91.8,
+            23.3,
+            90.7,
+            21.1,
+            "C",
+            89.9,
+            19.6,
+            88.2,
+            17.8,
+            86.8,
+            17.1,
+            "C",
+            84.7,
+            16,
+            82,
+            15.7,
+            79.7,
+            16.3,
+          ],
+          [
+            "M",
+            84.1,
+            18.2,
+            "C",
+            86.9,
+            19,
+            89,
+            21.3,
+            89.7,
+            24.5,
+            "C",
+            90,
+            26,
+            89.8,
+            27.4,
+            89.1,
+            28.9,
+            "C",
+            88.1,
+            30.8,
+            85.9,
+            32.6,
+            83.8,
+            33.2,
+            "C",
+            80.5,
+            34.1,
+            76.8,
+            32.2,
+            75.2,
+            28.8,
+            "C",
+            74.5,
+            27.5,
+            74.5,
+            27.4,
+            74.5,
+            25.7,
+            "C",
+            74.5,
+            24,
+            74.6,
+            23.9,
+            75,
+            22.9,
+            "C",
+            76.1,
+            20.6,
+            77.8,
+            19.1,
+            80.1,
+            18.3,
+            "C",
+            81,
+            18,
+            83,
+            17.9,
+            84.1,
+            18.2,
+          ],
+        ];
+        console.log(pathData);
+
+        pathData = multiply2DArray(pathData, 6);
+        console.log(pathData);
+
+        const filler = new ScanlineFiller(pathData);
+
+        let y = 10;
+        const interval = setInterval(() => {
+          if (y > 590) {
+            clearInterval(interval);
+            return;
+          }
+
+          filler.renderScanline(y);
+          y += 2; // Reduced step for denser coverage
+        }, 50); // Slightly faster interval
+      }
+    </script>
+  </body>
+</html>

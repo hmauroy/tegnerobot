@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bézier Centerline Visualization</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .control-panel {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f5f5f5;
+        border-radius: 5px;
+      }
+      .visualization {
+        border: 1px solid #ddd;
+        background: #f9f9f9;
+        margin-top: 20px;
+        overflow: hidden;
+      }
+      svg {
+        width: 100%;
+        height: 500px;
+        background: white;
+      }
+      .area-path {
+        fill: rgba(100, 149, 237, 0.2);
+        stroke: cornflowerblue;
+        stroke-width: 1;
+      }
+      .centerline {
+        fill: none;
+        stroke: red;
+        stroke-width: 2;
+      }
+      button {
+        padding: 8px 16px;
+        background: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+        font-size: 14px;
+      }
+      button:hover {
+        background: #3367d6;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+        font-family: monospace;
+        margin-bottom: 10px;
+      }
+      .legend {
+        display: flex;
+        margin-top: 10px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+      }
+      .legend-color {
+        width: 20px;
+        height: 10px;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Bézier Curve to Centerline Converter</h1>
+    <div class="control-panel">
+      <h3>Input SVG Path Data</h3>
+      <textarea id="pathData">
+[["M",18.1,0.3,"C",18.1,0.5,18.2,1.1,18.3,1.6,"C",18.4,2.1,18.5,3,18.6,3.5]]</textarea
+      >
+      <button id="processButton">Process Bézier Areas</button>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: cornflowerblue"></div>
+          <span>Original Area</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: red"></div>
+          <span>Centerline</span>
+        </div>
+      </div>
+    </div>
+    <div class="visualization">
+      <svg
+        id="visualizationSvg"
+        viewBox="0 0 100 70"
+        preserveAspectRatio="xMidYMid meet"
+      ></svg>
+    </div>
+
+    <script src="./extractCenterline.js"></script>
+  </body>
+</html>

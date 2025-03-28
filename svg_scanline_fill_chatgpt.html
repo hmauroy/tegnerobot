@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SVG Scanline Fill</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      #svgInput {
+        width: 100%;
+        height: 100px;
+        margin-bottom: 10px;
+      }
+      #drawCanvas {
+        border: 1px solid #000;
+        width: 100%;
+        max-width: 600px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SVG Scanline Fill</h1>
+    <textarea
+      id="svgInput"
+      placeholder="Enter JSON-formatted SVG path data"
+    ></textarea>
+    <label><input type="checkbox" id="fillCheckbox" /> Fill</label>
+    <br />
+    <label
+      ><input type="checkbox" id="scanlinesCheckbox" checked="checked" />
+      Scanlines</label
+    >
+    <br />
+    <label
+      ><input type="checkbox" id="outlineCheckbox" checked="checked" />
+      Outline</label
+    >
+    <br />
+    <button onclick="drawSvgPath()">Draw Path</button>
+    <br />
+    <canvas id="drawCanvas" width="700" height="500"></canvas>
+
+    <script>
+      document.getElementById("svgInput").value =
+        '[["M",79.7,16.3,"C",78.1,16.7,76.9,17.4,75.6,18.7,"C",71.5,22.6,71.3,28.2,75.2,32.3,"C",77,34.2,79,35.2,81.5,35.3,"C",86.1,35.6,90.4,32.4,91.6,27.8,"C",92.1,25.8,91.8,23.3,90.7,21.1,"C",89.9,19.6,88.2,17.8,86.8,17.1,"C",84.7,16,82,15.7,79.7,16.3],["M",84.1,18.2,"C",86.9,19,89,21.3,89.7,24.5,"C",90,26,89.8,27.4,89.1,28.9,"C",88.1,30.8,85.9,32.6,83.8,33.2,"C",80.5,34.1,76.8,32.2,75.2,28.8,"C",74.5,27.5,74.5,27.4,74.5,25.7,"C",74.5,24,74.6,23.9,75,22.9,"C",76.1,20.6,77.8,19.1,80.1,18.3,"C",81,18,83,17.9,84.1,18.2]]';
+      function parseSvgPath(svgArr) {
+        let lastCoordinates = [];
+        let drawCoords = [];
+        let currentSubarray = [];
+
+        let teller = 0;
+
+        for (let i = 0; i < svgArr.length; i++) {
+          for (let j = 0; j < svgArr[i].length; j++) {
+            if (svgArr[i][j] === "M") {
+              currentSubarray = [[svgArr[i][j + 1], svgArr[i][j + 2]]];
+              drawCoords.push(currentSubarray);
+              lastCoordinates = [svgArr[i][j + 1], svgArr[i][j + 2]];
+              j += 2;
+            } else if (svgArr[i][j] === "C") {
+              let x0 = lastCoordinates[0],
+                y0 = lastCoordinates[1];
+              let x1 = svgArr[i][j + 1],
+                y1 = svgArr[i][j + 2];
+              let x2 = svgArr[i][j + 3],
+                y2 = svgArr[i][j + 4];
+              let x3 = svgArr[i][j + 5],
+                y3 = svgArr[i][j + 6];
+              lastCoordinates = [x3, y3];
+
+              // Calculate approximate length of segment
+              const curveLength = Math.sqrt(
+                Math.pow(x3 - x0, 2) + Math.pow(y3 - y0, 2)
+              );
+
+              // Determine number of segments
+              const minimumSegments = 30;
+              let segmentLength = 1;
+              let segments = Math.ceil(curveLength / segmentLength);
+              segments = Math.max(minimumSegments, segments);
+              teller++;
+
+              for (let k = 1; k <= segments; k++) {
+                let t = k / segments;
+                let a = (1 - t) ** 3;
+                let b = 3 * t * (1 - t) ** 2;
+                let c = 3 * t ** 2 * (1 - t);
+                let d = t ** 3;
+                let x = a * x0 + b * x1 + c * x2 + d * x3;
+                let y = a * y0 + b * y1 + c * y2 + d * y3;
+                currentSubarray.push([x, y]);
+              }
+              j += 6;
+            } else if (svgArr[i][j] === "L") {
+              // Line:
+              // 1) Draw line from the last point to the start point of the line.
+              // Fetches the two first coordinates for the line.
+              currentSubarray.push([svgArr[i][j + 1], svgArr[i][j + 2]]);
+              // 2) Draw line to the endpoint of the line.
+              currentSubarray.push([svgArr[i][j + 3], svgArr[i][j + 4]]);
+              lastCoordinates = [svgArr[i][j + 3], svgArr[i][j + 4]];
+              j += 4;
+            }
+          }
+        }
+
+        return drawCoords;
+      }
+
+      function scanlineFill(
+        ctx,
+        pathArrays,
+        scaleFactor,
+        createScanlines,
+        createFill
+      ) {
+        let minY = Infinity,
+          maxY = -Infinity;
+
+        pathArrays.forEach((points) => {
+          points.forEach(([x, y]) => {
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+          });
+        });
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "green";
+        let stepSize = 0.3;
+
+        // Original code iterates through integer y-values.
+        //for (let y = Math.ceil(minY); y <= Math.floor(maxY); y++) {
+        if (createScanlines) {
+          stepSize = 1;
+        } else if (createFill) {
+          stepSize = 0.1;
+        }
+
+        for (let y = minY; y <= maxY; y += stepSize) {
+          let intersections = [];
+
+          pathArrays.forEach((points) => {
+            for (let i = 0; i < points.length - 1; i++) {
+              let [x1, y1] = points[i];
+              let [x2, y2] = points[i + 1];
+
+              if ((y1 <= y && y2 > y) || (y2 <= y && y1 > y)) {
+                let x = x1 + ((y - y1) * (x2 - x1)) / (y2 - y1);
+                intersections.push(x);
+              }
+            }
+          });
+
+          intersections.sort((a, b) => a - b);
+
+          for (let i = 0; i < intersections.length; i += 2) {
+            let xStart = intersections[i] * scaleFactor;
+            let xEnd = intersections[i + 1] * scaleFactor;
+            let yScaled = y * scaleFactor;
+            ctx.beginPath();
+            ctx.moveTo(xStart, yScaled);
+            ctx.lineTo(xEnd, yScaled);
+            if (createScanlines || createFill) {
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function drawSvgPath() {
+        const canvas = document.getElementById("drawCanvas");
+        const ctx = canvas.getContext("2d");
+        const svgInput = document.getElementById("svgInput");
+        const fillCheckbox = document.getElementById("fillCheckbox");
+        const scanlinesCheckbox = document.getElementById("scanlinesCheckbox");
+        const outlineCheckbox = document.getElementById("outlineCheckbox");
+
+        const createFill = fillCheckbox.checked;
+        const createScanlines = scanlinesCheckbox.checked;
+        const createOutline = outlineCheckbox.checked;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        try {
+          const svgData = JSON.parse(svgInput.value);
+          const pathArrays = parseSvgPath(svgData);
+
+          const allPoints = pathArrays.flat();
+          const scaleFactor =
+            Math.min(
+              canvas.width / Math.max(...allPoints.map((p) => p[0])),
+              canvas.height / Math.max(...allPoints.map((p) => p[1]))
+            ) * 1;
+
+          ctx.fillStyle = "lightblue";
+
+          // Calculates intersections and fills the scanlines with lines or dense lines (fill)
+          scanlineFill(
+            ctx,
+            pathArrays,
+            scaleFactor,
+            createScanlines,
+            createFill
+          );
+
+          ctx.fillStyle = "red";
+          ctx.strokeStyle = "black";
+          pathArrays.forEach((points) => {
+            let lastX = points[0][0] * scaleFactor;
+            let lastY = points[0][1] * scaleFactor;
+            points.forEach(([x, y]) => {
+              let xScaled = x * scaleFactor;
+              let yScaled = y * scaleFactor;
+              ctx.beginPath();
+              ctx.moveTo(lastX, lastY);
+              ctx.lineTo(xScaled, yScaled);
+              if (createOutline) {
+                ctx.stroke();
+              }
+              lastX = xScaled;
+              lastY = yScaled;
+              //ctx.arc(xScaled, yScaled, 1, 0, Math.PI * 2);
+              //ctx.fill();
+            });
+          });
+        } catch (error) {
+          console.error("Error drawing SVG path:", error);
+          alert("Invalid SVG path input. Please check your JSON format.");
+        }
+      }
+    </script>
+  </body>
+</html>

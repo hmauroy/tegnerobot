@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Even-Odd Rule Center Lines</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      svg {
+        border: 1px solid black;
+        background: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Even-Odd Rule - Centerline Effect</h2>
+    <p>
+      The white gaps inside the shape create centerlines using the even-odd
+      rule.
+    </p>
+
+    <svg width="500" height="500" viewBox="0 0 500 500">
+      <!-- First shape (outer) -->
+      <path
+        d="M100,100 L400,100 L400,400 L100,400 Z 
+                 M150,150 L350,150 L350,350 L150,350 Z"
+        fill="black"
+        fill-rule="evenodd"
+        stroke="black"
+        stroke-width="4"
+      />
+
+      <!-- Second shape (overlapping smaller cutout) -->
+      <path
+        d="M200,200 L300,200 L300,300 L200,300 Z"
+        fill="white"
+        stroke="black"
+        stroke-width="4"
+      />
+    </svg>
+
+    <p>
+      The outer shape is filled using <code>evenodd</code>, while the inner
+      shapes create the centerline effect.
+    </p>
+  </body>
+</html>

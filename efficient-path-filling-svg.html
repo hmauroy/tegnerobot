@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Path Filling Algorithm Demo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+      .canvas-container {
+        border: 1px solid #ccc;
+        margin: 20px 0;
+        text-align: center;
+      }
+      canvas {
+        display: inline-block;
+        background: #f9f9f9;
+        max-width: 100%;
+      }
+      .button-group {
+        display: flex;
+        justify-content: center;
+        margin: 15px 0;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      button {
+        padding: 8px 16px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      .input-group {
+        display: flex;
+        justify-content: center;
+        margin: 15px 0;
+        gap: 10px;
+      }
+      input[type="text"] {
+        padding: 8px;
+        width: 400px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .explanation {
+        background: #f5f5f5;
+        padding: 15px;
+        border-left: 4px solid #4caf50;
+        margin: 15px 0;
+      }
+      #benchmarkResult,
+      #pathInfo {
+        text-align: center;
+        font-weight: bold;
+        margin-top: 10px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="efficient-path-filling-svg.js"></script>
+    <h1>Advanced SVG Path Filling Algorithm</h1>
+
+    <div class="explanation">
+      <p>This demo showcases an advanced path filling algorithm supporting:</p>
+      <ul>
+        <li>Complex SVG path parsing</li>
+        <li>Bezier curve interpolation</li>
+        <li>Even-odd fill rule visualization</li>
+        <li>Performance benchmarking</li>
+      </ul>
+    </div>
+
+    <div class="input-group">
+      <input
+        type="text"
+        id="svgPathInput"
+        placeholder="Enter SVG Path (e.g., M100,100 C200,50 300,200 400,100)"
+        value="M100,100 C200,50 300,200 400,100 L400,300 C300,250 200,350 100,300 Z"
+      />
+      <button id="fillSVGPathBtn">Fill SVG Path</button>
+    </div>
+
+    <div id="pathInfo"></div>
+
+    <div class="canvas-container">
+      <canvas id="fillCanvas" width="500" height="400"></canvas>
+    </div>
+
+    <div class="button-group">
+      <button id="startBtn">Start Shape Animation</button>
+      <button id="fillOnlyBtn">Fill Only (No Animation)</button>
+      <button id="benchmarkBtn">Run Benchmark</button>
+    </div>
+
+    <div id="benchmarkResult"></div>
+
+    <div class="explanation">
+      <h3>Bezier Curve Path Filling Techniques</h3>
+      <p>Key features of our path filling algorithm:</p>
+      <ul>
+        <li>Supports multiple SVG path commands (M, L, C, Q)</li>
+        <li>Interpolates Bezier curves into discrete points</li>
+        <li>Handles complex, non-convex polygon shapes</li>
+        <li>Implements efficient scanline filling algorithm</li>
+      </ul>
+      <p>Enter SVG path commands to visualize filling:</p>
+      <ul>
+        <li><code>M</code>: Move to (starting point)</li>
+        <li><code>L</code>: Line to</li>
+        <li><code>C</code>: Cubic Bezier curve</li>
+        <li><code>Q</code>: Quadratic Bezier curve</li>
+        <li><code>Z</code>: Close path</li>
+      </ul>
+    </div>
+
+    <div class="explanation">
+      <h3>Algorithm Performance</h3>
+      <p>Our scanline algorithm is optimized through:</p>
+      <ul>
+        <li>Edge bucketing for O(n) preprocessing</li>
+        <li>Active edge tracking</li>
+        <li>Analytical intersection calculations</li>
+        <li>Minimal memory overhead</li>
+      </ul>
+    </div>
+
+    <script>
+      // Include the path filling JavaScript library here
+      // (Paste the entire previous JavaScript artifact content)
+      /* Paste the JavaScript from the previous artifact */
+    </script>
+  </body>
+</html>
