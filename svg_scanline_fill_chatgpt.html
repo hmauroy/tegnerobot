@@ -136,9 +136,14 @@
         //for (let y = Math.ceil(minY); y <= Math.floor(maxY); y++) {
         if (createScanlines) {
           stepSize = 1;
-        } else if (createFill) {
+        }
+        if (createFill) {
+          ctx.strokeStyle = "lawngreen";
           stepSize = 0.1;
         }
+
+        // Creates a new 2D-array of subarrays with points which run in the middle of the scanlines
+        let lineArray = [];
 
         for (let y = minY; y <= maxY; y += stepSize) {
           let intersections = [];
@@ -157,10 +162,16 @@
 
           intersections.sort((a, b) => a - b);
 
+          console.log(intersections);
+
+          // Creates a copy of the current intersections for the line.
+          let intersectionsCopy = [...intersections];
+
           for (let i = 0; i < intersections.length; i += 2) {
             let xStart = intersections[i] * scaleFactor;
             let xEnd = intersections[i + 1] * scaleFactor;
             let yScaled = y * scaleFactor;
+            lineArray.push([xEnd - xStart, yScaled]);
             ctx.beginPath();
             ctx.moveTo(xStart, yScaled);
             ctx.lineTo(xEnd, yScaled);
@@ -169,6 +180,8 @@
             }
           }
         }
+        console.log(lineArray);
+        return lineArray;
       }
 
       function drawSvgPath() {
@@ -231,6 +244,10 @@
           console.error("Error drawing SVG path:", error);
           alert("Invalid SVG path input. Please check your JSON format.");
         }
+      }
+
+      function deepCopy(arr) {
+        return arr.map((innerArray) => [...innerArray]);
       }
     </script>
   </body>
