@@ -138,7 +138,7 @@
           stepSize = 1;
         }
         if (createFill) {
-          ctx.strokeStyle = "lawngreen";
+          ctx.strokeStyle = "darkslategrey";
           stepSize = 0.1;
         }
 
@@ -171,7 +171,7 @@
             let xStart = intersections[i] * scaleFactor;
             let xEnd = intersections[i + 1] * scaleFactor;
             let yScaled = y * scaleFactor;
-            lineArray.push([xEnd - xStart, yScaled]);
+            lineArray.push([(xEnd + xStart) / 2, yScaled]);
             ctx.beginPath();
             ctx.moveTo(xStart, yScaled);
             ctx.lineTo(xEnd, yScaled);
