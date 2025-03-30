@@ -212,12 +212,14 @@
           const pathArrays = parseSvgPath(svgData);
 
           const allPoints = pathArrays.flat();
+          const scaleFactor = 5;
+          /*
           const scaleFactor =
             Math.min(
               canvas.width / Math.max(...allPoints.map((p) => p[0])),
               canvas.height / Math.max(...allPoints.map((p) => p[1]))
             ) * 1;
-
+            */
           ctx.fillStyle = "lightblue";
 
           // Calculates intersections and fills the scanlines with lines or dense lines (fill)
