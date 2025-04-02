@@ -27,6 +27,67 @@ function findNearestNeighborPath(points) {
   return output;
 }
 
+function findNearestNeighborPathImproved(points, maxDistanceThreshold = 30) {
+  if (!points || points.length === 0) return [];
+
+  const result = [];
+  const visited = new Set();
+  let currentLine = [];
+
+  // Start with the first point
+  let currentPoint = points[0];
+  currentLine.push(currentPoint);
+  visited.add(currentPoint);
+
+  while (visited.size < points.length) {
+    let nearestNeighbor = null;
+    let minDistance = Infinity;
+
+    // Find the nearest unvisited point
+    for (let j = 0; j < points.length; j++) {
+      const candidatePoint = points[j];
+
+      // Skip if we've already visited this point
+      if (visited.has(candidatePoint)) continue;
+
+      const distanceToNext = Math.sqrt(
+        Math.pow(candidatePoint[0] - currentPoint[0], 2) +
+          Math.pow(candidatePoint[1] - currentPoint[1], 2)
+      );
+
+      if (distanceToNext < minDistance) {
+        nearestNeighbor = candidatePoint;
+        minDistance = distanceToNext;
+      }
+    }
+
+    // If we found a nearest neighbor
+    if (nearestNeighbor) {
+      // Check if distance exceeds threshold - if so, start a new line
+      if (minDistance > maxDistanceThreshold && currentLine.length > 0) {
+        result.push([...currentLine]); // Add the current line to the result
+        currentLine = [nearestNeighbor]; // Start a new line with this point
+      } else {
+        // Add to the current line
+        currentLine.push(nearestNeighbor);
+      }
+
+      visited.add(nearestNeighbor);
+      currentPoint = nearestNeighbor;
+    } else {
+      // All points have been visited
+      break;
+    }
+  }
+
+  // Don't forget to add the last line if it has points
+  if (currentLine.length > 0) {
+    result.push(currentLine);
+  }
+
+  return result;
+}
+
 function drawPoints(points, thresholdDistance = 10) {
   // Get the canvas element and its 2D context
   let canvas = document.getElementById("drawCanvas");
@@ -53,6 +114,39 @@ function drawPoints(points, thresholdDistance = 10) {
 
   // Stroke the path, filling in the lines that were drawn
   ctx.stroke();
+}
+
+function drawPointsClaude(pointsArray) {
+  /*
+    Claude 3.7 edit.
+    */
+  // Get the canvas element and its 2D context
+  let canvas = document.getElementById("drawCanvas");
+  let ctx = canvas.getContext("2d");
+
+  // Iterate over each line (each subarray of points)
+  for (let lineIndex = 0; lineIndex < pointsArray.length; lineIndex++) {
+    const points = pointsArray[lineIndex];
+
+    // Skip empty lines
+    if (!points || points.length === 0) continue;
+
+    // Begin a new path for each line
+    ctx.beginPath();
+    ctx.strokeStyle = getColorForElement();
+
+    // Move to the first point of this line
+    ctx.moveTo(points[0][0], points[0][1]);
+    //console.log(points[0][0], points[0][1]);
+
+    // Draw lines to each subsequent point in this line
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i][0], points[i][1]);
+    }
+
+    // Stroke the path for this line
+    ctx.stroke();
+  }
 }
 
 /*
