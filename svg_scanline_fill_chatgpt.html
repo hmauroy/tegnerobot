@@ -36,6 +36,11 @@
     >
     <br />
     <label
+      ><input type="number" id="scanLineSeparation" value="5" /> Scan line
+      separation</label
+    >
+    <br />
+    <label
       ><input type="checkbox" id="outlineCheckbox" checked="checked" />
       Outline</label
     >
@@ -46,8 +51,8 @@
     >
     <br />
     <label
-      ><input type="text" id="maxDistanceThresholdCheckbox" value="30" /> Center
-      line separation</label
+      ><input type="number" id="maxDistanceThresholdCheckbox" value="30" />
+      Center line separation</label
     >
     <br />
 
@@ -281,11 +286,10 @@
 
         ctx.lineWidth = 1;
         ctx.strokeStyle = "green";
-        let stepSize = 5;
+        let stepSize = Number(
+          document.getElementById("scanLineSeparation").value
+        );
 
-        if (createScanlines) {
-          stepSize = 5;
-        }
         if (createFill) {
           ctx.strokeStyle = "darkslategrey";
           stepSize = 0.5;
@@ -531,9 +535,9 @@
         const createOutline = outlineCheckbox.checked;
         const createCenterLine =
           document.getElementById("centerlineCheckbox").checked;
-        const maxDistanceThreshold = document.getElementById(
-          "maxDistanceThresholdCheckbox"
-        ).value;
+        const maxDistanceThreshold = Number(
+          document.getElementById("maxDistanceThresholdCheckbox").value
+        );
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
