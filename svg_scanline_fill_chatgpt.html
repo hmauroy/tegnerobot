@@ -470,18 +470,16 @@
               if (i + 1 < intersectionsY.length) {
                 let yStart = intersectionsY[i];
                 let yEnd = intersectionsY[i + 1];
-                let xScaled = x;
-                let yStartScaled = yStart;
-                let yEndScaled = yEnd;
 
                 // Add midpoint to lineArray
-                lineArray.push([xScaled, (yStartScaled + yEndScaled) / 2]);
+                lineArray.push([x, (yStart + yEnd) / 2]);
 
                 // Draw horizontal scanline if needed
                 if (createScanlines || createFill) {
+                  ctx.strokeStyle = "blue";
                   ctx.beginPath();
-                  ctx.moveTo(xScaled, yStartScaled);
-                  ctx.lineTo(xScaled, yEndScaled);
+                  ctx.moveTo(x, yStart);
+                  ctx.lineTo(x, yEnd);
                   ctx.stroke();
                 }
               }
