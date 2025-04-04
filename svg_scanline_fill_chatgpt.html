@@ -407,16 +407,13 @@
               }
 
               // Add the midpoint to lineArray (for regular vertical scan)
-              let xStartScaled = xStart;
-              let xEndScaled = xEnd;
-              let yScaled = y;
-              lineArray.push([(xEndScaled + xStartScaled) / 2, yScaled]);
+              lineArray.push([(xEnd + xStart) / 2, y]);
 
               // Draw scanlines if needed
               if (createScanlines || createFill) {
                 ctx.beginPath();
-                ctx.moveTo(xStartScaled, yScaled);
-                ctx.lineTo(xEndScaled, yScaled);
+                ctx.moveTo(xStart, y);
+                ctx.lineTo(xEnd, y);
                 ctx.stroke();
               }
             }
@@ -426,6 +423,8 @@
         // 5) Perform horizontal scanning for identified horizontal areas
         ctx.strokeStyle = "blue"; // Different color for horizontal scans
 
+        console.log("Processes horizontalScanAreas.");
+        console.log(horizontalScanAreas);
         horizontalScanAreas.forEach((area) => {
           // Determine scan range with a bit of padding
           let padding = stepSize * 2;
@@ -435,7 +434,8 @@
 
           // Scan horizontally with the same step size
           for (let x = xStart; x <= xEnd; x += stepSize) {
-            let intersections = [];
+            console.log("x: " + x);
+            let intersectionsY = [];
 
             // Find y-intersections for this x coordinate
             pathArrays.forEach((points) => {
@@ -449,20 +449,23 @@
                   let y = y1 + ((x - x1) * (y2 - y1)) / (x2 - x1);
                   // Only consider intersections near our identified horizontal area
                   if (Math.abs(y - yValue) < stepSize * 3) {
-                    intersections.push(y);
+                    intersectionsY.push(y);
+                    drawSinglePoint([x, y], (radius = 4), (color = "red"));
                   }
                 }
               }
             });
 
             // Sort y-intersections
-            intersections.sort((a, b) => a - b);
+            intersectionsY.sort((a, b) => a - b);
+            console.log("intersections Y:");
+            console.log(intersectionsY);
 
             // Draw horizontal scan and add midpoints to lineArray
-            for (let i = 0; i < intersections.length; i += 2) {
-              if (i + 1 < intersections.length) {
-                let yStart = intersections[i];
-                let yEnd = intersections[i + 1];
+            for (let i = 0; i < intersectionsY.length; i += 2) {
+              if (i + 1 < intersectionsY.length) {
+                let yStart = intersectionsY[i];
+                let yEnd = intersectionsY[i + 1];
                 let xScaled = x;
                 let yStartScaled = yStart;
                 let yEndScaled = yEnd;
