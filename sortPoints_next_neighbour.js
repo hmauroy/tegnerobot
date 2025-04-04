@@ -116,6 +116,19 @@ function drawPoints(points, thresholdDistance = 10) {
   ctx.stroke();
 }
 
+function drawSinglePoint(point, radius = 3, color = "maroon") {
+  const x = point[0];
+  const y = point[1];
+  // Get the canvas and context
+  const canvas = document.getElementById("drawCanvas");
+  const ctx = canvas.getContext("2d");
+  ctx.beginPath();
+  ctx.moveTo(point[0], point[1]);
+  ctx.fillStyle = color;
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 function drawPointsClaude(pointsArray) {
   /*
     Claude 3.7 edit.
