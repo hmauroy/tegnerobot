@@ -205,9 +205,9 @@
 
           // 3) Sorts the intersections in the x-axis.
           intersections.sort((a, b) => a - b);
-          console.log(intersections);
+          //console.log(intersections);
 
-          drawIntersectionPoints(intersections);
+          //drawIntersectionPoints(intersections);
 
           // 4) Draws lines between the intersection points.
           for (let i = 0; i < intersections.length; i += 2) {
@@ -319,7 +319,7 @@
               if ((y1 <= y && y2 > y) || (y2 <= y && y1 > y)) {
                 let x = x1 + ((y - y1) * (x2 - x1)) / (y2 - y1);
                 intersections.push(x);
-                drawSinglePoint([x, y], (radius = 3), (color = "magenta"));
+                //drawSinglePoint([x, y], (radius = 3), (color = "magenta"));
               }
             }
           });
@@ -498,8 +498,7 @@
           );
           drawPointsClaude(path);
 
-          document.getElementById("SVG-output").innerText =
-            JSON.stringify(path);
+          //document.getElementById("SVG-output").innerText = JSON.stringify(path);
         }
       }
 
