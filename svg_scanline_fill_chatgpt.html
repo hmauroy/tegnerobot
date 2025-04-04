@@ -135,11 +135,15 @@
       ) {
         let minY = Infinity,
           maxY = -Infinity;
+        let minX = Infinity,
+          maxX = -Infinity;
 
         pathArrays.forEach((points) => {
           points.forEach(([x, y]) => {
             minY = Math.min(minY, y);
             maxY = Math.max(maxY, y);
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
           });
         });
 
@@ -147,24 +151,18 @@
         ctx.strokeStyle = "green";
         let stepSize = 0.3;
 
-        // Original code iterates through integer y-values.
-        //for (let y = Math.ceil(minY); y <= Math.floor(maxY); y++) {
-        if (createScanlines) {
-          stepSize = 0.3;
-        }
+        if (createScanlines) stepSize = 0.3;
         if (createFill) {
           ctx.strokeStyle = "darkslategrey";
           stepSize = 0.1;
         }
 
-        // Creates a new 2D-array of subarrays with points which run in the middle of the scanlines
         let lineArray = [];
 
-        // 1) Scans the drawing one line at a time with a fixed stepSize
+        // === VERTICAL SCANNING PASS ===
         for (let y = minY; y <= maxY; y += stepSize) {
           let intersections = [];
 
-          // 2) Searches for intersections among all the SVG path-arrays.
           pathArrays.forEach((points) => {
             for (let i = 0; i < points.length - 1; i++) {
               let [x1, y1] = points[i];
@@ -177,21 +175,66 @@
             }
           });
 
-          // 3) Sorts the intersections in the x-axis.
           intersections.sort((a, b) => a - b);
 
-          // 4) Draws lines between the intersection points.
           for (let i = 0; i < intersections.length; i += 2) {
-            let xStart = intersections[i] * scaleFactor;
-            let xEnd = intersections[i + 1] * scaleFactor;
+            let xStart = intersections[i];
+            let xEnd = intersections[i + 1];
             let yScaled = y * scaleFactor;
-            lineArray.push([(xEnd + xStart) / 2, yScaled]);
-            ctx.beginPath();
-            ctx.moveTo(xStart, yScaled);
-            ctx.lineTo(xEnd, yScaled);
-            // Only draw scanlines or dense scanlines if selected by user.
-            if (createScanlines || createFill) {
-              ctx.stroke();
+
+            // Check if the segment is very horizontal
+            let segmentSlope = Math.abs((y - y) / (xEnd - xStart || 1)); // avoid divide by 0
+            if (
+              intersections.length === 2 &&
+              segmentSlope < 0.5 // threshold for “flatness”, tweakable
+            ) {
+              // === SWITCH TO HORIZONTAL SCANNING IN THIS REGION ===
+              let midY = y;
+              for (let x = xStart; x <= xEnd; x += stepSize) {
+                let yHits = [];
+
+                pathArrays.forEach((points) => {
+                  for (let j = 0; j < points.length - 1; j++) {
+                    let [x1, y1] = points[j];
+                    let [x2, y2] = points[j + 1];
+
+                    if ((x1 <= x && x2 > x) || (x2 <= x && x1 > x)) {
+                      let yHit = y1 + ((x - x1) * (y2 - y1)) / (x2 - x1);
+                      yHits.push(yHit);
+                    }
+                  }
+                });
+
+                yHits.sort((a, b) => a - b);
+
+                for (let k = 0; k < yHits.length; k += 2) {
+                  let yStart = yHits[k];
+                  let yEnd = yHits[k + 1];
+                  if (yStart !== undefined && yEnd !== undefined) {
+                    let centerX = x * scaleFactor;
+                    let centerY = ((yStart + yEnd) / 2) * scaleFactor;
+                    lineArray.push([centerX, centerY]);
+
+                    if (createScanlines || createFill) {
+                      ctx.beginPath();
+                      ctx.moveTo(centerX, yStart * scaleFactor);
+                      ctx.lineTo(centerX, yEnd * scaleFactor);
+                      ctx.stroke();
+                    }
+                  }
+                }
+              }
+            } else {
+              // === NORMAL VERTICAL CENTER LINE ===
+              let centerX = ((xEnd + xStart) / 2) * scaleFactor;
+              lineArray.push([centerX, yScaled]);
+
+              if (createScanlines || createFill) {
+                ctx.beginPath();
+                ctx.moveTo(xStart * scaleFactor, yScaled);
+                ctx.lineTo(xEnd * scaleFactor, yScaled);
+                ctx.stroke();
+              }
             }
           }
         }
@@ -203,7 +246,7 @@
             maxDistanceThreshold
           );
           drawPointsClaude(path);
-          
+
           document.getElementById("SVG-output").innerText =
             JSON.stringify(path);
         }
