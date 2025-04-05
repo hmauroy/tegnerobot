@@ -402,70 +402,187 @@
       }
       // End claude 3.7 insertion
 
-      function findMiddlePath(intersectionPoints) {
-        // Sort all points by their x-coordinate
+      /**
+       * Find a path in the middle of closed SVG areas based on intersection points
+       * @param {Array} intersectionPoints - Array of [x,y] points representing intersections
+       * @param {Number} proximityThreshold - Maximum distance to consider points as belonging to the same group (default: 30px)
+       * @returns {Array} Array of [x,y] points representing the middle path
+       */
+      function findMiddlePath(intersectionPoints, proximityThreshold = 30) {
+        // Early exit for empty input
+        if (!intersectionPoints || intersectionPoints.length === 0) {
+          return [];
+        }
+
+        // Sort points by x value for horizontal processing
         const sortedByX = [...intersectionPoints].sort((a, b) => a[0] - b[0]);
 
-        // Group points by their x-coordinate
-        const pointsByX = {};
-        sortedByX.forEach((point) => {
-          const x = point[0];
-          if (!pointsByX[x]) {
-            pointsByX[x] = [];
-          }
-          pointsByX[x].push(point);
-        });
-
-        // Calculate average y for each x-coordinate
-        const xAxisPoints = [];
-        for (const x in pointsByX) {
-          const points = pointsByX[x];
-          const avgY =
-            points.reduce((sum, point) => sum + point[1], 0) / points.length;
-          xAxisPoints.push([parseFloat(x), avgY]);
-        }
-
-        // Sort all points by their y-coordinate
+        // Sort points by y value for vertical processing
         const sortedByY = [...intersectionPoints].sort((a, b) => a[1] - b[1]);
 
-        // Group points by their y-coordinate
-        const pointsByY = {};
-        sortedByY.forEach((point) => {
-          const y = point[1];
-          if (!pointsByY[y]) {
-            pointsByY[y] = [];
-          }
-          pointsByY[y].push(point);
-        });
+        // Points for the middle path
+        const middlePathPoints = [];
 
-        // Calculate average x for each y-coordinate
-        const yAxisPoints = [];
-        for (const y in pointsByY) {
-          const points = pointsByY[y];
-          const avgX =
-            points.reduce((sum, point) => sum + point[0], 0) / points.length;
-          yAxisPoints.push([avgX, parseFloat(y)]);
+        // Process points along the x-axis (points with same or similar x values)
+        let i = 0;
+        while (i < sortedByX.length) {
+          const currentX = sortedByX[i][0];
+          const pointsAtCurrentX = [];
+
+          // Collect all points with the same or very close x value
+          while (
+            i < sortedByX.length &&
+            Math.abs(sortedByX[i][0] - currentX) < 0.001
+          ) {
+            pointsAtCurrentX.push(sortedByX[i]);
+            i++;
+          }
+
+          // If we found multiple points at this x value, process them
+          if (pointsAtCurrentX.length > 1) {
+            // Sort these points by y value
+            pointsAtCurrentX.sort((a, b) => a[1] - b[1]);
+
+            // Group points that are close together vertically
+            let j = 0;
+            while (j < pointsAtCurrentX.length) {
+              const group = [pointsAtCurrentX[j]];
+              let k = j + 1;
+
+              // Find all points within proximity threshold
+              while (
+                k < pointsAtCurrentX.length &&
+                Math.abs(pointsAtCurrentX[k][1] - pointsAtCurrentX[j][1]) <=
+                  proximityThreshold
+              ) {
+                group.push(pointsAtCurrentX[k]);
+                k++;
+              }
+
+              // If we have a group, calculate the average y and add to middle path
+              if (group.length > 0) {
+                const avgY =
+                  group.reduce((sum, point) => sum + point[1], 0) /
+                  group.length;
+                middlePathPoints.push([currentX, avgY]);
+              }
+
+              j = k;
+            }
+          }
         }
 
-        // Combine both sets of points
-        const middlePath = [...xAxisPoints, ...yAxisPoints];
+        // Process points along the y-axis (points with same or similar y values)
+        i = 0;
+        while (i < sortedByY.length) {
+          const currentY = sortedByY[i][1];
+          const pointsAtCurrentY = [];
 
-        // Sort points to create a continuous path
-        // You might need a more sophisticated sorting algorithm depending on your needs
-        // For now, we'll just sort by x then y
-        middlePath.sort((a, b) => {
-          if (a[0] !== b[0]) {
-            return a[0] - b[0];
+          // Collect all points with the same or very close y value
+          while (
+            i < sortedByY.length &&
+            Math.abs(sortedByY[i][1] - currentY) < 0.001
+          ) {
+            pointsAtCurrentY.push(sortedByY[i]);
+            i++;
           }
-          return a[1] - b[1];
-        });
 
-        return middlePath;
+          // If we found multiple points at this y value, process them
+          if (pointsAtCurrentY.length > 1) {
+            // Sort these points by x value
+            pointsAtCurrentY.sort((a, b) => a[0] - b[0]);
+
+            // Group points that are close together horizontally
+            let j = 0;
+            while (j < pointsAtCurrentY.length) {
+              const group = [pointsAtCurrentY[j]];
+              let k = j + 1;
+
+              // Find all points within proximity threshold
+              while (
+                k < pointsAtCurrentY.length &&
+                Math.abs(pointsAtCurrentY[k][0] - pointsAtCurrentY[j][0]) <=
+                  proximityThreshold
+              ) {
+                group.push(pointsAtCurrentY[k]);
+                k++;
+              }
+
+              // If we have a group, calculate the average x and add to middle path
+              if (group.length > 0) {
+                const avgX =
+                  group.reduce((sum, point) => sum + point[0], 0) /
+                  group.length;
+                middlePathPoints.push([avgX, currentY]);
+              }
+
+              j = k;
+            }
+          }
+        }
+
+        // Remove duplicate or very close points
+        const uniquePoints = [];
+        for (const point of middlePathPoints) {
+          // Check if this point is already in our result set (or very close to an existing point)
+          const isDuplicate = uniquePoints.some(
+            (existing) =>
+              Math.sqrt(
+                Math.pow(existing[0] - point[0], 2) +
+                  Math.pow(existing[1] - point[1], 2)
+              ) < 5
+          );
+
+          if (!isDuplicate) {
+            uniquePoints.push(point);
+          }
+        }
+
+        // Sort the points to attempt to create a continuous path
+        // This is a simple approach - more sophisticated path ordering might be needed
+        return orderPointsForPath(uniquePoints);
       }
 
-      // To integrate with your existing code, add this line at the end of your scanlineFillClaude function:
-      // const middlePath = findMiddlePath(intersectionPoints);
-      // return middlePath;  // Or do something else with the path
+      /**
+       * Orders points to create a more continuous path
+       * @param {Array} points - Array of [x,y] points to order
+       * @returns {Array} Ordered array of points
+       */
+      function orderPointsForPath(points) {
+        if (points.length <= 2) return points;
+
+        const result = [points[0]];
+        const remaining = points.slice(1);
+
+        // Simple greedy algorithm to connect nearest points
+        while (remaining.length > 0) {
+          const lastPoint = result[result.length - 1];
+
+          // Find the closest remaining point
+          let closestIndex = 0;
+          let closestDistance = Infinity;
+
+          remaining.forEach((point, index) => {
+            const distance = Math.sqrt(
+              Math.pow(point[0] - lastPoint[0], 2) +
+                Math.pow(point[1] - lastPoint[1], 2)
+            );
+
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestIndex = index;
+            }
+          });
+
+          // Add the closest point to our result
+          result.push(remaining[closestIndex]);
+
+          // Remove it from the remaining points
+          remaining.splice(closestIndex, 1);
+        }
+
+        return result;
+      }
 
       function scanlineFillClaude(
         ctx,
