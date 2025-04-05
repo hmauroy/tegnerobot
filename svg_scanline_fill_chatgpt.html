@@ -402,6 +402,71 @@
       }
       // End claude 3.7 insertion
 
+      function findMiddlePath(intersectionPoints) {
+        // Sort all points by their x-coordinate
+        const sortedByX = [...intersectionPoints].sort((a, b) => a[0] - b[0]);
+
+        // Group points by their x-coordinate
+        const pointsByX = {};
+        sortedByX.forEach((point) => {
+          const x = point[0];
+          if (!pointsByX[x]) {
+            pointsByX[x] = [];
+          }
+          pointsByX[x].push(point);
+        });
+
+        // Calculate average y for each x-coordinate
+        const xAxisPoints = [];
+        for (const x in pointsByX) {
+          const points = pointsByX[x];
+          const avgY =
+            points.reduce((sum, point) => sum + point[1], 0) / points.length;
+          xAxisPoints.push([parseFloat(x), avgY]);
+        }
+
+        // Sort all points by their y-coordinate
+        const sortedByY = [...intersectionPoints].sort((a, b) => a[1] - b[1]);
+
+        // Group points by their y-coordinate
+        const pointsByY = {};
+        sortedByY.forEach((point) => {
+          const y = point[1];
+          if (!pointsByY[y]) {
+            pointsByY[y] = [];
+          }
+          pointsByY[y].push(point);
+        });
+
+        // Calculate average x for each y-coordinate
+        const yAxisPoints = [];
+        for (const y in pointsByY) {
+          const points = pointsByY[y];
+          const avgX =
+            points.reduce((sum, point) => sum + point[0], 0) / points.length;
+          yAxisPoints.push([avgX, parseFloat(y)]);
+        }
+
+        // Combine both sets of points
+        const middlePath = [...xAxisPoints, ...yAxisPoints];
+
+        // Sort points to create a continuous path
+        // You might need a more sophisticated sorting algorithm depending on your needs
+        // For now, we'll just sort by x then y
+        middlePath.sort((a, b) => {
+          if (a[0] !== b[0]) {
+            return a[0] - b[0];
+          }
+          return a[1] - b[1];
+        });
+
+        return middlePath;
+      }
+
+      // To integrate with your existing code, add this line at the end of your scanlineFillClaude function:
+      // const middlePath = findMiddlePath(intersectionPoints);
+      // return middlePath;  // Or do something else with the path
+
       function scanlineFillClaude(
         ctx,
         pathArrays,
@@ -601,7 +666,7 @@
         }
 
         console.log("finds center of mass for intersection points.");
-        const centerPoints = findCenterPath(intersectionPoints, pathArrays);
+        const centerPoints = findMiddlePath(intersectionPoints);
 
         centerPoints.forEach((point) => {
           console.log(point);
