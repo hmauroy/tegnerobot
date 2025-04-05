@@ -260,6 +260,148 @@
         return outputArr;
       }
 
+      // Claude 3.7 insertion
+      function findCenterPath(intersectionPoints, pathArrays) {
+        if (!intersectionPoints || intersectionPoints.length === 0) {
+          console.log("No intersection points found");
+          return [];
+        }
+
+        // First, group intersection points by x-coordinate
+        const pointsByX = {};
+        intersectionPoints.forEach((point) => {
+          const x = point[0];
+          if (!pointsByX[x]) {
+            pointsByX[x] = [];
+          }
+          pointsByX[x].push(point);
+        });
+
+        // For each x-coordinate, find midpoints between pairs of y-values
+        const xMidpoints = [];
+        for (const x in pointsByX) {
+          const yValues = pointsByX[x]
+            .map((point) => point[1])
+            .sort((a, b) => a - b);
+
+          // Find pairs of y-values that form boundaries
+          for (let i = 0; i < yValues.length; i += 2) {
+            if (i + 1 < yValues.length) {
+              const yStart = yValues[i];
+              const yEnd = yValues[i + 1];
+              const midY = (yStart + yEnd) / 2;
+
+              // Check if this midpoint is actually inside the shape
+              if (isPointInside([parseFloat(x), midY], pathArrays)) {
+                xMidpoints.push([parseFloat(x), midY]);
+              }
+            }
+          }
+        }
+
+        // Second, group intersection points by y-coordinate
+        const pointsByY = {};
+        intersectionPoints.forEach((point) => {
+          const y = point[1];
+          if (!pointsByY[y]) {
+            pointsByY[y] = [];
+          }
+          pointsByY[y].push(point);
+        });
+
+        // For each y-coordinate, find midpoints between pairs of x-values
+        const yMidpoints = [];
+        for (const y in pointsByY) {
+          const xValues = pointsByY[y]
+            .map((point) => point[0])
+            .sort((a, b) => a - b);
+
+          // Find pairs of x-values that form boundaries
+          for (let i = 0; i < xValues.length; i += 2) {
+            if (i + 1 < xValues.length) {
+              const xStart = xValues[i];
+              const xEnd = xValues[i + 1];
+              const midX = (xStart + xEnd) / 2;
+
+              // Check if this midpoint is actually inside the shape
+              if (isPointInside([midX, parseFloat(y)], pathArrays)) {
+                yMidpoints.push([midX, parseFloat(y)]);
+              }
+            }
+          }
+        }
+
+        // Combine all midpoints
+        const allMidpoints = [...xMidpoints, ...yMidpoints];
+
+        // Sort points to create a continuous path
+        // This is a simple implementation - more sophisticated path ordering might be needed
+        const centerPath = orderPointsForPath(allMidpoints);
+
+        return centerPath;
+      }
+
+      // Helper function to check if a point is inside the shape
+      function isPointInside(point, pathArrays) {
+        const [x, y] = point;
+        let inside = false;
+
+        // Ray casting algorithm to determine if point is inside polygon
+        pathArrays.forEach((points) => {
+          for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+            const [xi, yi] = points[i];
+            const [xj, yj] = points[j];
+
+            const intersect =
+              yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+
+            if (intersect) inside = !inside;
+          }
+        });
+
+        return inside;
+      }
+
+      // Helper function to order points into a continuous path
+      function orderPointsForPath(points) {
+        if (points.length <= 1) return points;
+
+        const result = [points[0]];
+        const remaining = new Set(points.slice(1));
+
+        while (remaining.size > 0) {
+          const current = result[result.length - 1];
+          let nearest = null;
+          let minDist = Infinity;
+
+          // Find the nearest unvisited point
+          for (const point of remaining) {
+            const dist = distance(current, point);
+            if (dist < minDist) {
+              minDist = dist;
+              nearest = point;
+            }
+          }
+
+          if (nearest) {
+            result.push(nearest);
+            remaining.delete(nearest);
+          } else {
+            break;
+          }
+        }
+
+        return result;
+      }
+
+      // Helper function to calculate distance between two points
+      function distance(p1, p2) {
+        return Math.sqrt(
+          Math.pow(p2[0] - p1[0], 2) + Math.pow(p2[1] - p1[1], 2)
+        );
+      }
+      // End claude 3.7 insertion
+
       function scanlineFillClaude(
         ctx,
         pathArrays,
@@ -304,9 +446,6 @@
 
         // Store horizontal scan data for each x level
         let horizontalScans = {};
-
-        // Angle threshold for determining nearly horizontal segments (in radians)
-        const HORIZONTAL_THRESHOLD = Math.PI / 6; // 30 degrees from horizontal
 
         // 1) First vertical scanning pass to identify horizontal areas
         console.log("Starts scanning along y direction.");
@@ -461,30 +600,57 @@
           }
         }
 
-        // Combine all center points for final path finding
-        let allCenterPoints = [
-          ...verticalScanPoints,
-          ...horizontalScanPoints,
-          ...intersectionPoints,
-        ];
+        console.log("finds center of mass for intersection points.");
+        const centerPoints = findCenterPath(intersectionPoints, pathArrays);
+
+        centerPoints.forEach((point) => {
+          console.log(point);
+          const x = point[0];
+          const y = point[1];
+          // Get the canvas and context
+          let canvas = document.getElementById("drawCanvas");
+          let ctx = canvas.getContext("2d");
+          ctx.beginPath();
+          ctx.moveTo(point[0], point[1]);
+          ctx.fillStyle = "red";
+          ctx.arc(x, y, 5, 0, Math.PI * 2);
+          ctx.fill();
+          //drawSinglePoint(point, (color = "red"), (radius = 50));
+        });
+
+        return;
+
+        /*
+
+        // You can then use centerPoints to create a centerline path
+        if (createCenterLine && centerPoints && centerPoints.length > 0) {
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(centerPoints[0][0], centerPoints[0][1]);
+
+          for (let i = 1; i < centerPoints.length; i++) {
+            ctx.lineTo(centerPoints[i][0], centerPoints[i][1]);
+          }
+
+          ctx.stroke();
+        }
+          */
 
         // 7) Use external function to find a path between all center points
         const path = findNearestNeighborPathImproved(
-          allCenterPoints,
+          centerPoints,
           maxDistanceThreshold
         );
 
         // 8) Draw the points onto the canvas
         if (createCenterLine) {
-          ctx.strokeStyle = "red";
+          ctx.strokeStyle = "blue";
           drawPointsClaude(path);
           //document.getElementById("SVG-output").innerText = JSON.stringify(path);
         }
 
         return {
-          verticalPoints: verticalScanPoints,
-          horizontalPoints: horizontalScanPoints,
-          intersectionPoints: intersectionPoints,
           finalPath: path,
         };
       }
