@@ -296,9 +296,14 @@
         }
 
         // Creates a new 2D-array of subarrays with points which run in the middle of the scanlines
-        let lineArray = [];
-        // Store areas that need horizontal scanning
-        let horizontalScanAreas = [];
+        let verticalScanPoints = [];
+        let horizontalScanPoints = [];
+
+        // Store vertical scan data for each y level
+        let verticalScans = {};
+
+        // Store horizontal scan data for each x level
+        let horizontalScans = {};
 
         // Angle threshold for determining nearly horizontal segments (in radians)
         const HORIZONTAL_THRESHOLD = Math.PI / 6; // 30 degrees from horizontal
@@ -306,9 +311,9 @@
         // 1) First vertical scanning pass to identify horizontal areas
         console.log("Starts scanning along y direction.");
         for (let y = minY; y <= maxY; y += stepSize) {
-          //for (let y = minY; y <= 30; y += stepSize) {
           console.log("y: " + y);
           let intersections = [];
+          verticalScans[y] = [];
 
           // 2) Searches for intersections among all the SVG path-arrays.
           pathArrays.forEach((points) => {
@@ -326,92 +331,22 @@
 
           // 3) Sorts the intersections in the x-axis.
           intersections.sort((a, b) => a - b);
-          console.log("intersections: ");
-          console.log(intersections);
           // 3b) Removes points that are at vertices or top of curves/circles.
           // These single intersections should only count as one x-value.
           intersections = removeDuplicates(intersections);
-          console.log("intersections edited: ");
-          console.log(intersections);
+
+          // Store all intersection points for this y level
+          verticalScans[y] = intersections;
 
           // 4) Process and draw lines between intersection points
           for (let i = 0; i < intersections.length; i += 2) {
             if (i + 1 < intersections.length) {
               let xStart = intersections[i];
               let xEnd = intersections[i + 1];
-              let width = Math.abs(xEnd - xStart);
               let midPoint = [(xEnd + xStart) / 2, y];
 
-              // Check if the segment is nearly horizontal
-              // We can identify horizontal areas by checking:
-              // 1. If we have exactly 2 intersections
-              // 2. If the width of the segment is significant compared to the step size
-              if (intersections.length === 2 && width > stepSize) {
-                console.log("horizontal scanning needed");
-                // Calculate local slope by sampling nearby scanlines
-                let prevY = y - stepSize;
-                let nextY = y + stepSize;
-                let prevIntersections = removeDuplicates(
-                  findIntersectionsAtY(pathArrays, prevY)
-                );
-                let nextIntersections = removeDuplicates(
-                  findIntersectionsAtY(pathArrays, nextY)
-                );
-
-                console.log(prevIntersections, nextIntersections);
-                let prevXstart, nextXEnd;
-
-                // If the last point is a vertex/top point, calculate slopes
-                if (
-                  prevIntersections.length === 1 &&
-                  nextIntersections.length === 2
-                ) {
-                  nextIntersections.sort((a, b) => a - b);
-                  prevXstart = prevIntersections[0];
-                  nextXEnd = nextIntersections[1];
-                }
-                // If we have 2 intersections on adjacent scanlines, calculate slopes
-                else if (
-                  prevIntersections.length === 2 &&
-                  nextIntersections.length === 2
-                ) {
-                  prevIntersections.sort((a, b) => a - b);
-                  nextIntersections.sort((a, b) => a - b);
-
-                  prevXstart = prevIntersections[0];
-                  nextXEnd = nextIntersections[1];
-                }
-
-                // Calculate angle of the center path segment
-                let dx = nextXEnd - prevXstart;
-                let dy = nextY - prevY;
-                let angle = Math.abs(Math.atan2(dy, dx));
-                console.log(
-                  "dx,dy: " +
-                    dx +
-                    "," +
-                    dy +
-                    ", angle: " +
-                    calcAngleDegrees(angle).toFixed(1) +
-                    " degrees."
-                );
-
-                // If close to horizontal, mark this area for horizontal scanning
-                if (
-                  angle < HORIZONTAL_THRESHOLD ||
-                  angle > Math.PI - HORIZONTAL_THRESHOLD
-                ) {
-                  console.log("horizontal area found!");
-                  horizontalScanAreas.push({
-                    y: y,
-                    xStart: xStart,
-                    xEnd: xEnd,
-                  });
-                }
-              }
-
-              // Add the midpoint to lineArray (for regular vertical scan)
-              lineArray.push([(xEnd + xStart) / 2, y]);
+              // Add the midpoint to verticalScanPoints (for y-direction scan)
+              verticalScanPoints.push(midPoint);
 
               // Draw scanlines if needed
               if (createScanlines || createFill) {
@@ -424,99 +359,134 @@
           }
         }
 
-        // 5) Perform horizontal scanning for identified horizontal areas
+        // 5) Perform horizontal scanning
         ctx.strokeStyle = "blue"; // Different color for horizontal scans
 
-        console.log("Processes horizontalScanAreas.");
-        console.log(horizontalScanAreas);
-        horizontalScanAreas.forEach((area) => {
-          // Determine scan range with a bit of padding
-          let padding = stepSize * 2;
-          let yValue = area.y;
-          let xStart = area.xStart - padding;
-          let xEnd = area.xEnd + padding;
+        console.log("Starting horizontal scanning.");
 
-          // Scan horizontally with the same step size
-          for (let x = xStart; x <= xEnd; x += stepSize) {
-            console.log("x: " + x);
-            let intersectionsY = [];
+        // Scan horizontally with the same step size
+        for (let x = minX; x <= maxX; x += stepSize) {
+          console.log("x: " + x);
+          let intersectionsY = [];
+          horizontalScans[x] = [];
 
-            // Find y-intersections for this x coordinate
-            pathArrays.forEach((points) => {
-              for (let i = 0; i < points.length - 1; i++) {
-                let [x1, y1] = points[i];
-                let [x2, y2] = points[i + 1];
+          // Find y-intersections for this x coordinate
+          pathArrays.forEach((points) => {
+            for (let i = 0; i < points.length - 1; i++) {
+              let [x1, y1] = points[i];
+              let [x2, y2] = points[i + 1];
 
-                // Check if the x value intersects with this path segment
-                if ((x1 <= x && x2 > x) || (x2 <= x && x1 > x)) {
-                  // Calculate y at intersection point
-                  let y = y1 + ((x - x1) * (y2 - y1)) / (x2 - x1);
-                  // Only consider intersections near our identified horizontal area
-                  if (Math.abs(y - yValue) < stepSize * 3) {
-                    intersectionsY.push(y);
-                    drawSinglePoint([x, y], (radius = 4), (color = "red"));
+              // Check if the x value intersects with this path segment
+              if ((x1 <= x && x2 > x) || (x2 <= x && x1 > x)) {
+                // Calculate y at intersection point
+                let y = y1 + ((x - x1) * (y2 - y1)) / (x2 - x1);
+                intersectionsY.push(y);
+              }
+            }
+          });
+
+          // Sort y-intersections
+          intersectionsY.sort((a, b) => a - b);
+
+          // Store all intersection points for this x level
+          horizontalScans[x] = intersectionsY;
+
+          // Process and draw lines between horizontal intersection points
+          for (let i = 0; i < intersectionsY.length; i += 2) {
+            if (i + 1 < intersectionsY.length) {
+              let yStart = intersectionsY[i];
+              let yEnd = intersectionsY[i + 1];
+              let midPointX = [x, (yEnd + yStart) / 2];
+
+              // Add the midpoint to horizontalScanPoints
+              horizontalScanPoints.push(midPointX);
+
+              // Draw horizontal scanlines if needed
+              if (createScanlines || createFill) {
+                ctx.beginPath();
+                ctx.moveTo(x, yStart);
+                ctx.lineTo(x, yEnd);
+                ctx.stroke();
+              }
+            }
+          }
+        }
+
+        // 6) Find intersections between vertical and horizontal scanlines
+        let intersectionPoints = [];
+
+        // Process each horizontal scanline (for each x-value)
+        for (let x in horizontalScans) {
+          x = parseFloat(x);
+          let yValues = horizontalScans[x];
+
+          // For each pair of y-values (representing a segment)
+          for (let i = 0; i < yValues.length; i += 2) {
+            if (i + 1 < yValues.length) {
+              let yStart = yValues[i];
+              let yEnd = yValues[i + 1];
+
+              // Check each vertical scanline (for each y-value)
+              for (let y in verticalScans) {
+                y = parseFloat(y);
+
+                // If the vertical scanline intersects with this horizontal segment
+                if (y >= yStart && y <= yEnd) {
+                  let xValues = verticalScans[y];
+
+                  // For each pair of x-values in the vertical scan
+                  for (let j = 0; j < xValues.length; j += 2) {
+                    if (j + 1 < xValues.length) {
+                      let xStart = xValues[j];
+                      let xEnd = xValues[j + 1];
+
+                      // If the horizontal scanline intersects with this vertical segment
+                      if (x >= xStart && x <= xEnd) {
+                        // We found an intersection point
+                        intersectionPoints.push([x, y]);
+
+                        // Optionally mark the intersection points
+                        if (createScanlines) {
+                          ctx.fillStyle = "purple";
+                          ctx.beginPath();
+                          ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                          ctx.fill();
+                        }
+                      }
+                    }
                   }
                 }
               }
-            });
-
-            // Sort y-intersections
-            intersectionsY.sort((a, b) => a - b);
-            console.log("intersections Y:");
-            console.log(intersectionsY);
-
-            // Draw horizontal scan and add midpoints to lineArray
-            for (let i = 0; i < intersectionsY.length; i += 2) {
-              if (i + 1 < intersectionsY.length) {
-                let yStart = intersectionsY[i];
-                let yEnd = intersectionsY[i + 1];
-
-                // Add midpoint to lineArray
-                lineArray.push([x, (yStart + yEnd) / 2]);
-
-                // Draw horizontal scanline if needed
-                if (createScanlines || createFill) {
-                  ctx.strokeStyle = "blue";
-                  ctx.beginPath();
-                  ctx.moveTo(x, yStart);
-                  ctx.lineTo(x, yEnd);
-                  ctx.stroke();
-                }
-              }
             }
           }
-        });
+        }
 
-        // Use external function to draw the points onto the canvas
+        // Combine all center points for final path finding
+        let allCenterPoints = [
+          ...verticalScanPoints,
+          ...horizontalScanPoints,
+          ...intersectionPoints,
+        ];
+
+        // 7) Use external function to find a path between all center points
+        const path = findNearestNeighborPathImproved(
+          allCenterPoints,
+          maxDistanceThreshold
+        );
+
+        // 8) Draw the points onto the canvas
         if (createCenterLine) {
           ctx.strokeStyle = "red";
-          const path = findNearestNeighborPathImproved(
-            lineArray,
-            maxDistanceThreshold
-          );
           drawPointsClaude(path);
-
           //document.getElementById("SVG-output").innerText = JSON.stringify(path);
         }
-      }
 
-      // Helper function to find intersections at a specific y coordinate
-      function findIntersectionsAtY(pathArrays, y) {
-        let intersections = [];
-
-        pathArrays.forEach((points) => {
-          for (let i = 0; i < points.length - 1; i++) {
-            let [x1, y1] = points[i];
-            let [x2, y2] = points[i + 1];
-
-            if ((y1 <= y && y2 > y) || (y2 <= y && y1 > y)) {
-              let x = x1 + ((y - y1) * (x2 - x1)) / (y2 - y1);
-              intersections.push(x);
-            }
-          }
-        });
-
-        return intersections;
+        return {
+          verticalPoints: verticalScanPoints,
+          horizontalPoints: horizontalScanPoints,
+          intersectionPoints: intersectionPoints,
+          finalPath: path,
+        };
       }
 
       function drawSvgPath() {
