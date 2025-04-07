@@ -66,6 +66,7 @@
     <script src="svg_points_to_bezier.js"></script>
     <script src="svg_colorArray.js"></script>
     <script src="svg_draw_intersection_points.js"></script>
+    <script src="svg_find_centerline.js"></script>
 
     <script>
       document.getElementById("svgInput").value =
@@ -783,7 +784,11 @@
         }
 
         console.log("finds center of mass for intersection points.");
-        const centerPoints = findMiddlePath(intersectionPoints);
+        console.log(JSON.stringify(intersectionPoints));
+        const centerPoints = findMidpath(intersectionPoints);
+        console.log(centerPoints);
+
+        //const centerPoints = findMiddlePath(intersectionPoints);
 
         centerPoints.forEach((point) => {
           console.log(point);
@@ -799,8 +804,6 @@
           ctx.fill();
           //drawSinglePoint(point, (color = "red"), (radius = 50));
         });
-
-        return;
 
         /*
 
