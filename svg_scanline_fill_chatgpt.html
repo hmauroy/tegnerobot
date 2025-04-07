@@ -67,6 +67,7 @@
     <script src="svg_colorArray.js"></script>
     <script src="svg_draw_intersection_points.js"></script>
     <script src="svg_find_centerline.js"></script>
+    <script src="svg_scanlineFill.js"></script>
 
     <script>
       document.getElementById("svgInput").value =
@@ -547,7 +548,7 @@
           ctx.fillStyle = "lightblue";
 
           // Calculates intersections and fills the scanlines with lines or dense lines (fill)
-          scanlineFill(
+          scanlineFillCopilot(
             ctx,
             pathArrays,
             scaleFactor,
