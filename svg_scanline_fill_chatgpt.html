@@ -785,7 +785,13 @@
 
         console.log("finds center of mass for intersection points.");
         console.log(JSON.stringify(intersectionPoints));
-        const centerPoints = findMidpath(intersectionPoints);
+        const proximityThreshold = document.getElementById(
+          "maxDistanceThresholdCheckbox"
+        ).value;
+        const centerPoints = findMiddlePath(
+          intersectionPoints,
+          proximityThreshold
+        );
         console.log(centerPoints);
 
         //const centerPoints = findMiddlePath(intersectionPoints);
