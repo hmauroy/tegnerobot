@@ -1,42 +1,34 @@
 /**
- * Finds an approximate middle path through a grid of points.
+ * Finds an approximate middle path through a grid of points using a grid-based approach.
  * @param {Array} points - Array of [x, y] points.
- * @param {number} proximityThreshold - Maximum distance to group points together (default: 30).
+ * @param {number} gridSize - Size of the grid cells to group points (default: 30).
  * @returns {Array} Array of [x, y] points representing the middle path.
  */
-function findMiddlePath(points, proximityThreshold = 30) {
+function findMiddlePath(points, gridSize = 30) {
   if (!points || points.length === 0) {
     return [];
   }
 
-  // Sort points by x-coordinate for horizontal grouping
-  const sortedByX = [...points].sort((a, b) => a[0] - b[0]);
+  // Create a map to group points into grid cells
+  const grid = new Map();
 
-  // Group points by proximity along the x-axis
-  const groupedPoints = [];
-  let currentGroup = [sortedByX[0]];
+  points.forEach(([x, y]) => {
+    const gridX = Math.floor(x / gridSize);
+    const gridY = Math.floor(y / gridSize);
+    const key = `${gridX},${gridY}`;
 
-  for (let i = 1; i < sortedByX.length; i++) {
-    const [prevX, prevY] = sortedByX[i - 1];
-    const [currX, currY] = sortedByX[i];
-
-    if (
-      Math.sqrt(Math.pow(currX - prevX, 2) + Math.pow(currY - prevY, 2)) <=
-      proximityThreshold
-    ) {
-      currentGroup.push([currX, currY]);
-    } else {
-      groupedPoints.push(currentGroup);
-      currentGroup = [[currX, currY]];
+    if (!grid.has(key)) {
+      grid.set(key, []);
     }
-  }
-  groupedPoints.push(currentGroup);
+    grid.get(key).push([x, y]);
+  });
 
-  // Calculate the centroid (average point) of each group
-  const centroids = groupedPoints.map((group) => {
+  // Calculate the centroid (average point) of each grid cell
+  const centroids = [];
+  grid.forEach((group) => {
     const sumX = group.reduce((sum, [x]) => sum + x, 0);
     const sumY = group.reduce((sum, [, y]) => sum + y, 0);
-    return [sumX / group.length, sumY / group.length];
+    centroids.push([sumX / group.length, sumY / group.length]);
   });
 
   // Sort centroids to create a continuous path
@@ -81,6 +73,7 @@ function orderPointsForPath(points) {
   return result;
 }
 
+/*
 // Example usage:
 const points = [
   [10, 10],
@@ -95,3 +88,4 @@ const points = [
 ];
 const middlePath = findMiddlePath(points, 20);
 console.log(middlePath);
+*/
