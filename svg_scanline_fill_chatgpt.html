@@ -95,7 +95,7 @@
 
         try {
           const svgData = JSON.parse(svgInput.value);
-
+          // Automatic scaling of the data to visualize on a similar scale for all svg drawings.
           const boundingBox = calcBoundingBox(svgData); // [x1,y1,x2,y2]
           const svgWidth = boundingBox[2] - boundingBox[0];
           const svgHeight = boundingBox[3] - boundingBox[1];
@@ -118,10 +118,10 @@
             createFill
           );
 
-          // Find the paths through the points.
+          // Find the paths through the mid points.
+          let path = [];
           if (createCenterLine) {
-            ctx.strokeStyle = "red";
-            const path = findNearestNeighborPathImproved(
+            path = findNearestNeighborPathImproved(
               midpoints,
               maxDistanceThreshold
             );
@@ -129,28 +129,46 @@
             drawPointsClaude(path);
           }
 
-          // 2) Create bezier curves of the pathArrays.
-
-          // 3) Last step is to scale down all
-
-          ctx.fillStyle = "red";
-          ctx.strokeStyle = "black";
-          pathArrays.forEach((points) => {
-            let lastX = points[0][0];
-            let lastY = points[0][1];
-            points.forEach(([x, y]) => {
-              ctx.beginPath();
-              ctx.moveTo(lastX, lastY);
-              ctx.lineTo(x, y);
-              if (createOutline) {
-                ctx.stroke();
-              }
-              lastX = x;
-              lastY = y;
-              //ctx.arc(xScaled, yScaled, 1, 0, Math.PI * 2);
-              //ctx.fill();
+          // 2) Reverse the scale down to original size using the scaleFactorX.
+          let pathScaledDown = [];
+          let indx = 0;
+          console.log(path);
+          path.forEach((curve) => {
+            pathScaledDown.push([]);
+            curve.forEach((point) => {
+              pathScaledDown[indx].push([
+                point[0] / scaleFactorX,
+                point[1] / scaleFactorX,
+              ]);
             });
+            indx++;
           });
+          console.log(pathScaledDown);
+
+          // 3) Create bezier curves of the pathArrays.
+          const svgOutput = generateBezierCurves(path);
+          console.log(JSON.stringify(svgOutput));
+
+          // Draw the outline as the last step to lay the outline on top of the other drawings.
+          if (createOutline) {
+            ctx.fillStyle = "red";
+            ctx.strokeStyle = "black";
+            pathArrays.forEach((points) => {
+              let lastX = points[0][0];
+              let lastY = points[0][1];
+              points.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                lastX = x;
+                lastY = y;
+                //ctx.arc(xScaled, yScaled, 1, 0, Math.PI * 2);
+                //ctx.fill();
+              });
+            });
+          }
         } catch (error) {
           console.error("Error drawing SVG path:", error);
           alert("Invalid SVG path input. Please check your JSON format.");
