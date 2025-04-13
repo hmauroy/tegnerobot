@@ -65,8 +65,6 @@
     <script src="sortPoints_next_neighbour.js"></script>
     <script src="svg_points_to_bezier.js"></script>
     <script src="svg_colorArray.js"></script>
-    <script src="svg_draw_intersection_points.js"></script>
-    <script src="svg_find_centerline.js"></script>
     <script src="svg_scanlineFill.js"></script>
     <script src="svg_parseSvg.js"></script>
 
@@ -145,11 +143,16 @@
           });
           console.log(pathScaledDown);
 
-          // 3) Create bezier curves of the pathArrays.
-          const svgOutput = generateBezierCurves(path);
-          console.log(JSON.stringify(svgOutput));
+          // 3) Sort the curves for minimizing travel distance.
+          const sortedLines = sortPathCurves(pathScaledDown);
 
-          // Draw the outline as the last step to lay the outline on top of the other drawings.
+          // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
+          return;
+          // 5) Create bezier curves of the pathArrays.
+          const svgOutput = generateBezierCurves(sortedLines);
+          //console.log(JSON.stringify(svgOutput));
+
+          // 6) Draw the outline as the last step to lay the outline on top of the other drawings.
           if (createOutline) {
             ctx.fillStyle = "red";
             ctx.strokeStyle = "black";
@@ -164,8 +167,6 @@
 
                 lastX = x;
                 lastY = y;
-                //ctx.arc(xScaled, yScaled, 1, 0, Math.PI * 2);
-                //ctx.fill();
               });
             });
           }
