@@ -103,28 +103,3 @@ function calcBoundingBox(svgPathArray) {
 
   return [minX, minY, maxX, maxY];
 }
-
-/**
- * Sorts the svg curves based on minimizing travel distance from end of a line to start of the next.
- * @param {Array} lineArrays - The path array (e.g., [[[x1,y1],[x2,y2]...],[X1,Y1],[X2,Y2]...]).
- * @param {Array} boundingBox - Array containing the bounding box [x1,y1,x2,y2],
- * @returns {Array} sortedCurves An array containing the sorted curves.
- */
-function sortPathCurves(lineArrays, boundingBox) {
-  const sortedCurves = [];
-  let minX = -Infinity;
-  let maxX = Infinity;
-  let minY = -Infinity;
-  let maxY = Infinity;
-  let startPoint = [boundingBox[0], boundingBox[1]];
-  // 1) Scan through to find upper most left point
-  lineArrays.forEach((curve) => {
-    console.log(curve[0], curve[curve.length - 1]);
-    if (curve[0][0] < startPoint[0][0]) {
-      startPoint[0][0] = curve[0][0];
-    }
-  });
-  // 2) Start from start point and find the natural "path" through the curves by scanning
-  // the neighbors from each end point of a curve.
-  return sortedCurves;
-}

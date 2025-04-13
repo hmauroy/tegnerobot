@@ -1,32 +1,7 @@
-function findNearestNeighborPath(points) {
-  const output = [];
-  let currentPoint = points[0];
-
-  for (let i = 1; i < points.length; i++) {
-    let nearestNeighbor = null;
-    let minDistance = Infinity;
-
-    for (let j = 0; j < points.length; j++) {
-      if (points[j] === currentPoint || output.includes(points[j])) continue;
-
-      const distance = Math.sqrt(
-        Math.pow(points[j][0] - currentPoint[0], 2) +
-          Math.pow(points[j][1] - currentPoint[1], 2)
-      );
-
-      if (distance < minDistance) {
-        nearestNeighbor = points[j];
-        minDistance = distance;
-      }
-    }
-
-    output.push(nearestNeighbor);
-    currentPoint = nearestNeighbor;
-  }
-
-  return output;
-}
-
+/*
+Claude 3.7 is main author of this function.
+Henrik Mauroy has a few edits.
+*/
 function findNearestNeighborPathImproved(points, maxDistanceThreshold = 30) {
   if (!points || points.length === 0) return [];
 
@@ -65,7 +40,11 @@ function findNearestNeighborPathImproved(points, maxDistanceThreshold = 30) {
     if (nearestNeighbor) {
       // Check if distance exceeds threshold - if so, start a new line
       if (minDistance > maxDistanceThreshold && currentLine.length > 0) {
-        result.push([...currentLine]); // Add the current line to the result
+        if (calcLength(currentLine) > 5) {
+          result.push([...currentLine]); // Add the current line to the result
+        } else {
+          // The line is discarded because it is too short.
+        }
         currentLine = [nearestNeighbor]; // Start a new line with this point
       } else {
         // Add to the current line
@@ -82,38 +61,89 @@ function findNearestNeighborPathImproved(points, maxDistanceThreshold = 30) {
 
   // Don't forget to add the last line if it has points
   if (currentLine.length > 0) {
-    result.push(currentLine);
+    // Check if the line is very short, then it's a turd and should be discarded.
+    if (calcLength(currentLine) > 5) {
+      result.push(currentLine);
+    }
   }
 
   return result;
 }
 
-function drawPoints(points, thresholdDistance = 10) {
-  // Get the canvas element and its 2D context
-  let canvas = document.getElementById("drawCanvas");
-  let ctx = canvas.getContext("2d");
+function calcLength(line) {
+  let length = 0;
+  let currentPoint = line[0];
+  function distance(a, b) {
+    return Math.sqrt(
+      (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])
+    );
+  }
+  line.forEach((point) => {
+    length += distance(currentPoint, point);
+    currentPoint = point;
+  });
+  return length;
+}
 
-  // Begin a new path
-  ctx.beginPath();
-
-  // Move to the first point
-  ctx.moveTo(points[0][0], points[0][1]);
-
-  // Draw lines to each subsequent point, skipping those farther than the threshold
-  for (let i = 1; i < points.length; i++) {
-    const dx = points[i][0] - points[i - 1][0];
-    const dy = points[i][1] - points[i - 1][1];
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance <= thresholdDistance) {
-      ctx.lineTo(points[i][0], points[i][1]);
-    } else {
-      ctx.moveTo(points[i][0], points[i][1]);
+/**
+ * Sorts the svg curves based on minimizing travel distance from end of a line to start of the next.
+ * @param {Array} lineArrays - The path array (3D-array: [[[x1,y1],[x2,y2]...],[X1,Y1],[X2,Y2]...]).
+ * @param {Array} boundingBox - Array containing the bounding box [x1,y1,x2,y2],
+ * @param {Object} ctx - Handle to the canvas.
+ * @returns {Array} sortedCurves An array containing the sorted curves.
+ */
+function sortPathCurves(lineArrays, boundingBox, ctx, createStartpoints) {
+  const sortedCurves = [];
+  let minDist = calcDistance([boundingBox[2], boundingBox[3]]);
+  let startPoint = [boundingBox[2], boundingBox[3]]; // Lower right point of boundingbox.
+  let radius = 3;
+  ctx.fillStyle = "purple";
+  // 1) Scan through to find point closest to (0,0), shortes distance to travel from the beginning.
+  lineArrays.forEach((curve) => {
+    if (createStartpoints) {
+      ctx.beginPath();
+      ctx.arc(curve[0][0], curve[0][1], radius, 0, 2 * Math.PI);
+      ctx.fill();
     }
+
+    if (calcDistance(curve[0]) <= minDist) {
+      minDist = calcDistance(curve[0]);
+      startPoint = curve[0];
+      console.log(startPoint, minDist);
+    }
+  });
+  if (createStartpoints) {
+    ctx.fillStyle = "red";
+    radius = 5;
+    ctx.beginPath();
+    ctx.arc(startPoint[0], startPoint[1], radius, 0, 2 * Math.PI);
+    ctx.fill();
   }
 
-  // Stroke the path, filling in the lines that were drawn
-  ctx.stroke();
+  // 2) Start from start point and find the natural "path" through the curves by scanning
+  // the neighbors from each end point of a curve.
+  return sortedCurves;
+}
+
+/**
+ * Calculates length of point vector startin in origo.
+ * @param {Array} point - End point
+ * @returns {float} returns distance.
+ */
+function calcDistance(point) {
+  return Math.sqrt(point[0] * point[0] + point[1] * point[1]);
+}
+
+/**
+ * Calculates Euclidian distance between two points.
+ * @param {Array} a - First point
+ * @param {Array} b - Second point
+ * @returns {float} returns distance.
+ */
+function calcDistancePoints(a, b) {
+  return Math.sqrt(
+    (a[0] - b[0]) * (a[0] - b[0]) - (a[1] - b[1]) * (a[1] - b[1])
+  );
 }
 
 function drawSinglePoint(point, radius = 3, color = "maroon") {

@@ -126,6 +126,8 @@ function scanlineFillYaxis(
   if (createFill) {
     ctx.strokeStyle = "darkslategrey";
     stepSize = 0.1;
+    createScanlines = false;
+    createCenterLine = false;
   }
 
   // Creates a new 2D-array of subarrays with points which run in the middle of the scanlines

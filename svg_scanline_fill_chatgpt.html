@@ -51,6 +51,11 @@
     >
     <br />
     <label
+      ><input type="checkbox" id="startpointsCheckbox" checked="checked" /> Mark
+      start points</label
+    >
+    <br />
+    <label
       ><input type="number" id="maxDistanceThresholdCheckbox" value="30" />
       Center line separation</label
     >
@@ -79,12 +84,17 @@
         const fillCheckbox = document.getElementById("fillCheckbox");
         const scanlinesCheckbox = document.getElementById("scanlinesCheckbox");
         const outlineCheckbox = document.getElementById("outlineCheckbox");
+        const centerlineCheckbox =
+          document.getElementById("centerlineCheckbox");
+        const startpointsCheckbox = document.getElementById(
+          "startpointsCheckbox"
+        );
 
         const createFill = fillCheckbox.checked;
         const createScanlines = scanlinesCheckbox.checked;
         const createOutline = outlineCheckbox.checked;
-        const createCenterLine =
-          document.getElementById("centerlineCheckbox").checked;
+        const createCenterLine = centerlineCheckbox.checked;
+        const createStartpoints = startpointsCheckbox.checked;
         const maxDistanceThreshold = Number(
           document.getElementById("maxDistanceThresholdCheckbox").value
         );
@@ -130,7 +140,6 @@
           // 2) Reverse the scale down to original size using the scaleFactorX.
           let pathScaledDown = [];
           let indx = 0;
-          console.log(path);
           path.forEach((curve) => {
             pathScaledDown.push([]);
             curve.forEach((point) => {
@@ -141,10 +150,15 @@
             });
             indx++;
           });
-          console.log(pathScaledDown);
+          //console.log(pathScaledDown);
 
           // 3) Sort the curves for minimizing travel distance.
-          const sortedLines = sortPathCurves(pathScaledDown);
+          const sortedLines = sortPathCurves(
+            path,
+            calcBoundingBox(path),
+            ctx,
+            createStartpoints
+          );
 
           // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
           return;
