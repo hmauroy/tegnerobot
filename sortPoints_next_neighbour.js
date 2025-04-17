@@ -100,7 +100,7 @@ function sortPathCurves(lineArrays, boundingBox, ctx) {
   let radius = 3;
   let startIndex = 0;
   let curve;
-  let nextCandidate;
+  let nextCandidate = 0;
   // 1) Scan through to find point closest to (0,0), shortes distance to travel from the beginning.
   for (let i = 0; i < lineArrays.length; i++) {
     curve = lineArrays[i];
@@ -116,18 +116,17 @@ function sortPathCurves(lineArrays, boundingBox, ctx) {
   // Picks the starting curve by spreding with the ... spread operator.
   sortedCurves.push(...lineArrays.splice(startIndex, 1));
   // Search for next curve
-  let idx = 0;
-  minDist = calcDistance([boundingBox[2], boundingBox[3]]);
   while (lineArrays.length > 0) {
     curve = sortedCurves[sortedCurves.length - 1];
+    minDist = calcDistance([boundingBox[2], boundingBox[3]]); // Resets the minDist every new search.
     // Checks distance from last point in current curve and start points of the rest of the curves.
     for (let i = 0; i < lineArrays.length; i++) {
       if (
-        calcDistancePoints(curve[curve.length - 1][0], lineArrays[i][0]) <=
-        minDist
+        calcDistancePoints(curve[curve.length - 1], lineArrays[i][0]) <= minDist
       ) {
         minDist = calcDistancePoints(curve[curve.length - 1], lineArrays[i][0]);
         nextCandidate = i;
+        console.log("nextCandidate:", i, lineArrays[i][0]);
       }
     }
     sortedCurves.push(...lineArrays.splice(nextCandidate, 1));
@@ -160,20 +159,7 @@ function calcDistancePoints(a, b) {
   );
 }
 
-function drawSinglePoint(point, radius = 3, color = "maroon") {
-  const x = point[0];
-  const y = point[1];
-  // Get the canvas and context
-  const canvas = document.getElementById("drawCanvas");
-  const ctx = canvas.getContext("2d");
-  ctx.beginPath();
-  ctx.moveTo(point[0], point[1]);
-  ctx.fillStyle = color;
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawPointsClaude(pointsArray) {
+function drawLinesClaude(pointsArray) {
   /*
     Claude 3.7 edit.
     */

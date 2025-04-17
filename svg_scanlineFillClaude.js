@@ -246,7 +246,7 @@ function scanlineFillClaude(
   // 8) Draw the points onto the canvas
   if (createCenterLine) {
     ctx.strokeStyle = "blue";
-    drawPointsClaude(path);
+    drawLinesClaude(path);
     //document.getElementById("SVG-output").innerText = JSON.stringify(path);
   }
 
