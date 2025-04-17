@@ -93,60 +93,49 @@ function calcLength(line) {
  * @param {Object} ctx - Handle to the canvas.
  * @returns {Array} sortedCurves An array containing the sorted curves.
  */
-function sortPathCurves(lineArrays, boundingBox, ctx, createStartpoints) {
+function sortPathCurves(lineArrays, boundingBox, ctx) {
   const sortedCurves = [];
   let minDist = calcDistance([boundingBox[2], boundingBox[3]]);
   let startPoint = [boundingBox[2], boundingBox[3]]; // Lower right point of boundingbox.
   let radius = 3;
   let startIndex = 0;
   let curve;
-  ctx.fillStyle = "purple";
+  let nextCandidate;
   // 1) Scan through to find point closest to (0,0), shortes distance to travel from the beginning.
   for (let i = 0; i < lineArrays.length; i++) {
     curve = lineArrays[i];
-    if (createStartpoints) {
-      ctx.beginPath();
-      ctx.arc(curve[0][0], curve[0][1], radius, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-
     if (calcDistance(curve[0]) <= minDist) {
       minDist = calcDistance(curve[0]);
       startPoint = curve[0];
       startIndex = i;
     }
   }
-  if (createStartpoints) {
-    ctx.fillStyle = "red";
-    radius = 5;
-    ctx.beginPath();
-    ctx.arc(startPoint[0], startPoint[1], radius, 0, 2 * Math.PI);
-    ctx.fill();
-  }
 
   // 2) Start from start point and find the natural "path" through the curves by scanning
   // the neighbors from each end point of a curve.
-  // Picks the starting curve
-  sortedCurves.push(lineArrays.splice(startIndex, 1));
+  // Picks the starting curve by spreding with the ... spread operator.
+  sortedCurves.push(...lineArrays.splice(startIndex, 1));
   // Search for next curve
   let idx = 0;
   minDist = calcDistance([boundingBox[2], boundingBox[3]]);
   while (lineArrays.length > 0) {
     curve = sortedCurves[sortedCurves.length - 1];
     // Checks distance from last point in current curve and start points of the rest of the curves.
-    console.log(curve[curve.length - 1][0]);
-    console.log(lineArrays[idx][0]);
-    if (
-      calcDistancePoints(curve[curve.length - 1][0], lineArrays[idx][0]) <=
-      minDist
-    ) {
-      minDist = calcDistancePoints(curve[curve.length - 1], lineArrays[idx][0]);
-      sortedCurves.push(lineArrays.splice(idx, 1));
-      idx = -1;
+    for (let i = 0; i < lineArrays.length; i++) {
+      if (
+        calcDistancePoints(curve[curve.length - 1][0], lineArrays[i][0]) <=
+        minDist
+      ) {
+        minDist = calcDistancePoints(curve[curve.length - 1], lineArrays[i][0]);
+        nextCandidate = i;
+      }
     }
-    idx++;
+    sortedCurves.push(...lineArrays.splice(nextCandidate, 1));
+    if (lineArrays.length === 0) {
+      console.log("empty lineArrays");
+      break;
+    }
   }
-  console.log("sortedCurves:", sortedCurves);
   return sortedCurves;
 }
 

@@ -121,7 +121,10 @@
             svgHeight * scaleFactorX
           );
           if (scaleFactorX * (y1 + svgHeight) * paddingFactor > canvas.height) {
-            while (scaleFactorX * (y1 + svgHeight) * paddingFactor > canvas.height) {
+            while (
+              scaleFactorX * (y1 + svgHeight) * paddingFactor >
+              canvas.height
+            ) {
               scaleFactorX = scaleFactorX * 0.995;
             }
           }
@@ -164,12 +167,33 @@
           //console.log(pathScaledDown);
 
           // 3) Sort the curves for minimizing travel distance.
-          const sortedLines = sortPathCurves(
-            path,
-            calcBoundingBox(path),
-            ctx,
-            createStartpoints
-          );
+          const sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
+
+          // 4) Draw the start points of the sorted curves
+          let radius = 3;
+          if (createStartpoints) {
+            ctx.fillStyle = "purple";
+            sortedLines.forEach((curve) => {
+              console.log(curve.length);
+              ctx.beginPath();
+              ctx.arc(curve[0][0], curve[0][1], radius, 0, 2 * Math.PI);
+              ctx.fill();
+            });
+          }
+          // Draws the first starting point in red.
+          if (createStartpoints) {
+            ctx.fillStyle = "red";
+            radius = 5;
+            ctx.beginPath();
+            ctx.arc(
+              sortedLines[0][0][0],
+              sortedLines[0][0][1],
+              radius,
+              0,
+              2 * Math.PI
+            );
+            ctx.fill();
+          }
 
           // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
           return;
