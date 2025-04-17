@@ -90,14 +90,12 @@ function calcLength(line) {
  * Author: Henrik C. Mauroy
  * @param {Array} lineArrays - The path array (3D-array: [[[x1,y1],[x2,y2]...],[X1,Y1],[X2,Y2]...]).
  * @param {Array} boundingBox - Array containing the bounding box [x1,y1,x2,y2],
- * @param {Object} ctx - Handle to the canvas.
  * @returns {Array} sortedCurves An array containing the sorted curves.
  */
-function sortPathCurves(lineArrays, boundingBox, ctx) {
+function sortPathCurves(lineArrays, boundingBox) {
   const sortedCurves = [];
   let minDist = calcDistance([boundingBox[2], boundingBox[3]]);
   let startPoint = [boundingBox[2], boundingBox[3]]; // Lower right point of boundingbox.
-  let radius = 3;
   let startIndex = 0;
   let curve;
   let nextCandidate = 0;
@@ -119,6 +117,7 @@ function sortPathCurves(lineArrays, boundingBox, ctx) {
   while (lineArrays.length > 0) {
     curve = sortedCurves[sortedCurves.length - 1];
     minDist = calcDistance([boundingBox[2], boundingBox[3]]); // Resets the minDist every new search.
+    nextCandidate = 0;
     // Checks distance from last point in current curve and start points of the rest of the curves.
     for (let i = 0; i < lineArrays.length; i++) {
       if (
@@ -126,14 +125,9 @@ function sortPathCurves(lineArrays, boundingBox, ctx) {
       ) {
         minDist = calcDistancePoints(curve[curve.length - 1], lineArrays[i][0]);
         nextCandidate = i;
-        console.log("nextCandidate:", i, lineArrays[i][0]);
       }
     }
     sortedCurves.push(...lineArrays.splice(nextCandidate, 1));
-    if (lineArrays.length === 0) {
-      console.log("empty lineArrays");
-      break;
-    }
   }
   return sortedCurves;
 }
@@ -157,39 +151,6 @@ function calcDistancePoints(a, b) {
   return Math.sqrt(
     (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])
   );
-}
-
-function drawLinesClaude(pointsArray) {
-  /*
-    Claude 3.7 edit.
-    */
-  // Get the canvas element and its 2D context
-  let canvas = document.getElementById("drawCanvas");
-  let ctx = canvas.getContext("2d");
-
-  // Iterate over each line (each subarray of points)
-  for (let lineIndex = 0; lineIndex < pointsArray.length; lineIndex++) {
-    const points = pointsArray[lineIndex];
-
-    // Skip empty lines
-    if (!points || points.length === 0) continue;
-
-    // Begin a new path for each line
-    ctx.beginPath();
-    ctx.strokeStyle = getColorForElement();
-
-    // Move to the first point of this line
-    ctx.moveTo(points[0][0], points[0][1]);
-    //console.log(points[0][0], points[0][1]);
-
-    // Draw lines to each subsequent point in this line
-    for (let i = 1; i < points.length; i++) {
-      ctx.lineTo(points[i][0], points[i][1]);
-    }
-
-    // Stroke the path for this line
-    ctx.stroke();
-  }
 }
 
 /*

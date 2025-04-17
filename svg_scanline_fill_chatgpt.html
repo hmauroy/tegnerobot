@@ -18,7 +18,8 @@
       #drawCanvas {
         border: 1px solid #000;
         width: 100%;
-        max-width: 600px;
+        max-width: 700px;
+        cursor: default;
       }
     </style>
   </head>
@@ -63,6 +64,14 @@
 
     <button onclick="drawSvgPath()">Draw Path</button>
     <br />
+
+    <label
+      ><input type="number" id="pupilDiameter" value="10" /> Pupil
+      diameter</label
+    >
+    <button id="btnPupilInsert">Draw pupil</button>
+    <br />
+
     <canvas id="drawCanvas" width="700" height="500"></canvas>
 
     <div id="SVG-output"></div>
@@ -72,7 +81,7 @@
     <script src="svg_colorArray.js"></script>
     <script src="svg_scanlineFill.js"></script>
     <script src="svg_parseSvg.js"></script>
-    <script src="svg_drawStartingPoints.js"></script>
+    <script src="svg_drawingFunctions.js"></script>
 
     <script>
       document.getElementById("svgInput").value =
@@ -102,9 +111,36 @@
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Set listener to drawing pupils onto the canvas.
+        let isEditing = false;
+        let eventHandle;
+        document
+          .getElementById("btnPupilInsert")
+          .addEventListener("click", function (evt) {
+            if (isEditing) {
+              isEditing = false;
+              canvas.style.cursor = "default";
+              document.getElementById("btnPupilInsert").innerText =
+                "Draw pupil";
+              // TODO: Remove event listener.
+              removeEventListener("click", eventHandle);
+            } else {
+              isEditing = true;
+              canvas.style.cursor = "crosshair";
+              document.getElementById("btnPupilInsert").innerText = "Finish";
+              eventHandle = canvas.addEventListener("click", function (evt) {
+                console.log(evt.offsetX, evt.offsetY);
+                const diameter = Number(
+                  document.getElementById("pupilDiameter").value
+                );
+                drawPupil(evt.offsetX, evt.offsetY, diameter, ctx);
+              });
+            }
+          });
+
         try {
           const svgData = JSON.parse(svgInput.value);
-          // 0) Automatic scaling of the data to visualize on a similar scale for all svg drawings.
+          // (I)) Automatic scaling of the data to visualize on a similar scale for all svg drawings.
           const boundingBox = calcBoundingBox(svgData); // [x1,y1,x2,y2]
           const x1 = boundingBox[0];
           const x2 = boundingBox[2];
@@ -116,11 +152,6 @@
 
           // Scalefactor divides the canvas width on the svg width some padding.
           let scaleFactorX = canvas.width / (svgWidth * paddingFactor);
-          console.log(
-            "widthxheight = ",
-            svgWidth * scaleFactorX,
-            svgHeight * scaleFactorX
-          );
           if (scaleFactorX * (y1 + svgHeight) * paddingFactor > canvas.height) {
             while (
               scaleFactorX * (y1 + svgHeight) * paddingFactor >
@@ -129,11 +160,11 @@
               scaleFactorX = scaleFactorX * 0.995;
             }
           }
+          // (II) Parse the svg data format applying scaling for better viewing by the user.
           const pathArrays = parseSvgPath(svgData, scaleFactorX);
 
-          ctx.fillStyle = "lightblue";
-
-          // 1) Calculates intersections and fills the scanlines with lines or dense lines (fill)
+          // 1a) Calculates intersections and fills the scanlines with lines or dense lines (fill).
+          // Return value is an array of the mid points of intersections of scan lines.
           const midpoints = scanlineFillCopilot(
             ctx,
             pathArrays,
@@ -141,7 +172,7 @@
             createFill
           );
 
-          // Find the paths through the mid points.
+          // 1b) Find the paths through the mid points.
           let path = [];
           if (createCenterLine) {
             path = findNearestNeighborPathImproved(
@@ -149,13 +180,21 @@
               maxDistanceThreshold
             );
             // Draw lines between points.
-            drawLinesClaude(path);
+            drawLines(path);
           }
 
-          // 2) Reverse the scale down to original size using the scaleFactorX.
-          let pathScaledDown = [];
+          // 2) Sort the curves for minimizing travel distance.
+          const sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
+
+          // 3) Draw the start points of the sorted curves
+          if (createStartpoints) {
+            drawStartingPoints(sortedLines, ctx);
+          }
+
+          // 4) Reverse the scale down to original size using the scaleFactorX.
+          const pathScaledDown = [];
           let indx = 0;
-          path.forEach((curve) => {
+          sortedLines.forEach((curve) => {
             pathScaledDown.push([]);
             curve.forEach((point) => {
               pathScaledDown[indx].push([
@@ -165,20 +204,11 @@
             });
             indx++;
           });
-          //console.log(pathScaledDown);
-
-          // 3) Sort the curves for minimizing travel distance.
-          const sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
-
-          // 4) Draw the start points of the sorted curves
-          if (createStartpoints) {
-            drawStartingPoints(sortedLines, ctx);
-          }
 
           // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
-          return;
+          //return;
           // 5) Create bezier curves of the pathArrays.
-          const svgOutput = generateBezierCurves(sortedLines);
+          const svgOutput = generateBezierCurves(pathScaledDown);
           //console.log(JSON.stringify(svgOutput));
 
           // 6) Draw the outline as the last step to lay the outline on top of the other drawings.

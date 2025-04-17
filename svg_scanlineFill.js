@@ -177,6 +177,6 @@ function scanlineFillYaxis(
       lineArray,
       maxDistanceThreshold
     );
-    drawLinesClaude(path);
+    drawLines(path);
   }
 }
