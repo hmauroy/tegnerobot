@@ -103,14 +103,24 @@
 
         try {
           const svgData = JSON.parse(svgInput.value);
-          // Automatic scaling of the data to visualize on a similar scale for all svg drawings.
+          // 0) Automatic scaling of the data to visualize on a similar scale for all svg drawings.
           const boundingBox = calcBoundingBox(svgData); // [x1,y1,x2,y2]
-          const svgWidth = boundingBox[2] - boundingBox[0];
-          const svgHeight = boundingBox[3] - boundingBox[1];
-          // Scalefactor divides the canvas width on the svg width with 10 % padding.
+          const x1 = boundingBox[0];
+          const x2 = boundingBox[2];
+          const y1 = boundingBox[1];
+          const y2 = boundingBox[3];
+          const svgWidth = x2 - x1;
+          const svgHeight = y2 - y1;
+
+          // Scalefactor divides the canvas width on the svg width with 2.5 % padding on each side (5 % total).
           let scaleFactorX = canvas.width / (svgWidth * 1.0);
-          if (scaleFactorX * svgHeight * 1.0 > canvas.height) {
-            while (scaleFactorX * svgHeight * 1.0 > canvas.height) {
+          console.log(
+            "widthxheight = ",
+            svgWidth * scaleFactorX,
+            svgHeight * scaleFactorX
+          );
+          if (scaleFactorX * (y1 + svgHeight) * 1.0 > canvas.height) {
+            while (scaleFactorX * (y1 + svgHeight) * 1.0 > canvas.height) {
               scaleFactorX = scaleFactorX * 0.995;
             }
           }
