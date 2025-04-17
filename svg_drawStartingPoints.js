@@ -3,30 +3,28 @@ Draws all starting points utilizing helper function which draws a single point.
 */
 function drawStartingPoints(sortedLines, ctx) {
   let radius = 6;
-  let offsetX = radius / 2;
-  // Set font properties
-  ctx.font = "8px Arial";
   let cnt = 0;
   sortedLines.forEach((curve) => {
     cnt++;
-    if (cnt >= 10) {
-      offsetX = radius / 1.3;
-    }
-    ctx.beginPath();
-    ctx.fillStyle = "black";
-    ctx.arc(curve[0][0], curve[0][1], radius, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillStyle = "white"; // Text color
-    ctx.fillText(cnt, curve[0][0] - offsetX, curve[0][1] + radius / 2); // (text, x, y)
+    drawSinglePoint(curve[0], radius, ctx, "black", cnt);
   });
   // Draws the first starting point in red on top of eventual other points nearby.
-  ctx.fillStyle = "red";
-  const point = [sortedLines[0][0][0], sortedLines[0][0][1]];
-  ctx.beginPath();
-  ctx.arc(point[0], point[1], radius, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.fillStyle = "white";
-  ctx.fillText(1, point[0] - radius / 2, point[1] + radius / 2); // (text, x, y)
+  drawSinglePoint(sortedLines[0][0], radius, ctx, "red", 1);
 }
 
-function drawSinglePoint(point, number = -1) {}
+function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
+  let offsetX = radius / 2;
+  if (number >= 10) {
+    offsetX = radius / 1.3;
+  }
+  ctx.beginPath();
+  ctx.fillStyle = color;
+  ctx.arc(point[0], point[1], radius, 0, 2 * Math.PI);
+  ctx.fill();
+  if (number != -1) {
+    // Set font properties
+    ctx.font = "8px Arial";
+    ctx.fillStyle = "white"; // Text color
+    ctx.fillText(number, point[0] - offsetX, point[1] + radius / 2); // (text, x, y)
+  }
+}
