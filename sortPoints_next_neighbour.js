@@ -87,6 +87,7 @@ function calcLength(line) {
 
 /**
  * Sorts the svg curves based on minimizing travel distance from end of a line to start of the next.
+ * Author: Henrik C. Mauroy
  * @param {Array} lineArrays - The path array (3D-array: [[[x1,y1],[x2,y2]...],[X1,Y1],[X2,Y2]...]).
  * @param {Array} boundingBox - Array containing the bounding box [x1,y1,x2,y2],
  * @param {Object} ctx - Handle to the canvas.
@@ -97,9 +98,12 @@ function sortPathCurves(lineArrays, boundingBox, ctx, createStartpoints) {
   let minDist = calcDistance([boundingBox[2], boundingBox[3]]);
   let startPoint = [boundingBox[2], boundingBox[3]]; // Lower right point of boundingbox.
   let radius = 3;
+  let startIndex = 0;
+  let curve;
   ctx.fillStyle = "purple";
   // 1) Scan through to find point closest to (0,0), shortes distance to travel from the beginning.
-  lineArrays.forEach((curve) => {
+  for (let i = 0; i < lineArrays.length; i++) {
+    curve = lineArrays[i];
     if (createStartpoints) {
       ctx.beginPath();
       ctx.arc(curve[0][0], curve[0][1], radius, 0, 2 * Math.PI);
@@ -109,9 +113,9 @@ function sortPathCurves(lineArrays, boundingBox, ctx, createStartpoints) {
     if (calcDistance(curve[0]) <= minDist) {
       minDist = calcDistance(curve[0]);
       startPoint = curve[0];
-      console.log(startPoint, minDist);
+      startIndex = i;
     }
-  });
+  }
   if (createStartpoints) {
     ctx.fillStyle = "red";
     radius = 5;
@@ -122,6 +126,27 @@ function sortPathCurves(lineArrays, boundingBox, ctx, createStartpoints) {
 
   // 2) Start from start point and find the natural "path" through the curves by scanning
   // the neighbors from each end point of a curve.
+  // Picks the starting curve
+  sortedCurves.push(lineArrays.splice(startIndex, 1));
+  // Search for next curve
+  let idx = 0;
+  minDist = calcDistance([boundingBox[2], boundingBox[3]]);
+  while (lineArrays.length > 0) {
+    curve = sortedCurves[sortedCurves.length - 1];
+    // Checks distance from last point in current curve and start points of the rest of the curves.
+    console.log(curve[curve.length - 1][0]);
+    console.log(lineArrays[idx][0]);
+    if (
+      calcDistancePoints(curve[curve.length - 1][0], lineArrays[idx][0]) <=
+      minDist
+    ) {
+      minDist = calcDistancePoints(curve[curve.length - 1], lineArrays[idx][0]);
+      sortedCurves.push(lineArrays.splice(idx, 1));
+      idx = -1;
+    }
+    idx++;
+  }
+  console.log("sortedCurves:", sortedCurves);
   return sortedCurves;
 }
 
@@ -142,7 +167,7 @@ function calcDistance(point) {
  */
 function calcDistancePoints(a, b) {
   return Math.sqrt(
-    (a[0] - b[0]) * (a[0] - b[0]) - (a[1] - b[1]) * (a[1] - b[1])
+    (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])
   );
 }
 

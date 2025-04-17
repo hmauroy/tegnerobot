@@ -111,16 +111,17 @@
           const y2 = boundingBox[3];
           const svgWidth = x2 - x1;
           const svgHeight = y2 - y1;
+          const paddingFactor = 1.02;
 
-          // Scalefactor divides the canvas width on the svg width with 2.5 % padding on each side (5 % total).
-          let scaleFactorX = canvas.width / (svgWidth * 1.0);
+          // Scalefactor divides the canvas width on the svg width some padding.
+          let scaleFactorX = canvas.width / (svgWidth * paddingFactor);
           console.log(
             "widthxheight = ",
             svgWidth * scaleFactorX,
             svgHeight * scaleFactorX
           );
-          if (scaleFactorX * (y1 + svgHeight) * 1.0 > canvas.height) {
-            while (scaleFactorX * (y1 + svgHeight) * 1.0 > canvas.height) {
+          if (scaleFactorX * (y1 + svgHeight) * paddingFactor > canvas.height) {
+            while (scaleFactorX * (y1 + svgHeight) * paddingFactor > canvas.height) {
               scaleFactorX = scaleFactorX * 0.995;
             }
           }
