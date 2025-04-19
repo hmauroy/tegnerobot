@@ -63,4 +63,11 @@ function drawCurve(curve, ctx) {
 function drawPupil(x, y, diameter, ctx) {
   const radius = diameter / 2;
   drawSinglePoint([x, y], radius, ctx, "black");
+  return [x, y, radius];
+}
+
+function generatePupilPath(x, y, radius) {
+  // TODO: Finish it!
+  // 1) Generate outline
+  // 2) Generate scan lines for each 2nd pixel. Need testing to see which resolution is sane.
 }
