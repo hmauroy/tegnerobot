@@ -66,8 +66,14 @@ function drawPupil(x, y, diameter, ctx) {
   return [x, y, radius];
 }
 
-function generatePupilPath(x, y, radius) {
+function generatePupilPath(pupil) {
+  const x = pupil[0];
+  const y = pupil[1];
+  const radius = pupil[2];
+  let pupilPath = [];
+  console.log(x, y, radius);
   // TODO: Finish it!
   // 1) Generate outline
   // 2) Generate scan lines for each 2nd pixel. Need testing to see which resolution is sane.
+  return pupilPath;
 }

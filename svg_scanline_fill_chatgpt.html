@@ -132,8 +132,12 @@
               document.getElementById("btnPupilInsert").innerText =
                 "Draw pupil";
               canvas.removeEventListener("click", handlePupilClick);
-              // Generate pupil paths
-              
+              // 1) Generate pupil paths
+              const pupilPaths = [];
+              pupils.forEach((pupil) => {
+                pupilPaths.push(generatePupilPath(pupil));
+              });
+              // 2) Add pupil paths to sortedLines array and sort the curves one more time.
             } else {
               isEditing = true;
               canvas.style.cursor = "crosshair";
