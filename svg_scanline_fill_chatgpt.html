@@ -74,7 +74,7 @@
 
     <canvas id="drawCanvas" width="700" height="500"></canvas>
 
-    <div id="SVG-output"></div>
+    <div id="svgOutput">Her kommer utskriften...</div>
 
     <script src="sortPoints_next_neighbour.js"></script>
     <script src="svg_points_to_bezier.js"></script>
@@ -91,6 +91,7 @@
         const canvas = document.getElementById("drawCanvas");
         const ctx = canvas.getContext("2d");
         const svgInput = document.getElementById("svgInput");
+        const svgOutput = document.getElementById("svgOutput");
         const fillCheckbox = document.getElementById("fillCheckbox");
         const scanlinesCheckbox = document.getElementById("scanlinesCheckbox");
         const outlineCheckbox = document.getElementById("outlineCheckbox");
@@ -216,8 +217,8 @@
           // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
           //return;
           // 5) Create bezier curves of the pathArrays.
-          const svgOutput = generateBezierCurves(pathScaledDown);
-          //console.log(JSON.stringify(svgOutput));
+          const svgOutputData = generateBezierCurves(pathScaledDown);
+          svgOutput.innerHTML = JSON.stringify(svgOutputData);
 
           // 6) Draw the outline as the last step to lay the outline on top of the other drawings.
           if (createOutline) {
