@@ -99,7 +99,7 @@
     </div>
 
     <div><input type="button" id="btnCopy" value="Copy SVG" /></div>
-    <textarea id="svgTextOutput" rows="5" , cols="50"></textarea>
+    <textarea id="svgTextOutput" rows="5" cols="50"></textarea>
     <div id="bottomText"></div>
 
     <script type="text/javascript">
@@ -345,7 +345,7 @@
 
           //c(svg);
           let output = "";
-          document.getElementById("svgTextOutput").innerHTML = svg_beziers;
+          document.getElementById("svgTextOutput").value = svg_beziers;
           let rows = Math.ceil(beziers.length * 4);
           svgTextOutput.setAttribute("rows", rows);
           //console.log(svg);

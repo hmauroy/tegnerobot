@@ -6,12 +6,11 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        max-width: 800px;
         margin: 0 auto;
         padding: 20px;
       }
       #svgInput {
-        width: 100%;
+        width: 60%;
         height: 100px;
         margin-bottom: 10px;
       }
@@ -21,6 +20,9 @@
         max-width: 700px;
         cursor: default;
       }
+      #svgTextOutput {
+        min-width: 60%;
+      }
     </style>
   </head>
   <body>
@@ -28,7 +30,9 @@
     <textarea
       id="svgInput"
       placeholder="Enter JSON-formatted SVG path data"
+      cols="50"
     ></textarea>
+    <br />
     <label><input type="checkbox" id="fillCheckbox" /> Fill</label>
     <br />
     <label
@@ -74,7 +78,10 @@
 
     <canvas id="drawCanvas" width="700" height="500"></canvas>
 
-    <div id="svgOutput">Her kommer utskriften...</div>
+    <div>
+      <input type="button" id="btnCopy" value="Copy SVG" />
+    </div>
+    <textarea id="svgTextOutput" rows="5" cols="50"></textarea>
 
     <script src="sortPoints_next_neighbour.js"></script>
     <script src="svg_points_to_bezier.js"></script>
@@ -91,7 +98,7 @@
         const canvas = document.getElementById("drawCanvas");
         const ctx = canvas.getContext("2d");
         const svgInput = document.getElementById("svgInput");
-        const svgOutput = document.getElementById("svgOutput");
+        const svgTextOutput = document.getElementById("svgTextOutput");
         const fillCheckbox = document.getElementById("fillCheckbox");
         const scanlinesCheckbox = document.getElementById("scanlinesCheckbox");
         const outlineCheckbox = document.getElementById("outlineCheckbox");
@@ -218,7 +225,10 @@
           //return;
           // 5) Create bezier curves of the pathArrays.
           const svgOutputData = generateBezierCurves(pathScaledDown);
-          svgOutput.innerHTML = JSON.stringify(svgOutputData);
+          let rows = Math.ceil(svgOutputData.length * 25);
+          svgTextOutput.rows = rows;
+          svgTextOutput.cols = 50;
+          svgTextOutput.value = svgOutputData;
 
           // 6) Draw the outline as the last step to lay the outline on top of the other drawings.
           if (createOutline) {
@@ -239,8 +249,8 @@
             });
           }
         } catch (error) {
-          console.error("Error drawing SVG path:", error);
-          alert("Invalid SVG path input. Please check your JSON format.");
+          console.error("Error:", error);
+          alert("Error with something...");
         }
       }
     </script>
