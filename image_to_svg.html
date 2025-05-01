@@ -138,7 +138,7 @@
       updateSliders();
       let width, height;
       let imgElement = document.getElementById("imageSrc");
-      let inputElement = document.getElementById("fileInput");
+      let fileInputEl = document.getElementById("fileInput");
       let canvasWindow = document.getElementById("canvasWindow");
       let canvas = document.getElementById("canvas");
       let svgOutput = document.getElementById("svgOutput");
@@ -149,7 +149,7 @@
       let imgData; // Set later when filters are applied.
       let teller = 1;
       let userOutput = [];
-      inputElement.addEventListener(
+      fileInputEl.addEventListener(
         "change",
         (e) => {
           imgElement.src = URL.createObjectURL(e.target.files[0]);
@@ -385,6 +385,9 @@
         //while (svgDiv.firstChild) {
         //svgDiv.removeChild(svgDiv.firstChild);
         //}
+        // Clear data inside potrace
+        Potrace.clear();
+        PotraceBG8.clear();
       }
 
       function c(text) {
