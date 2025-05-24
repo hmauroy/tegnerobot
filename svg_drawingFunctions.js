@@ -77,3 +77,31 @@ function generatePupilPath(pupil) {
   // 2) Generate scan lines for each 2nd pixel. Need testing to see which resolution is sane.
   return pupilPath;
 }
+
+function updateMouseFollowerPosition(evt) {
+  const follower = document.getElementById('mouse-follower');
+
+  if (follower) {
+    console.log(evt.clientX, evt.clientY);
+    const diameter = Number(document.getElementById("pupilDiameter").value);
+    //follower.style.width = 2*diameter + "px"; // Adjust size as needed
+    //follower.style.height = 2*diameter + "px"; // Adjust size as needed
+    //follower.style.left = (evt.clientX - diameter/2)  + "px";
+    //follower.style.top = (evt.clientY - diameter / 2) + "px"; // Adjust offset as needed
+    follower.style.transform = `translate(${evt.clientX - diameter/2}px, ${evt.clientY - diameter/2}px)`;
+  }
+}
+
+function showMouseFollower() {
+    const mouseFollower = document.querySelector('#mouse-follower');
+    if (mouseFollower) {
+        mouseFollower.style.display = 'block';
+    }
+}
+
+function hideMouseFollower() {
+    const mouseFollower = document.querySelector('#mouse-follower');
+    if (mouseFollower) {
+        mouseFollower.style.display = 'none';
+    }
+}

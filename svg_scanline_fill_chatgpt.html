@@ -123,10 +123,8 @@
         const pupils = []; // [[x1,y1,radius1],[x2,y2,radius2],...]
         function handlePupilClick(evt) {
           console.log(evt.offsetX, evt.offsetY);
-          const diameter = Number(
-            document.getElementById("pupilDiameter").value
-          );
-          pupils.push(drawPupil(evt.offsetX, evt.offsetY, diameter, ctx));
+          pupils.push(drawPupil(evt.offsetX, evt.offsetY, getDiameter(), ctx));
+          //console.log(pupils);
           console.log(JSON.stringify(pupils));
         }
         // Set listener to drawing pupils onto the canvas.
@@ -146,13 +144,38 @@
                 pupilPaths.push(generatePupilPath(pupil));
               });
               // 2) Add pupil paths to sortedLines array and sort the curves one more time.
+              // TODO!!!
             } else {
               isEditing = true;
               canvas.style.cursor = "crosshair";
               document.getElementById("btnPupilInsert").innerText = "Finish";
               canvas.addEventListener("click", handlePupilClick);
+              // Create a div with the same size as the pupil which follows the mouse.
+              // Create a hidden div to hold the SVG circle
+              const mouseFollower = document.createElement('div');
+              mouseFollower.id = "mouse-follower";
+              mouseFollower.style.position = "absolute";
+              mouseFollower.style.width = 3*getDiameter() + "px"; // Adjust size as needed
+              mouseFollower.style.height = 3*getDiameter() + "px"; // Adjust size as needed
+              mouseFollower.style.borderRadius = "50%"; // Make it a circle
+              mouseFollower.style.backgroundColor = "black";
+              mouseFollower.style.display = "none"; // Initially hidden
+              mouseFollower.style.left = 0;
+              mouseFollower.style.top = 0;
+
+              document.body.appendChild(mouseFollower); // Add to the body or any other appropriate parent
+
+              canvas.addEventListener('mousemove', updateMouseFollowerPosition);
+              canvas.addEventListener('mouseenter', showMouseFollower);
+              canvas.addEventListener('mouseleave', hideMouseFollower);
+              
             }
           });
+      
+      function getDiameter() {
+        return Number(document.getElementById("pupilDiameter").value);
+      }
+      
 
         try {
           const svgData = JSON.parse(svgInput.value);
