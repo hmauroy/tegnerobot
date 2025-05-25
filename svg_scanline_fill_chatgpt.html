@@ -19,9 +19,28 @@
         width: 100%;
         max-width: 700px;
         cursor: default;
+        z-index: -100;
       }
       #svgTextOutput {
         min-width: 60%;
+      }
+      #canvasOverlay {
+        position: absolute;
+        width: 100%;
+        max-width: 700px;
+        height: 500px;
+        z-index: 100;
+        background-color: rgba(255,0,100,0.3);
+      }
+      #mouse-follower {
+        position: relative;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: black;
+        top: 50%;
+        left: 50%;
+        visibility: visible;
       }
     </style>
   </head>
@@ -77,6 +96,10 @@
     <br />
 
     <canvas id="drawCanvas" width="700" height="500"></canvas>
+    <div id="canvasOverlay">
+      <div id="mouse-follower"></div>
+    </div>
+    
 
     <div>
       <input type="button" id="btnCopy" value="Copy SVG" />
@@ -150,25 +173,16 @@
               canvas.style.cursor = "crosshair";
               document.getElementById("btnPupilInsert").innerText = "Finish";
               canvas.addEventListener("click", handlePupilClick);
-              // Create a div with the same size as the pupil which follows the mouse.
-              // Create a hidden div to hold the SVG circle
-              const mouseFollower = document.createElement('div');
-              mouseFollower.id = "mouse-follower";
-              mouseFollower.style.position = "absolute";
-              mouseFollower.style.width = 3*getDiameter() + "px"; // Adjust size as needed
-              mouseFollower.style.height = 3*getDiameter() + "px"; // Adjust size as needed
-              mouseFollower.style.borderRadius = "50%"; // Make it a circle
-              mouseFollower.style.backgroundColor = "black";
-              mouseFollower.style.display = "none"; // Initially hidden
-              mouseFollower.style.left = 0;
-              mouseFollower.style.top = 0;
-
-              document.body.appendChild(mouseFollower); // Add to the body or any other appropriate parent
-
+              // Black circle as a mouse follower.
+              const canvasOverlay = document.getElementById("canvasOverlay");
+              console.log(canvasOverlay);
+              const rect = canvas.getBoundingClientRect();
+              console.log(rect.x,rect.y);
+              canvasOverlay.style.left = rect.x + "px";
+              canvasOverlay.style.top = rect.y + "px";
               canvas.addEventListener('mousemove', updateMouseFollowerPosition);
               canvas.addEventListener('mouseenter', showMouseFollower);
               canvas.addEventListener('mouseleave', hideMouseFollower);
-              
             }
           });
       
