@@ -9,102 +9,114 @@
         margin: 0 auto;
         padding: 20px;
       }
+      #main {
+        display: flex;
+        flex-direction: column;
+        width: 100vw;
+      }
       #svgInput {
         width: 60%;
         height: 100px;
         margin-bottom: 10px;
       }
-      #drawCanvas {
-        border: 1px solid #000;
+      #controls {
+        display: flex;
+        flex-direction: column;
+        width: 60%;
+        align-items: flex-start;
+      }
+      input[type="number"],
+      input[type="text"] {
+        width: 200px;
+      }
+      button {
+        width: 100px;
+      }
+      #graphics {
+        position: relative;
         width: 100%;
         max-width: 700px;
-        cursor: default;
-        z-index: -100;
       }
-      #svgTextOutput {
-        min-width: 60%;
+      #drawCanvas {
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 500px;
+        border: solid black 1px;
       }
       #canvasOverlay {
         position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
-        max-width: 700px;
         height: 500px;
         z-index: 100;
-        background-color: rgba(255,0,100,0.3);
+        background-color: rgba(255, 0, 100, 0.3);
       }
       #mouse-follower {
-        position: relative;
+        position: fixed;
         width: 10px;
         height: 10px;
         border-radius: 50%;
         background-color: black;
-        top: 50%;
+        top: 10%;
         left: 50%;
         visibility: visible;
+      }
+      #svgTextOutput {
+        min-width: 60%;
       }
     </style>
   </head>
   <body>
     <h1>SVG Scanline Fill</h1>
-    <textarea
-      id="svgInput"
-      placeholder="Enter JSON-formatted SVG path data"
-      cols="50"
-    ></textarea>
-    <br />
-    <label><input type="checkbox" id="fillCheckbox" /> Fill</label>
-    <br />
-    <label
-      ><input type="checkbox" id="scanlinesCheckbox" checked="checked" />
-      Scanlines</label
-    >
-    <br />
-    <label
-      ><input type="number" id="scanLineSeparation" value="5" /> Scan line
-      separation</label
-    >
-    <br />
-    <label
-      ><input type="checkbox" id="outlineCheckbox" checked="checked" />
-      Outline</label
-    >
-    <br />
-    <label
-      ><input type="checkbox" id="centerlineCheckbox" checked="checked" />
-      Center line</label
-    >
-    <br />
-    <label
-      ><input type="checkbox" id="startpointsCheckbox" checked="checked" /> Mark
-      start points</label
-    >
-    <br />
-    <label
-      ><input type="number" id="maxDistanceThresholdCheckbox" value="30" />
-      Center line separation</label
-    >
-    <br />
+    <div id="main">
+      <textarea
+        id="svgInput"
+        placeholder="Enter JSON-formatted SVG path data"
+        cols="50"
+      ></textarea>
+      <div id="controls">
+        <label>Fill</label>
+        <input type="checkbox" id="fillCheckbox" />
 
-    <button onclick="drawSvgPath()">Draw Path</button>
-    <br />
+        <label> Scanlines</label>
+        <input type="checkbox" id="scanlinesCheckbox" checked="checked" />
 
-    <label
-      ><input type="number" id="pupilDiameter" value="10" /> Pupil
-      diameter</label
-    >
-    <button id="btnPupilInsert">Draw pupil</button>
-    <br />
+        <label> Scan line separation</label>
+        <input type="number" id="scanLineSeparation" value="5" />
 
-    <canvas id="drawCanvas" width="700" height="500"></canvas>
-    <div id="canvasOverlay">
-      <div id="mouse-follower"></div>
+        <label> Outline</label>
+        <input type="checkbox" id="outlineCheckbox" checked="checked" />
+
+        <label> Center line</label>
+        <input type="checkbox" id="centerlineCheckbox" checked="checked" />
+
+        <label> Mark start points</label>
+        <input type="checkbox" id="startpointsCheckbox" checked="checked" />
+
+        <label> Center line separation</label>
+        <input type="number" id="maxDistanceThresholdCheckbox" value="30" />
+
+        <button onclick="drawSvgPath()">Draw Path</button>
+
+        <label> Pupil diameter</label>
+        <input type="number" id="pupilDiameter" value="10" />
+
+        <button id="btnPupilInsert">Draw pupil</button>
+
+        <div id="graphics">
+          <canvas id="drawCanvas" width="700" height="500"></canvas>
+        </div>
+      </div>
+
+      <div>
+        <input type="button" id="btnCopy" value="Copy SVG" />
+      </div>
+      <textarea id="svgTextOutput" rows="5" cols="50"></textarea>
     </div>
-    
-
-    <div>
-      <input type="button" id="btnCopy" value="Copy SVG" />
-    </div>
-    <textarea id="svgTextOutput" rows="5" cols="50"></textarea>
+    <div id="mouse-follower"></div>
 
     <script src="sortPoints_next_neighbour.js"></script>
     <script src="svg_points_to_bezier.js"></script>
@@ -130,6 +142,7 @@
         const startpointsCheckbox = document.getElementById(
           "startpointsCheckbox"
         );
+        const follower = document.getElementById("mouse-follower");
 
         const createFill = fillCheckbox.checked;
         const createScanlines = scanlinesCheckbox.checked;
@@ -142,16 +155,35 @@
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        let isEditing = false; // Used for editing with pupil insertions.
         // Handle click when inserting pupils.
         const pupils = []; // [[x1,y1,radius1],[x2,y2,radius2],...]
         function handlePupilClick(evt) {
           console.log(evt.offsetX, evt.offsetY);
-          pupils.push(drawPupil(evt.offsetX, evt.offsetY, getDiameter(), ctx));
-          //console.log(pupils);
-          console.log(JSON.stringify(pupils));
+          const rect = canvas.getBoundingClientRect();
+          if (isOverCanvas) {
+            const x = evt.clientX - rect.x - 2;
+            const y = evt.clientY - rect.y - 2;
+            pupils.push(drawPupil(x, y, getDiameter(), ctx));
+            //console.log(pupils);
+            console.log(JSON.stringify(pupils));
+          }
+        }
+        function isOverCanvas(evt) {
+          const rect = canvas.getBoundingClientRect();
+          if (
+            evt.clientX > rect.x &&
+            evt.clientX < rect.x + rect.width &&
+            evt.clientY > rect.y &&
+            evt.clientY < rect.y + rect.height
+          ) {
+            console.log("Over Canvas!");
+            return true;
+          } else {
+            return false;
+          }
         }
         // Set listener to drawing pupils onto the canvas.
-        let isEditing = false;
         document
           .getElementById("btnPupilInsert")
           .addEventListener("click", function (evt) {
@@ -160,7 +192,7 @@
               canvas.style.cursor = "default";
               document.getElementById("btnPupilInsert").innerText =
                 "Draw pupil";
-              canvas.removeEventListener("click", handlePupilClick);
+              document.removeEventListener("click", handlePupilClick);
               // 1) Generate pupil paths
               const pupilPaths = [];
               pupils.forEach((pupil) => {
@@ -170,26 +202,19 @@
               // TODO!!!
             } else {
               isEditing = true;
-              canvas.style.cursor = "crosshair";
+              canvas.style.cursor = "none";
               document.getElementById("btnPupilInsert").innerText = "Finish";
-              canvas.addEventListener("click", handlePupilClick);
+              document.addEventListener("click", handlePupilClick);
               // Black circle as a mouse follower.
-              const canvasOverlay = document.getElementById("canvasOverlay");
-              console.log(canvasOverlay);
-              const rect = canvas.getBoundingClientRect();
-              console.log(rect.x,rect.y);
-              canvasOverlay.style.left = rect.x + "px";
-              canvasOverlay.style.top = rect.y + "px";
-              canvas.addEventListener('mousemove', updateMouseFollowerPosition);
-              canvas.addEventListener('mouseenter', showMouseFollower);
-              canvas.addEventListener('mouseleave', hideMouseFollower);
+              canvas.addEventListener("mousemove", updateMouseFollowerPosition);
+              canvas.addEventListener("mouseenter", showMouseFollower);
+              canvas.addEventListener("mouseleave", hideMouseFollower);
             }
           });
-      
-      function getDiameter() {
-        return Number(document.getElementById("pupilDiameter").value);
-      }
-      
+
+        function getDiameter() {
+          return Number(document.getElementById("pupilDiameter").value);
+        }
 
         try {
           const svgData = JSON.parse(svgInput.value);
@@ -288,6 +313,42 @@
         } catch (error) {
           console.error("Error:", error);
           alert("Error with something...");
+        }
+      }
+
+      function updateMouseFollowerPosition(evt) {
+        const follower = document.getElementById("mouse-follower");
+
+        if (follower) {
+          const diameter = Number(
+            document.getElementById("pupilDiameter").value
+          );
+          const rect = document
+            .getElementById("drawCanvas")
+            .getBoundingClientRect();
+          follower.style.width = diameter + "px"; // Adjust size as needed
+          follower.style.height = diameter + "px"; // Adjust size as needed
+          let x = rect.x + evt.offsetX;
+          let y = rect.y + evt.offsetY;
+          x -= diameter / 2;
+          y -= diameter / 2;
+          follower.style.top = y + "px";
+          follower.style.left = x + "px"; // Adjust offset as needed
+          //follower.style.transform = `translate(${evt.x - diameter / 2}px, ${evt.y - diameter / 2}px)`;
+        }
+      }
+
+      function showMouseFollower() {
+        const mouseFollower = document.querySelector("#mouse-follower");
+        if (mouseFollower) {
+          mouseFollower.style.visibility = "visible";
+        }
+      }
+
+      function hideMouseFollower() {
+        const mouseFollower = document.querySelector("#mouse-follower");
+        if (mouseFollower) {
+          mouseFollower.style.visibility = "hidden";
         }
       }
     </script>

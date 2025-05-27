@@ -18,6 +18,7 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
     offsetX = radius / 1.3;
   }
   ctx.beginPath();
+  console.log("Begin path");
   ctx.fillStyle = color;
   ctx.arc(point[0], point[1], radius, 0, 2 * Math.PI);
   ctx.fill();
@@ -62,6 +63,7 @@ function drawCurve(curve, ctx) {
 
 function drawPupil(x, y, diameter, ctx) {
   const radius = diameter / 2;
+  console.log(x + "," + y + ", radius: " + radius);
   drawSinglePoint([x, y], radius, ctx, "black");
   return [x, y, radius];
 }
@@ -76,32 +78,4 @@ function generatePupilPath(pupil) {
   // 1) Generate outline
   // 2) Generate scan lines for each 2nd pixel. Need testing to see which resolution is sane.
   return pupilPath;
-}
-
-function updateMouseFollowerPosition(evt) {
-  const follower = document.getElementById('mouse-follower');
-
-  if (follower) {
-    console.log(evt.clientX, evt.clientY);
-    const diameter = Number(document.getElementById("pupilDiameter").value);
-    //follower.style.width = 2*diameter + "px"; // Adjust size as needed
-    //follower.style.height = 2*diameter + "px"; // Adjust size as needed
-    //follower.style.left = (evt.clientX - diameter/2)  + "px";
-    //follower.style.top = (evt.clientY - diameter / 2) + "px"; // Adjust offset as needed
-    follower.style.transform = `translate(${evt.clientX - diameter/2}px, ${evt.clientY - diameter/2}px)`;
-  }
-}
-
-function showMouseFollower() {
-    const mouseFollower = document.querySelector('#mouse-follower');
-    if (mouseFollower) {
-        mouseFollower.style.display = 'block';
-    }
-}
-
-function hideMouseFollower() {
-    const mouseFollower = document.querySelector('#mouse-follower');
-    if (mouseFollower) {
-        mouseFollower.style.display = 'none';
-    }
 }
