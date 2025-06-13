@@ -185,7 +185,7 @@ class PointSmoother {
    */
   static smartSmooth(points, options = {}) {
     const {
-      minDistance = 2.0,
+      minDistance = 1.5,
       angleThreshold = 0.1,
       douglasEpsilon = 1.5,
       movingAverageWindow = 3,
