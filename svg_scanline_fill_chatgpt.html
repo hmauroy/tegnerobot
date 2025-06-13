@@ -67,6 +67,117 @@
       #svgTextOutput {
         min-width: 60%;
       }
+      /* Container styling */
+      .container {
+          background-color: #ffffff;
+          padding: 2.5rem;
+          border-radius: 1rem;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+          width: 100%;
+          max-width: 500px;
+          box-sizing: border-box;
+      }
+
+      /* Control group styling */
+      .control-group {
+          margin-bottom: 1.5rem;
+      }
+
+      .control-group label {
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+          color: #333;
+      }
+
+      .slider-display {
+          font-weight: 500;
+          color: #555;
+          margin-left: 0.5rem;
+      }
+
+      .flex-center-y {
+          display: flex;
+          align-items: center;
+      }
+
+      /* Slider (range input) styling */
+      input[type="range"] {
+          width: 100%;
+          -webkit-appearance: none; /* Remove default styling */
+          appearance: none;
+          height: 8px;
+          background: #d1d5db; /* Light gray track */
+          border-radius: 5px;
+          outline: none;
+          transition: opacity .2s;
+          cursor: pointer;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          background: #4f46e5; /* Indigo thumb */
+          border-radius: 50%; /* Circular thumb */
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+          transition: background 0.3s ease;
+      }
+
+      input[type="range"]::-webkit-slider-thumb:hover {
+          background: #3730a3; /* Darker indigo on hover */
+      }
+
+      input[type="range"]::-moz-range-thumb { /* For Firefox */
+          width: 20px;
+          height: 20px;
+          background: #4f46e5;
+          border-radius: 50%;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+          transition: background 0.3s ease;
+          cursor: pointer;
+      }
+
+      input[type="range"]::-moz-range-thumb:hover {
+          background: #3730a3;
+      }
+
+      /* Checkbox styling */
+      input[type="checkbox"] {
+          transform: scale(1.2); /* Make checkbox slightly larger */
+          margin-right: 0.5rem;
+          accent-color: #4f46e5; /* Set accent color for checked state */
+          border-radius: 0.25rem; /* Rounded corners */
+      }
+
+      /* Current settings display area */
+      .current-settings-box {
+          margin-top: 2rem;
+          padding: 1rem;
+          background-color: #eef2ff; /* Light indigo background */
+          border-radius: 0.5rem;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06); /* Inner shadow */
+      }
+
+      .current-settings-box h2 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #4338ca; /* Darker indigo for heading */
+          margin-bottom: 0.75rem;
+      }
+
+      .current-settings-pre {
+          font-family: monospace;
+          font-size: 0.875rem;
+          color: #4c1d95; /* Deep purple for text */
+          background-color: #e0e7ff; /* Lighter indigo for code block */
+          padding: 0.75rem;
+          border-radius: 0.375rem;
+          overflow-x: auto; /* Enable horizontal scrolling for long lines */
+          white-space: pre-wrap; /* Preserve whitespace and wrap text */
+          word-break: break-all; /* Break words to prevent overflow */
+      }
     </style>
   </head>
   <body>
@@ -106,6 +217,51 @@
 
         <button id="btnPupilInsert">Draw pupil</button>
 
+        <div class="container">
+            <h1 style="font-size: 1.875rem; font-weight: 700; text-align: center; color: #1f2937; margin-bottom: 2rem;">Path Smoothing Controls</h1>
+
+            <div class="control-group">
+                <label for="enableSmoothing">Enable Smoothing:</label>
+                <div class="flex-center-y">
+                    <input type="checkbox" id="enableSmoothing">
+                    <span id="enableSmoothingDisplay" class="slider-display"></span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="minDistance">Min Distance: <span id="minDistanceDisplay" class="slider-display"></span></label>
+                <input type="range" id="minDistance" min="0" max="10" step="0.1" value="1.5">
+            </div>
+
+            <div class="control-group">
+                <label for="angleThreshold">Angle Threshold: <span id="angleThresholdDisplay" class="slider-display"></span></label>
+                <input type="range" id="angleThreshold" min="0" max="1" step="0.01" value="0.1">
+            </div>
+
+            <div class="control-group">
+                <label for="douglasEpsilon">Douglas Epsilon: <span id="douglasEpsilonDisplay" class="slider-display"></span></label>
+                <input type="range" id="douglasEpsilon" min="0" max="1" step="0.01" value="0.1">
+            </div>
+
+            <div class="control-group">
+                <label for="movingAverageWindow">Moving Average Window: <span id="movingAverageWindowDisplay" class="slider-display"></span></label>
+                <input type="range" id="movingAverageWindow" min="1" max="20" step="1" value="3">
+            </div>
+
+            <div class="control-group">
+                <label for="applyMovingAverage">Apply Moving Average:</label>
+                <div class="flex-center-y">
+                    <input type="checkbox" id="applyMovingAverage">
+                    <span id="applyMovingAverageDisplay" class="slider-display"></span>
+                </div>
+            </div>
+
+            <div class="current-settings-box">
+                <h2>Current Settings:</h2>
+                <pre id="currentSettings" class="current-settings-pre"></pre>
+            </div>
+        </div>
+
         <div id="graphics">
           <canvas id="drawCanvas" width="700" height="500"></canvas>
         </div>
@@ -115,7 +271,11 @@
         <input type="button" id="btnCopy" value="Copy SVG" />
       </div>
       <textarea id="svgTextOutput" rows="5" cols="50"></textarea>
+      
     </div>
+
+    
+
     <div id="mouse-follower"></div>
 
     <script src="sortPoints_next_neighbour.js"></script>
