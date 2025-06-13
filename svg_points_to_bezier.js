@@ -1,7 +1,7 @@
 /**
  * Converts arrays of points into SVG-style bezier curve commands
  * @param {Array<Array<Array<number>>>} pointArrays - Array of arrays where each sub-array contains points [[x,y], [x,y], ...]
- * @returns {Array<Array<any>>} - Array of command arrays in the format ["M",x,y,"C",cp1x,cp1y,cp2x,cp2y,x,y,...]
+ * @returns {string} - JSON string of command arrays in the format [["M",x,y,"C",cp1x,cp1y,cp2x,cp2y,x,y,...],...]
  */
 function generateBezierCurves(pointArrays) {
   // Result will hold all curve command arrays
@@ -17,8 +17,8 @@ function generateBezierCurves(pointArrays) {
     // Start with a move command to the first point
     const commandArray = [
       "M",
-      points[0][0].toFixed(1),
-      points[0][1].toFixed(1),
+      Number(points[0][0].toFixed(1)),
+      Number(points[0][1].toFixed(1)),
     ];
 
     // If we have only 2 points, we'll create a simple curve with control points
@@ -35,12 +35,12 @@ function generateBezierCurves(pointArrays) {
       // Add a bezier curve command
       commandArray.push(
         "C",
-        (x1 + dx / 3).toFixed(1),
-        (y1 + dy / 3).toFixed(1),
-        (x2 - dx / 3).toFixed(1),
-        (y2 - dy / 3).toFixed(1),
-        x2.toFixed(1),
-        y2.toFixed(1)
+        Number((x1 + dx / 3).toFixed(1)),
+        Number((y1 + dy / 3).toFixed(1)),
+        Number((x2 - dx / 3).toFixed(1)),
+        Number((y2 - dy / 3).toFixed(1)),
+        Number(x2.toFixed(1)),
+        Number(y2.toFixed(1))
       );
     } else {
       // For 3 or more points, calculate control points using the algorithm
@@ -90,12 +90,12 @@ function generateBezierCurves(pointArrays) {
         // Add a bezier curve command
         commandArray.push(
           "C",
-          cp1x.toFixed(1),
-          cp1y.toFixed(1),
-          cp2x.toFixed(1),
-          cp2y.toFixed(1),
-          x2.toFixed(1),
-          y2.toFixed(1)
+          Number(cp1x.toFixed(1)),
+          Number(cp1y.toFixed(1)),
+          Number(cp2x.toFixed(1)),
+          Number(cp2y.toFixed(1)),
+          Number(x2.toFixed(1)),
+          Number(y2.toFixed(1))
         );
       }
     }
@@ -103,9 +103,10 @@ function generateBezierCurves(pointArrays) {
     result.push(commandArray);
   }
 
-  return result;
+  return JSON.stringify(result);
 }
 
+/*
 // Example usage:
 const pointArrays = [
   [
@@ -120,7 +121,8 @@ const pointArrays = [
   ],
 ];
 
-//const bezierCommands = generateBezierCurves(pointArrays);
-//console.log(bezierCommands);
-// Output will be in the format:
+const bezierCommands = generateBezierCurves(pointArrays);
+console.log(bezierCommands);
+// Output will be in the format with actual numbers (not strings):
 // [["M",1,2,"C",...],["M",10,20,"C",...]]
+*/

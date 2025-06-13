@@ -120,6 +120,7 @@
 
     <script src="sortPoints_next_neighbour.js"></script>
     <script src="svg_points_to_bezier.js"></script>
+    <script src="svg_points_to_bezier_smoothing.js"></script>
     <script src="svg_colorArray.js"></script>
     <script src="svg_scanlineFill.js"></script>
     <script src="svg_parseSvg.js"></script>
@@ -152,6 +153,11 @@
         const maxDistanceThreshold = Number(
           document.getElementById("maxDistanceThresholdCheckbox").value
         );
+
+        const copyButton = document.getElementById("btnCopy");
+        copyButton.addEventListener("click", () => {
+          copySVG();
+        });
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -286,7 +292,14 @@
           // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
           //return;
           // 5) Create bezier curves of the pathArrays.
-          const svgOutputData = generateBezierCurves(pathScaledDown);
+          //const svgOutputData = generateBezierCurves(pathScaledDown); // No smoothing
+          const svgOutputData = generateBezierCurvesWithSmoothing(pathScaledDown); // Smoothing
+          // Compare sizes
+          const comparison = compareArraySizes(pathScaledDown, svgOutputData);
+          // Print detailed analysis
+          printComparison(comparison);
+
+          // Fill texarea.
           let rows = Math.ceil(svgOutputData.length * 25);
           svgTextOutput.rows = rows;
           svgTextOutput.cols = 50;
@@ -350,6 +363,12 @@
         if (mouseFollower) {
           mouseFollower.style.visibility = "hidden";
         }
+      }
+
+      function copySVG() {
+        svgTextOutput.select();
+        //document.execCommand("copy");
+        navigator.clipboard.writeText(svgTextOutput.value);
       }
     </script>
   </body>
