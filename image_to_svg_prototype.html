@@ -15,15 +15,17 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 1vw;
         }
 
         .container {
+            display: flex;
+            flex-direction: column;
             max-width: 100vw;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
+            border-radius: 1.5vw;
             padding: 30px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
@@ -38,27 +40,23 @@
 
         .panels-grid {
             display: flex;
-            flex-direction: column;
-        }
-
-        .horizontal {
-            display: flex;
-            height: 30vw;
-            width: 90vw;
-            margin-bottom: 5vh;
+            flex-wrap: wrap;
+            width: 95vw;
+            margin-bottom: 2vh;
             justify-content: space-around;
+            align-items: flex-start;
         }
 
         .panel {
             background: white;
-            border-radius: 15px;
+            border-radius: 1vw;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             transition: transform 0.3s ease, box-shadow 0.3s;
             border: 2px solid transparent;
-            flex: 1;
-            width: 10vw;
-            height: 20vw;
+            width: 38.7vw;
+            height: 29.8vw;
             position: relative;
+            margin-bottom: 2vw;
         }
 
         .panel:hover {
@@ -71,6 +69,42 @@
             margin-bottom: 15px;
             font-size: 1.3em;
             font-weight: 600;
+        }
+
+        #img-window {
+            order: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        #svgWindow {
+            order: 2;
+        }
+        #img-processing{
+            order: 3;
+        }
+        #invisible {
+            order: 4;
+            visibility: hidden;
+        }
+        #canvas-centerLine{
+            order: 5;
+        }
+        #outputWindow{
+            order: 6;
+        }
+        #output-options{
+            order: 7;
+        }
+        #smoothing-controls{
+            order: 8;
+        }
+
+        
+        #img-window img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
         }
 
         .canvas-area {
@@ -97,39 +131,27 @@
             color: #7f8c8d;
         }
 
-        .controls-section {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        }
-
-        .controls-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-        }
-
         .control-group {
-            flex: 1;
-            min-width: 300px;
+            padding: 1vw;
+            height: unset;
+            align-items: flex-start;
         }
 
         .control-group h3 {
             color: #2c3e50;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-size: 1.2em;
             font-weight: 600;
         }
 
         .slider-container {
-            margin-bottom: 20px;
+            margin-bottom: 0.5vw;
         }
 
         .slider-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 0;
             color: #555;
             font-weight: 500;
         }
@@ -170,13 +192,13 @@
         }
 
         .checkbox-group {
-            margin-bottom: 15px;
+            margin-bottom: 1vw;
         }
 
         .checkbox-container {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 1vw;
             cursor: pointer;
         }
 
@@ -215,6 +237,10 @@
             transform: translateY(0);
         }
 
+        #svgTextOutput {
+          width: 80vw;
+        }
+
         /* Overlay styles */
         .overlay {
             position: absolute;
@@ -223,7 +249,7 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
+            border-radius: 1vw;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -274,17 +300,55 @@
         }
 
         @media (max-width: 768px) {
-            .panels-grid, .controls-grid {
+            
+            .panel {
+                width: 90vw;
+                height: 90vw;
+                background-color: pink;
+            }
+            .panels-grid {
+                gap: 3vh;
+            }
+             .controls-grid {
                 flex-direction: column;
-                gap: 20px;
+                gap: 2vh;
+            }
+
+            .control-group {
+                width: 95%;
+
             }
             
             .container {
-                padding: 20px;
+                padding: 0;
             }
             
             h1 {
                 font-size: 2em;
+            }
+            #img-window {
+                order: 1;
+            }
+            #svgWindow {
+                order: 3;
+            }
+            #img-processing{
+                order: 2;
+            }
+            #invisible {
+                display: none;
+            }
+            #canvas-centerLine{
+                order: 4;
+            }
+            #outputWindow{
+                order: 6;
+            }
+            #output-options{
+                order: 5;
+            }
+            #smoothing-controls{
+                order: 7;
             }
         }
 
@@ -301,141 +365,181 @@
 </head>
 <body>
     <div class="container">
-        <h1>Image Editor Studio</h1>
-        
         <div class="panels-grid">
-            <div class="horizontal">
-                <div class="panel">
-                    <h2>IMG</h2>
-                    <div class="canvas-area">
-                        <div class="canvas-content">
-                            <p>Original Image</p>
-                        </div>
+            <div class="panel" id="img-window">
+                <img id="img-src" src="owl.png">
+                <!-- Overlay div with close button -->
+                <div class="overlay" id="img-overlay">
+                    <button class="close-button" onclick="closeOverlay()" aria-label="Close overlay">
+                        ×
+                    </button>
+                    <canvas id="canvas"></canvas>
+                    Drawing grey image
+                    
+                </div>
+            </div>
+
+            <div class="panel" id="svgWindow">
+                <div id="svgOutput"></div> 
+                SVG
+            </div>
+
+            <div class="panel control-group" id="img-processing">
+                <h3>Image processing</h3>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Drawing max width (mm)</span>
+                        <span id="slider1-value">50</span>
                     </div>
-                    <!-- Overlay div with close button -->
-                    <div class="overlay" id="img-overlay">
-                        <button class="close-button" onclick="closeOverlay()" aria-label="Close overlay">
-                            ×
-                        </button>
-                        <div class="overlay-content">
-                            <p>Image Processing Overlay</p>
-                            <p>Click X to close</p>
-                        </div>
+                    <input type="range" min="0" max="100" value="50" class="slider" id="slider1">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Blur factor</span>
+                        <span id="slider2-value">75</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="75" class="slider" id="slider2">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>B&W threshold</span>
+                        <span id="slider3-value">25</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="25" class="slider" id="slider3">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Turd size</span>
+                        <span id="slider4-value">8</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="8" class="slider" id="slider4">
+                </div>
+
+                <div class="checkbox-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="silhouette" class="checkbox">
+                        <label for="silhouette" class="checkbox-label">Silhouette</label>
+                    </div>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="fill" class="checkbox">
+                        <label for="fill" class="checkbox-label">Fill</label>
                     </div>
                 </div>
 
-                <div class="panel">
-                    <h2>SVG</h2>
-                    <div class="canvas-area">
-                        <div class="canvas-content">
-                            <p>Vector Output</p>
-                        </div>
+                <button class="create-btn" onclick="processImage()">Create SVG</button>
+            </div>
+
+            <div class="panel" id="invisible">
+                <!-- I am invisible-->
+            </div>
+
+            
+
+            <div class="panel" id="canvas-centerLine">
+                <canvas id="drawCanvas"></canvas>     
+                centerline               
+            </div>
+
+            <div class="panel" id="outputWindow">
+                <canvas id="outputCanvas"></canvas>
+                output
+            </div>
+            
+        
+            <div class="panel control-group" id="output-options">
+                <h3>Output Options</h3>
+
+                <div class="checkbox-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="scanlinesCheckbox" class="checkbox">
+                        <label for="scanlinesCheckbox" class="checkbox-label">Scanlines</label>
                     </div>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="fillCheckbox" class="checkbox">
+                        <label for="fillCheckbox" class="checkbox-label">Fill</label>
+                    </div>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="centerlineCheckbox" class="checkbox" checked>
+                        <label for="centerlineCheckbox" class="checkbox-label">Centerline</label>
+                    </div>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="outlineCheckbox" class="checkbox">
+                        <label for="outlineCheckbox" class="checkbox-label">Outline</label>
+                    </div>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="startpointsCheckbox" class="checkbox">
+                        <label for="startpointsCheckbox" class="checkbox-label">Mark start points</label>
+                    </div>
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Center line separation</span>
+                        <span id="slider4-value">30</span>
+                    </div>
+                    <input type="range" min="2" max="100" value="30" class="slider" id="slider4">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Pupil diameter</span>
+                        <span id="slider1-value">10</span>
+                    </div>
+                    <input type="range" min="1" max="100" value="10" class="slider" id="slider1">
                 </div>
 
             </div>
-            <div class="horizontal">
-                <div class="panel">
-                    <h2>CenterLine</h2>
-                    <div class="canvas-area">
-                        <div class="canvas-content">
-                            <p>Centerline Analysis</p>
-                        </div>
+            <div class="panel control-group" id="smoothing-controls">
+                <h3>Smoothing Controls</h3>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Min distance</span>
+                        <span id="slider2-value">75</span>
                     </div>
+                    <input type="range" min="0" max="100" value="75" class="slider" id="slider2">
                 </div>
 
-                <div class="panel">
-                    <h2>Output SVG</h2>
-                    <div class="canvas-area">
-                        <div class="canvas-content">
-                            <p>Final Result</p>
-                        </div>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Angle threshold</span>
+                        <span id="slider3-value">25</span>
                     </div>
+                    <input type="range" min="0" max="100" value="25" class="slider" id="slider3">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Slider 5</span>
+                        <span id="slider5-value">80</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="80" class="slider" id="slider5">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Slider 6</span>
+                        <span id="slider6-value">80</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="80" class="slider" id="slider6">
                 </div>
 
             </div>
-            
-            
-            
+        </div>
+        <div>
+            <button class="create-btn" id="btnCopy">Copy SVG</button>
         </div>
         
-        <div class="controls-section">
-            <div class="controls-grid">
-                <div class="control-group">
-                    <h3>Processing Controls</h3>
-                    
-                    <div class="slider-container">
-                        <div class="slider-label">
-                            <span>Slider 1</span>
-                            <span id="slider1-value">50</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="50" class="slider" id="slider1">
-                    </div>
-                    
-                    <div class="slider-container">
-                        <div class="slider-label">
-                            <span>Slider 2</span>
-                            <span id="slider2-value">75</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="75" class="slider" id="slider2">
-                    </div>
-                    
-                    <div class="slider-container">
-                        <div class="slider-label">
-                            <span>Slider 3</span>
-                            <span id="slider3-value">25</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="25" class="slider" id="slider3">
-                    </div>
-                    
-                    <button class="create-btn" onclick="processImage()">Create</button>
-                </div>
-                
-                <div class="control-group">
-                    <h3>Output Options</h3>
-                    
-                    <div class="checkbox-group">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="silhouette" class="checkbox" checked>
-                            <label for="silhouette" class="checkbox-label">Silhouette</label>
-                        </div>
-                        
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="fill" class="checkbox">
-                            <label for="fill" class="checkbox-label">Fill</label>
-                        </div>
-                        
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="smoothing" class="checkbox" checked>
-                            <label for="smoothing" class="checkbox-label">Smoothing</label>
-                        </div>
-                    </div>
-                    
-                    <div class="slider-container">
-                        <div class="slider-label">
-                            <span>Slider 4</span>
-                            <span id="slider4-value">60</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="60" class="slider" id="slider4">
-                    </div>
-                    
-                    <div class="slider-container">
-                        <div class="slider-label">
-                            <span>Slider 5</span>
-                            <span id="slider5-value">80</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="80" class="slider" id="slider5">
-                    </div>
-                    <div class="slider-container">
-                        <div class="slider-label">
-                            <span>Slider 6</span>
-                            <span id="slider6-value">80</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="80" class="slider" id="slider6">
-                    </div>
-                </div>
-            </div>
-        </div>
+        <textarea id="svgTextOutput" rows="5" cols="50"></textarea>
     </div>
 
     <script>
@@ -478,6 +582,10 @@
                     button.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
                 }, 1000);
             }, 2000);
+        }
+
+        function copySVG() {
+            // Copies the textarea to clipboard.
         }
 
     </script>
