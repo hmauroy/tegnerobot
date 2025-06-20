@@ -18,6 +18,14 @@ let firstRun = true;
 let imgData; // Set later when filters are applied.
 let teller = 1;
 let userOutput = [];
+
+// Catch any errors.
+window.addEventListener('error', function(event) {
+    alert("OpenVC error occurred. Please refresh page.");
+    // Or display in a custom error div
+});
+
+
 fileInputEl.addEventListener(
   "change",
   (e) => {
