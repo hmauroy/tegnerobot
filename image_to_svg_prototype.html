@@ -20,8 +20,7 @@
 </head>
 <body>
     <p id="opencv-status" class="crt-font">OpenCV.js is loading...</p>
-    <div><input type="file" id="fileInput" name="file" /></div>
-    <!-- Overlay div with close button -->
+    <div><input type="file" id="fileInput" name="file" /></div>    
     <div class="container">
         <div class="panels-grid">
             <div class="panel" id="img-window">
@@ -29,7 +28,8 @@
                     <!--Padding div to prevent flexbox to mess around with the image size.-->
                     <img id="img-src" src="lillebror_newborn512.png" alt="No Image">
                 </div>
-                <div class="overlay" id="img-overlay">
+                <!-- Overlay div with close button -->
+                <div class="overlay hidden" id="img-overlay">
                     <button class="close-button" onclick="closeOverlay()" aria-label="Close overlay">
                         ×
                     </button>
@@ -39,7 +39,6 @@
 
             <div class="panel" id="svgWindow">
                 <div id="svgOutput"></div> 
-                SVG
             </div>
 
             <div class="panel control-group" id="img-processing">
@@ -84,8 +83,8 @@
                     </div>
 
                     <div class="checkbox-container">
-                        <input type="checkbox" id="fill" class="checkbox">
-                        <label for="fill" class="checkbox-label">Fill</label>
+                        <input type="checkbox" id="chkFillPath" class="checkbox">
+                        <label for="chkFillPath" class="checkbox-label">Fill</label>
                     </div>
                 </div>
 
