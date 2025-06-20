@@ -11,24 +11,29 @@
     <script src="potrace.js"></script>
     <!-- potrace repo: https://github.com/kilobtye/potrace/blob/master/potrace.js-->
     <style>
+        #opencv-status {
+            display: block;
+            color: var(--mauroy-grey-light);
+        }
         
     </style>
 </head>
 <body>
+    <p id="opencv-status" class="crt-font">OpenCV.js is loading...</p>
+    <div><input type="file" id="fileInput" name="file" /></div>
+    <!-- Overlay div with close button -->
     <div class="container">
         <div class="panels-grid">
             <div class="panel" id="img-window">
-                <img id="img-src" src="lillebror_newborn512.png" alt="No Image">
-                <div><input type="file" id="fileInput" name="file" /></div>
-                <!-- Overlay div with close button -->
+                <div id="img-padding">
+                    <!--Padding div to prevent flexbox to mess around with the image size.-->
+                    <img id="img-src" src="lillebror_newborn512.png" alt="No Image">
+                </div>
                 <div class="overlay" id="img-overlay">
                     <button class="close-button" onclick="closeOverlay()" aria-label="Close overlay">
                         ×
                     </button>
-                    <canvas id="canvas"></canvas>
-                    <p id="status" class="crt-font">OpenCV.js is loading...</p>
-                    Drawing grey image
-                    
+                    <canvas id="canvas"></canvas>  
                 </div>
             </div>
 
@@ -211,6 +216,12 @@
         function showOverlay() {
             const overlay = document.getElementById('img-overlay');
             overlay.classList.remove('hidden');
+            const rect = imgSource.getBoundingClientRect();
+            const windowRect = document.getElementById("img-window").getBoundingClientRect();
+            // Adjust positioning in relation to the image window and the 2px border.
+            overlay.style.top = rect.top - windowRect.top - 2 + "px";
+            overlay.style.left = rect.left - windowRect.left - 2 + "px";
+
         }
 
         // Update slider values in real-time

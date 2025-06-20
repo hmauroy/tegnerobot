@@ -6,7 +6,7 @@ document.getElementById("btnUpdate").addEventListener("click", (e) => {
 */
 
 let width, height;
-const imgElement = document.getElementById("img-src");
+const imgSource = document.getElementById("img-src");
 const fileInputEl = document.getElementById("fileInput");
 const canvasWindow = document.getElementById("canvasWindow");
 const canvas = document.getElementById("canvas");
@@ -21,18 +21,19 @@ let userOutput = [];
 fileInputEl.addEventListener(
   "change",
   (e) => {
-    imgElement.src = URL.createObjectURL(e.target.files[0]);
+      imgSource.src = URL.createObjectURL(e.target.files[0]);
+      //imgSource.style.width = "38.7vw";
   },
   false
 );
-imgElement.onload = function () {
+imgSource.onload = function () {
   if (moduleInitialized) {
     clearSvgWindow();
     // Create the matrices if deleted.
     gray = new cv.Mat();
     medianBlurred = new cv.Mat();
     thresholded = new cv.Mat();
-    src = cv.imread(imgElement);
+    src = cv.imread(imgSource);
     // 1) color to gray
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
     c(gray.cols);
@@ -48,10 +49,10 @@ let Module = {
     gray = new cv.Mat();
     medianBlurred = new cv.Mat();
     thresholded = new cv.Mat();
-    src = cv.imread(imgElement);
+    src = cv.imread(imgSource);
     // 1) color to gray
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-    document.getElementById("status").innerHTML = "OpenCV.js is ready.";
+    document.getElementById("opencv-status").innerHTML = "OpenCV.js is ready.";
 
     //applyFilters();
     //gray.delete();
@@ -63,6 +64,10 @@ let Module = {
 
 // Functions to apply image trickery + convert to svg.
 function applyFilters() {
+    // Recrate the gray image to be the same size as scaled img-source.
+    src = cv.imread(imgSource);
+    // 1) color to gray
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   // Empty svg-window before doing anything else.
   document.getElementById("svgOutput").innerHTML = "";
   let blur_factor = document.getElementById("rngBlur").value;
@@ -126,21 +131,21 @@ function applyFilters() {
 }
 
 function opencv2image(opencvData) {
-  // Ensure the canvas size matches the image
-  canvas.width = imgElement.width;
-  canvas.height = imgElement.height;
-  let ctx = canvas.getContext("2d", [{ willReadFrequently: true }]);
-  // Convert OpenCV matrix to ImageData
-  imgData = ctx.createImageData(canvas.width, canvas.height);
-  for (let i = 0, j = 0; i < opencvData.data.length; i++, j += 4) {
-    imgData.data[j] =
-      imgData.data[j + 1] =
-      imgData.data[j + 2] =
+    // Ensure the canvas size matches the image
+    canvas.width = imgSource.width;
+    canvas.height = imgSource.height;
+    let ctx = canvas.getContext("2d", [{ willReadFrequently: true }]);
+    // Convert OpenCV matrix to ImageData
+    imgData = ctx.createImageData(canvas.width, canvas.height);
+    for (let i = 0, j = 0; i < opencvData.data.length; i++, j += 4) {
+        imgData.data[j] =
+        imgData.data[j + 1] =
+        imgData.data[j + 2] =
         opencvData.data[i];
-    imgData.data[j + 3] = 255; // Alpha channel
-  }
-    ctx.putImageData(imgData, 0, 0);
-    showOverlay();
+        imgData.data[j + 3] = 255; // Alpha channel
+    }
+        ctx.putImageData(imgData, 0, 0);
+        showOverlay();
 }
 
 function createSvg() {
