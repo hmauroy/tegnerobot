@@ -11,7 +11,6 @@ const fileInputEl = document.getElementById("fileInput");
 const canvasWindow = document.getElementById("canvasWindow");
 const canvas = document.getElementById("canvas");
 const svgOutput = document.getElementById("svgOutput");
-const svgTextOutput = document.getElementById("svgTextOutput");
 let src, gray, medianBlurred, thresholded;
 let moduleInitialized = false;
 let firstRun = true;
@@ -207,25 +206,18 @@ function createSvg() {
     document.getElementById("svgWindow").style.visibility = "visible";
   });
   // Create array with bezier curves
-  PotraceBG8.process(function () {
+  PotraceBG8.process(() => {
     let svg_beziers = PotraceBG8.getSVG(scaleFactor, "curve"); // Scaling to fit drawing robot.
-    //c(svg_beziers);
+      //c(svg_beziers);
     let beziers;
     try {
       beziers = JSON.parse(svg_beziers);
-      //c(beziers);
+        c(beziers);
+        // Send svg_beziers to centerLine-funciton.
+        drawSvgPath(beziers);
     } catch (error) {
       c("Error parsing JSON!", error);
     }
-
-    //c(svg);
-    let output = "";
-    document.getElementById("svgTextOutput").value = svg_beziers;
-    let rows = Math.ceil(beziers.length * 4);
-    svgTextOutput.setAttribute("rows", rows);
-    //console.log(svg);
-    //svg = '<svg id="svg" version="1.1" width="327" height="245" xmlns="http://www.w3.org/2000/svg"><path d="M1.654 0.750 C 1.232 1.432,35.540 1.418,75.000 0.720 C 83.525 0.569,70.614 0.345,46.309 0.223 C 22.004 0.100,1.909 0.337,1.654 0.750 M91.725 3.250 C 90.899 5.038,89.888 7.603,89.480 8.951 C 89.072 10.299,85.515 14.799,81.576 18.951 C 74.278 26.644,63.000 42.557,63.000 45.161 C 63.000 45.953,62.592 47.028,62.093 47.550 C 60.343 49.384,54.155 69.563,53.522 75.500 C 53.051 79.923,53.254 82.003,54.298 83.414 C 55.371 84.866,55.492 86.314,54.797 89.407 C 54.004 92.940,54.151 93.704,55.898 95.118 C 57.007 96.017,57.698 96.968,57.433 97.233 C 57.168 97.498,57.628 98.276,58.455 98.963 C 59.579 99.896,59.701 100.691,58.936 102.119" stroke="none" fill="black" fill-rule="evenodd"/></svg>'
-    //parseSvg(svg);
   });
 }
 
@@ -246,12 +238,6 @@ function cubicBezier(pointsList, n) {
     pts.push([x, y]);
   }
   return pts;
-}
-
-function copySVG() {
-  svgTextOutput.select();
-  //document.execCommand("copy");
-  navigator.clipboard.writeText(svgTextOutput.value);
 }
 
 function clearSvgWindow() {

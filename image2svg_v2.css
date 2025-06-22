@@ -291,6 +291,13 @@ h1 {
   display: block;
 }
 
+.chechbox-buttons {
+    display: flex;
+    justify-content: space-around;
+    align-items: baseline;
+    border: solid white 1px;
+}
+
 
 
 .close-button {

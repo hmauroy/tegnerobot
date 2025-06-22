@@ -16,7 +16,7 @@ function scanlineFillCopilot(ctx, pathArrays, createScanlines, createFill) {
 
   ctx.lineWidth = 1;
   ctx.strokeStyle = "green";
-  let stepSize = Number(document.getElementById("scanLineSeparation").value);
+  let stepSize = Number(document.getElementById("centerLineSeparation").value);
 
   if (createFill) {
     ctx.strokeStyle = "darkslategrey";
