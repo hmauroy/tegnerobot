@@ -11,6 +11,7 @@ const centerlineCheckbox =
 const startpointsCheckbox = document.getElementById(
   "startpointsCheckbox"
 );
+const btnApplySmoothing = document.getElementById("btnApplySmoothing");
 const follower = document.getElementById("mouse-follower");
 
 // Get references to all the input elements
@@ -39,7 +40,10 @@ let smoothingSettings = {
     applyMovingAverage: true
 };
 
-// Add event listeners for range inputs (sliders)
+// Add event listeners
+btnApplySmoothing.addEventListener("click", () => {
+    // Apply smoothing to the bezier curves.
+});
 minDistanceElement.addEventListener('input', () => {
   smoothingSettings.minDistance = parseFloat(minDistanceElement.value);
   d("minDistanceDisplay").innerText = smoothingSettings.minDistance;
@@ -209,13 +213,9 @@ function drawSvgPath(svgData) {
 
     // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
     //return;
-    // 5) Create bezier curves of the pathArrays.
-    //const svgOutputData = generateBezierCurves(pathScaledDown); // No smoothing
-    const svgOutputData = generateBezierCurvesWithSmoothing(pathScaledDown,smoothingSettings); // Smoothing
-    // Compare sizes
-    const comparison = compareArraySizes(pathScaledDown, svgOutputData);
-    // Print detailed analysis
-    printComparison(comparison);
+      // 5) Create bezier curves of the pathArrays.
+    const svgOutputData = generateBezierCurves(pathScaledDown); // No smoothing
+    
 
     // Fill texarea.
     let rows = Math.ceil(svgOutputData.length * 25);
@@ -245,6 +245,16 @@ function drawSvgPath(svgData) {
     console.error("Error:", error);
     alert("Error with something...");
   }
+}
+
+function applySmoothing() {
+    const svgOutputData = generateBezierCurvesWithSmoothing(pathScaledDown,smoothingSettings); // Smoothing
+    // Compare sizes
+    const comparison = compareArraySizes(pathScaledDown, svgOutputData);
+    // Print detailed analysis
+    printComparison(comparison);
+    // Draw smoothed svg data.
+    
 }
 
 function updateMouseFollowerPosition(evt) {

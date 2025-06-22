@@ -132,6 +132,7 @@
         paths.forEach((path, index) => {
           let color = getRandomColor();
           ctx.strokeStyle = color;
+          ctx.strokeStyle = "black";
           ctx.beginPath();
           for (let i = 0; i < path.length; i++) {
             const cmd = path[i];
