@@ -59,8 +59,8 @@ h1 {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     transition: transform 0.3s ease, box-shadow 0.3s;
     border: 2px solid rgba(230, 28, 125, 0.3);
-    width: 38.7vw;
-    height: 29.8vw;
+    width: 45.0vw;
+    height: 34.6vw;
     position: relative;
     margin-bottom: 2vw;
 }
@@ -68,6 +68,10 @@ h1 {
 .panel:hover {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
     border-color: var(--mauroy-pink);
+}
+
+img {
+    border: solid black 1px;
 }
 
 #img-window {

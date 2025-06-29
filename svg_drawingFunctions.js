@@ -30,12 +30,11 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
   }
 }
 
-function drawLines(pointsArray) {
+function drawLines(pointsArray, canvas) {
   /*
     Claude 3.7 edit.
     */
   // Get the canvas element and its 2D context
-  let canvas = document.getElementById("drawCanvas");
   let ctx = canvas.getContext("2d");
 
   // Iterate over each line (each subarray of points)
@@ -78,4 +77,77 @@ function generatePupilPath(pupil) {
   // 1) Generate outline
   // 2) Generate scan lines for each 2nd pixel. Need testing to see which resolution is sane.
   return pupilPath;
+}
+
+function drawBezierCurves(pathsArray, canvas, width, height) {
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Normalizes the paths to the size of the canvas.
+  let paths = normalizePaths(pathsArray, 200, 200);
+
+
+  paths.forEach((path, index) => {
+    ctx.strokeStyle = "chartreuse";
+    ctx.beginPath();
+    for (let i = 0; i < path.length; i++) {
+      const cmd = path[i];
+      if (cmd === "M") {
+        ctx.moveTo(path[i + 1], path[i + 2]);
+        i += 2;
+      } else if (cmd === "C") {
+        ctx.bezierCurveTo(
+          path[i + 1],
+          path[i + 2],
+          path[i + 3],
+          path[i + 4],
+          path[i + 5],
+          path[i + 6]
+        );
+        i += 6;
+      } else if (cmd === "L") {
+        ctx.lineTo(path[i + 1], path[i + 2]);
+        i += 2;
+      }
+    }
+    ctx.stroke();
+  });
+}
+
+
+function normalizePaths(paths, width, height) {
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+
+  paths.forEach((path) => {
+    for (let i = 1; i < path.length; i++) {
+      if (
+        typeof path[i] === "number" &&
+        typeof path[i + 1] === "number"
+      ) {
+        minX = Math.min(minX, path[i]);
+        minY = Math.min(minY, path[i + 1]);
+        maxX = Math.max(maxX, path[i]);
+        maxY = Math.max(maxY, path[i + 1]);
+      }
+    }
+  });
+
+  const scaleX = width / (maxX - minX);
+  const scaleY = height / (maxY - minY);
+  const scale = Math.min(scaleX, scaleY);
+
+  return paths.map((path) => {
+    let newPath = [];
+    for (let i = 0; i < path.length; i++) {
+      if (typeof path[i] === "string") {
+        newPath.push(path[i]);
+      } else {
+        newPath.push((path[i] - minX) * scale);
+      }
+    }
+    return newPath;
+  });
 }

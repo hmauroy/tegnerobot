@@ -11,6 +11,7 @@ const fileInputEl = document.getElementById("fileInput");
 const canvasWindow = document.getElementById("canvasWindow");
 const canvas = document.getElementById("canvas");
 const svgOutput = document.getElementById("svgOutput");
+let beziers = []; // Center line beziers are stored in this variable.
 let src, gray, medianBlurred, thresholded;
 let moduleInitialized = false;
 let firstRun = true;
@@ -209,12 +210,13 @@ function createSvg() {
   PotraceBG8.process(() => {
     let svg_beziers = PotraceBG8.getSVG(scaleFactor, "curve"); // Scaling to fit drawing robot.
       //c(svg_beziers);
-    let beziers;
-    try {
-      beziers = JSON.parse(svg_beziers);
+      try {
+        // Set value to the global variable 'beziers'
+          beziers = JSON.parse(svg_beziers);
+          c("hei");
         c(beziers);
-        // Send svg_beziers to centerLine-funciton.
-        drawSvgPath(beziers);
+        // Start centerLine-function in different JS-script.
+        drawSvgPath();
     } catch (error) {
       c("Error parsing JSON!", error);
     }

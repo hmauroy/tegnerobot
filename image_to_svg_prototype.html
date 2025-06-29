@@ -38,6 +38,7 @@
             </div>
 
             <div class="panel" id="svgWindow">
+                <!--The svgOutput is going to contain SVG element as a child-->
                 <div id="svgOutput"></div> 
             </div>
 
@@ -98,13 +99,11 @@
             
 
             <div class="panel" id="canvas-centerLine">
-                <canvas id="drawCanvas"></canvas>     
-                centerline               
+                <canvas id="centerLineCanvas"></canvas>     
             </div>
 
             <div class="panel" id="outputWindow">
-                <canvas id="outputCanvas"></canvas>
-                output
+                <canvas id="smoothedCanvas"></canvas>
             </div>
             
         
@@ -139,6 +138,7 @@
                     </div>
 
                     <div id="buttons-group">
+                        <button class="create-btn" id="btnUpdateCenterline">Update centerline</button>
                         <button class="create-btn" id="btnPupilInsert">Draw pupil</button>
                     </div>
 
@@ -150,7 +150,15 @@
                         <span>Center line separation</span>
                         <span id="centerLineSeparation-value">30</span>
                     </div>
-                    <input type="range" min="2" max="100" value="30" class="slider" id="centerLineSeparation">
+                    <input type="range" min="1" max="100" value="30" class="slider" id="centerLineSeparation">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Scan line separation</span>
+                        <span id="scanLineSeparation-value">2</span>
+                    </div>
+                    <input type="range" min="2" max="10" value="2" class="slider" id="scanLineSeparation">
                 </div>
 
                 <div class="slider-container">
@@ -174,9 +182,9 @@
                 <div class="slider-container">
                     <div class="slider-label">
                         <span>Min distance</span>
-                        <span id="minDistance-value">75</span>
+                        <span id="minDistance-value">1.5</span>
                     </div>
-                    <input type="range" min="0" max="100" value="75" class="slider" id="minDistance">
+                    <input type="range" min="0" max="10" value="1.5" step="0.1" class="slider" id="minDistance">
                 </div>
 
                 <div class="slider-container">
@@ -256,6 +264,9 @@
                 if (slider.classList.contains("filterSlider")) {
                     applyFilters();
                 }
+                if (slider.classList.contains("smoothingSlider")) {
+                    applySmoothing();
+                }
                 const valueDisplay = document.getElementById(this.id + '-value');
                 if (valueDisplay) {
                     valueDisplay.textContent = this.value;
@@ -280,10 +291,6 @@
                     button.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
                 }, 1000);
             }, 2000);
-        }
-
-        function copySVG() {
-            // Copies the textarea to clipboard.
         }
 
     </script>

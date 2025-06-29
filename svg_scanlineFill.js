@@ -1,4 +1,4 @@
-function scanlineFillCopilot(ctx, pathArrays, createScanlines, createFill) {
+function scanlineFillCopilot(ctx, pathArrays, stepSize, createScanlines, createFill) {
   let minY = Infinity,
     maxY = -Infinity,
     minX = Infinity,
@@ -16,8 +16,7 @@ function scanlineFillCopilot(ctx, pathArrays, createScanlines, createFill) {
 
   ctx.lineWidth = 1;
   ctx.strokeStyle = "green";
-  let stepSize = Number(document.getElementById("centerLineSeparation").value);
-
+  
   if (createFill) {
     ctx.strokeStyle = "darkslategrey";
     stepSize = 0.1;

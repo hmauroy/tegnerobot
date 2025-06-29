@@ -1,6 +1,8 @@
 
-const drawCanvas = document.getElementById("drawCanvas");
-const ctx = drawCanvas.getContext("2d");
+const imgSrc = document.getElementById("img-src");
+const centerLineCanvas = document.getElementById("centerLineCanvas");
+const ctx = centerLineCanvas.getContext("2d");
+const smoothedCanvas = document.getElementById("smoothedCanvas");
 const svgInput = document.getElementById("svgInput");
 const svgTextOutput = document.getElementById("svgTextOutput");
 const fillCheckbox = document.getElementById("fillCheckbox");
@@ -11,6 +13,9 @@ const centerlineCheckbox =
 const startpointsCheckbox = document.getElementById(
   "startpointsCheckbox"
 );
+const scanLineSeparationEl = document.getElementById("scanLineSeparation");
+const centerLineSeparationEl = document.getElementById("centerLineSeparation");
+const btnUpdateCenterline = document.getElementById("btnUpdateCenterline");
 const btnApplySmoothing = document.getElementById("btnApplySmoothing");
 const follower = document.getElementById("mouse-follower");
 
@@ -21,14 +26,9 @@ const angleThresholdElement = document.getElementById('angleThreshold');
 const douglasEpsilonElement = document.getElementById('douglasEpsilon');
 const movingAverageWindowElement = document.getElementById('movingAverageWindow');
 
-const createFill = fillCheckbox.checked;
-const createScanlines = scanlinesCheckbox.checked;
-const createOutline = outlineCheckbox.checked;
-const createCenterLine = centerlineCheckbox.checked;
-const createStartpoints = startpointsCheckbox.checked;
-const maxDistanceThreshold = Number(
-  document.getElementById("centerLineSeparation").value
-);
+// Final global array for the center path.
+const pathScaledDown = [];
+let scaleFactorX = 1;
 
 // Curve smoothing of bezier curves.
 let smoothingSettings = {
@@ -41,22 +41,27 @@ let smoothingSettings = {
 };
 
 // Add event listeners
+btnUpdateCenterline.addEventListener("click", () => {
+    // Apply smoothing to the bezier curves.
+    drawSvgPath();
+});
 btnApplySmoothing.addEventListener("click", () => {
     // Apply smoothing to the bezier curves.
+    applySmoothing();
 });
 minDistanceElement.addEventListener('input', () => {
   smoothingSettings.minDistance = parseFloat(minDistanceElement.value);
-  d("minDistanceDisplay").innerText = smoothingSettings.minDistance;
+  d("minDistance-value").innerText = smoothingSettings.minDistance;
 });
 
 angleThresholdElement.addEventListener('input', () => {
     smoothingSettings.angleThreshold = parseFloat(angleThresholdElement.value);
-    d("angleThresholdDisplay").innerText = smoothingSettings.angleThreshold;
+    d("angleThreshold-value").innerText = smoothingSettings.angleThreshold;
 });
 
 douglasEpsilonElement.addEventListener('input', () => {
     smoothingSettings.douglasEpsilon = parseFloat(douglasEpsilonElement.value);
-    d("douglasEpsilonDisplay").innerText = smoothingSettings.douglasEpsilon;
+    d("douglasEpsilon-value").innerText = smoothingSettings.douglasEpsilon;
 });
 
 movingAverageWindowElement.addEventListener('input', () => {
@@ -78,18 +83,36 @@ copyButton.addEventListener("click", () => {
   copySVG();
 });
 
-function drawSvgPath(svgData) {
-    console.log(typeof svgData);
+function drawSvgPath() {
+
+    
+
+    const createFill = fillCheckbox.checked;
+    const createScanlines = scanlinesCheckbox.checked;
+    const createOutline = outlineCheckbox.checked;
+    let createCenterLine = centerlineCheckbox.checked;
+    const createStartpoints = startpointsCheckbox.checked;
+    console.log("drawSvgPath"); 
+    const centerLineSeparation = Number(centerLineSeparationEl.value);
+    const scanLineSeparation = Number(scanLineSeparationEl.value);
 
 
-  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    console.log("centerLineSeparation", centerLineSeparation);
+    console.log("scanLineSeparation", scanLineSeparation);
+
+
+    centerLineCanvas.width = imgSrc.width;
+    centerLineCanvas.height = imgSrc.height;
+
+
+  ctx.clearRect(0, 0, centerLineCanvas.width, centerLineCanvas.height);
 
   let isEditing = false; // Used for editing with pupil insertions.
   // Handle click when inserting pupils.
   const pupils = []; // [[x1,y1,radius1],[x2,y2,radius2],...]
   function handlePupilClick(evt) {
     console.log(evt.offsetX, evt.offsetY);
-    const rect = drawCanvas.getBoundingClientRect();
+    const rect = centerLineCanvas.getBoundingClientRect();
     if (isOverCanvas) {
       const x = evt.clientX - rect.x - 2;
       const y = evt.clientY - rect.y - 2;
@@ -99,7 +122,7 @@ function drawSvgPath(svgData) {
     }
   }
   function isOverCanvas(evt) {
-    const rect = drawCanvas.getBoundingClientRect();
+    const rect = centerLineCanvas.getBoundingClientRect();
     if (
       evt.clientX > rect.x &&
       evt.clientX < rect.x + rect.width &&
@@ -118,7 +141,7 @@ function drawSvgPath(svgData) {
     .addEventListener("click", function (evt) {
       if (isEditing) {
         isEditing = false;
-        drawCanvas.style.cursor = "default";
+        centerLineCanvas.style.cursor = "default";
         document.getElementById("btnPupilInsert").innerText =
           "Draw pupil";
         document.removeEventListener("click", handlePupilClick);
@@ -131,13 +154,13 @@ function drawSvgPath(svgData) {
         // TODO!!!
       } else {
         isEditing = true;
-        drawCanvas.style.cursor = "none";
+        centerLineCanvas.style.cursor = "none";
         document.getElementById("btnPupilInsert").innerText = "Finish";
         document.addEventListener("click", handlePupilClick);
         // Black circle as a mouse follower.
-        drawCanvas.addEventListener("mousemove", updateMouseFollowerPosition);
-        drawCanvas.addEventListener("mouseenter", showMouseFollower);
-        drawCanvas.addEventListener("mouseleave", hideMouseFollower);
+        centerLineCanvas.addEventListener("mousemove", updateMouseFollowerPosition);
+        centerLineCanvas.addEventListener("mouseenter", showMouseFollower);
+        centerLineCanvas.addEventListener("mouseleave", hideMouseFollower);
       }
     });
 
@@ -147,33 +170,43 @@ function drawSvgPath(svgData) {
 
   try {
     // (I)) Automatic scaling of the data to visualize on a similar scale for all svg drawings.
-    const boundingBox = calcBoundingBox(svgData); // Returns [x1,y1,x2,y2]
+    const boundingBox = calcBoundingBox(beziers); // Returns [x1,y1,x2,y2]
     const x1 = boundingBox[0];
     const x2 = boundingBox[2];
     const y1 = boundingBox[1];
-    const y2 = boundingBox[3];
+      const y2 = boundingBox[3];
+      console.log("boundingbox: ",boundingBox);
     const svgWidth = x2 - x1;
-    const svgHeight = y2 - y1;
+      const svgHeight = y2 - y1;
+      console.log("width,height: ", svgWidth, svgHeight);
     const paddingFactor = 1.02;
 
-    // Scalefactor divides the canvas width on the svg width some padding.
-    let scaleFactorX = drawCanvas.width / (svgWidth * paddingFactor);
-    if (scaleFactorX * (y1 + svgHeight) * paddingFactor > drawCanvas.height) {
-      while (
-        scaleFactorX * (y1 + svgHeight) * paddingFactor >
-        drawCanvas.height
-      ) {
-        scaleFactorX = scaleFactorX * 0.995;
-      }
+    // Scalefactor divides the canvas width on the svg width plus some padding.
+      scaleFactorX = centerLineCanvas.width / (svgWidth * paddingFactor);
+      
+
+    if (scaleFactorX * (y1 + svgHeight) * paddingFactor > centerLineCanvas.height) {
+        c("Too tall drawing! Rescaling to fit window.");
+        while (
+            scaleFactorX * (y1 + svgHeight) * paddingFactor >
+            centerLineCanvas.height
+        ) {
+            scaleFactorX = scaleFactorX * 0.995;
+        }
     }
+      //console.log("scaleFactorX: ",scaleFactorX);
+      //console.log("svgWidthScaled: ", scaleFactorX * svgWidth);
+      //console.log("centerLineCanvas.width: ", centerLineCanvas.width);
+      
     // (II) Parse the svg data format applying scaling for better viewing by the user.
-    const pathArrays = parseSvgPath(svgData, scaleFactorX);
+    const pathArrays = parseSvgPath(beziers, scaleFactorX);
 
     // 1a) Calculates intersections and fills the scanlines with lines or dense lines (fill).
     // Return value is an array of the mid points of intersections of scan lines.
     const midpoints = scanlineFillCopilot(
       ctx,
       pathArrays,
+      scanLineSeparation,
       createScanlines,
       createFill
     );
@@ -183,10 +216,10 @@ function drawSvgPath(svgData) {
     if (createCenterLine) {
       path = findNearestNeighborPathImproved(
         midpoints,
-        maxDistanceThreshold
+        centerLineSeparation
       );
       // Draw lines between points.
-      drawLines(path);
+      drawLines(path,centerLineCanvas);
     }
 
     // 2) Sort the curves for minimizing travel distance.
@@ -198,7 +231,6 @@ function drawSvgPath(svgData) {
     }
 
     // 4) Reverse the scale down to original size using the scaleFactorX.
-    const pathScaledDown = [];
     let indx = 0;
     sortedLines.forEach((curve) => {
       pathScaledDown.push([]);
@@ -254,7 +286,15 @@ function applySmoothing() {
     // Print detailed analysis
     printComparison(comparison);
     // Draw smoothed svg data.
-    
+    const width = scaleFactorX * centerLineCanvas.width;
+    const height = scaleFactorX * centerLineCanvas.height;
+    drawBezierCurves(JSON.parse(svgOutputData), smoothedCanvas, width,height)
+    // Output bezier curves as text
+    let rows = Math.ceil(svgOutputData.length * 25);
+    svgTextOutput.rows = rows;
+    svgTextOutput.cols = 50;
+    svgTextOutput.value = svgOutputData;
+
 }
 
 function updateMouseFollowerPosition(evt) {
@@ -265,7 +305,7 @@ function updateMouseFollowerPosition(evt) {
       document.getElementById("pupilDiameter").value
     );
     const rect = document
-      .getElementById("drawCanvas")
+      .getElementById("centerLineCanvas")
       .getBoundingClientRect();
     follower.style.width = diameter + "px"; // Adjust size as needed
     follower.style.height = diameter + "px"; // Adjust size as needed
