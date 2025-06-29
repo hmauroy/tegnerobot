@@ -27,7 +27,7 @@ const douglasEpsilonElement = document.getElementById('douglasEpsilon');
 const movingAverageWindowElement = document.getElementById('movingAverageWindow');
 
 // Final global array for the center path.
-const pathScaledDown = [];
+let pathScaledDown = [];
 let scaleFactorX = 1;
 
 // Curve smoothing of bezier curves.
@@ -85,7 +85,8 @@ copyButton.addEventListener("click", () => {
 
 function drawSvgPath() {
 
-    
+    // Empties eventual allready filled arrays
+    pathScaledDown = [];
 
     const createFill = fillCheckbox.checked;
     const createScanlines = scanlinesCheckbox.checked;
@@ -100,9 +101,11 @@ function drawSvgPath() {
     console.log("centerLineSeparation", centerLineSeparation);
     console.log("scanLineSeparation", scanLineSeparation);
 
-
+    // Setting the size of the output canvasesses
     centerLineCanvas.width = imgSrc.width;
     centerLineCanvas.height = imgSrc.height;
+    smoothedCanvas.width = imgSrc.width;
+    smoothedCanvas.height = imgSrc.height;
 
 
   ctx.clearRect(0, 0, centerLineCanvas.width, centerLineCanvas.height);
@@ -179,7 +182,7 @@ function drawSvgPath() {
     const svgWidth = x2 - x1;
       const svgHeight = y2 - y1;
       console.log("width,height: ", svgWidth, svgHeight);
-    const paddingFactor = 1.02;
+    const paddingFactor = 1.0;
 
     // Scalefactor divides the canvas width on the svg width plus some padding.
       scaleFactorX = centerLineCanvas.width / (svgWidth * paddingFactor);
@@ -286,9 +289,7 @@ function applySmoothing() {
     // Print detailed analysis
     printComparison(comparison);
     // Draw smoothed svg data.
-    const width = scaleFactorX * centerLineCanvas.width;
-    const height = scaleFactorX * centerLineCanvas.height;
-    drawBezierCurves(JSON.parse(svgOutputData), smoothedCanvas, width,height)
+    drawBezierCurves(JSON.parse(svgOutputData), smoothedCanvas)
     // Output bezier curves as text
     let rows = Math.ceil(svgOutputData.length * 25);
     svgTextOutput.rows = rows;

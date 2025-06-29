@@ -79,15 +79,15 @@ function generatePupilPath(pupil) {
   return pupilPath;
 }
 
-function drawBezierCurves(pathsArray, canvas, width, height) {
+function drawBezierCurves(pathsArray, canvas) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Normalizes the paths to the size of the canvas.
-  let paths = normalizePaths(pathsArray, 200, 200);
+  let paths = normalizePaths(pathsArray, canvas.width, canvas.height);
 
 
-  paths.forEach((path, index) => {
+  paths.forEach((path) => {
     ctx.strokeStyle = "chartreuse";
     ctx.beginPath();
     for (let i = 0; i < path.length; i++) {
