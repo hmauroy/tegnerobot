@@ -385,8 +385,8 @@ function compareArraySizes(inputPointArrays, outputBezierString) {
     },
     comparison: {
       compressionRatio: compressionRatio,
-      compressionPercent: compressionPercent.toFixed(1),
-      pointReduction: pointReduction.toFixed(1),
+      compressionPercent: compressionPercent,
+      pointReduction: pointReduction,
       sizeDifference: inputSize - outputSize,
       isSmaller: outputSize < inputSize
     }

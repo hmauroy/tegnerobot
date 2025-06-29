@@ -30,7 +30,7 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
   }
 }
 
-function drawLines(pointsArray, canvas) {
+function drawLines(pointsArray, canvas, lineWidth=1) {
   /*
     Claude 3.7 edit.
     */
@@ -40,14 +40,15 @@ function drawLines(pointsArray, canvas) {
   // Iterate over each line (each subarray of points)
   for (let lineIndex = 0; lineIndex < pointsArray.length; lineIndex++) {
     const points = pointsArray[lineIndex];
-    drawCurve(points, ctx);
+    drawCurve(points, ctx, lineWidth);
   }
 }
 
-function drawCurve(curve, ctx) {
+function drawCurve(curve, ctx, lineWidth=1) {
   // Begin a new path for each line
   ctx.beginPath();
   ctx.strokeStyle = getColorForElement();
+  ctx.lineWidth = lineWidth;
 
   // Move to the first point of this line
   ctx.moveTo(curve[0][0], curve[0][1]);
@@ -79,7 +80,7 @@ function generatePupilPath(pupil) {
   return pupilPath;
 }
 
-function drawBezierCurves(pathsArray, canvas) {
+function drawBezierCurves(pathsArray, canvas, color) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -88,7 +89,7 @@ function drawBezierCurves(pathsArray, canvas) {
 
 
   paths.forEach((path) => {
-    ctx.strokeStyle = "chartreuse";
+    ctx.strokeStyle = color;
     ctx.beginPath();
     for (let i = 0; i < path.length; i++) {
       const cmd = path[i];

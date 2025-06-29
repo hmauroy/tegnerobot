@@ -25,6 +25,7 @@ const minDistanceElement = document.getElementById('minDistance');
 const angleThresholdElement = document.getElementById('angleThreshold');
 const douglasEpsilonElement = document.getElementById('douglasEpsilon');
 const movingAverageWindowElement = document.getElementById('movingAverageWindow');
+const compressionInfoEl = document.getElementById('compressionInfo');
 
 // Final global array for the center path.
 let pathScaledDown = [];
@@ -177,11 +178,11 @@ function drawSvgPath() {
     const x1 = boundingBox[0];
     const x2 = boundingBox[2];
     const y1 = boundingBox[1];
-      const y2 = boundingBox[3];
-      console.log("boundingbox: ",boundingBox);
+    const y2 = boundingBox[3];
+    //console.log("boundingbox: ",boundingBox);
     const svgWidth = x2 - x1;
-      const svgHeight = y2 - y1;
-      console.log("width,height: ", svgWidth, svgHeight);
+    const svgHeight = y2 - y1;
+    //console.log("width,height: ", svgWidth, svgHeight);
     const paddingFactor = 1.0;
 
     // Scalefactor divides the canvas width on the svg width plus some padding.
@@ -222,7 +223,7 @@ function drawSvgPath() {
         centerLineSeparation
       );
       // Draw lines between points.
-      drawLines(path,centerLineCanvas);
+      drawLines(path,centerLineCanvas,3);
     }
 
     // 2) Sort the curves for minimizing travel distance.
@@ -288,8 +289,11 @@ function applySmoothing() {
     const comparison = compareArraySizes(pathScaledDown, svgOutputData);
     // Print detailed analysis
     printComparison(comparison);
+    // Put compression analysis into smoothing control window.
+    compressionInfoEl.innerText = "Compression ratio: " + comparison.comparison.compressionRatio.toFixed(3) + ":1";
+    compressionInfoEl.innerText = "Compression ratio bezier compression: " + comparison.comparison.compressionPercent.toFixed(1) + " %";
     // Draw smoothed svg data.
-    drawBezierCurves(JSON.parse(svgOutputData), smoothedCanvas)
+    drawBezierCurves(JSON.parse(svgOutputData), smoothedCanvas, "black")
     // Output bezier curves as text
     let rows = Math.ceil(svgOutputData.length * 25);
     svgTextOutput.rows = rows;
