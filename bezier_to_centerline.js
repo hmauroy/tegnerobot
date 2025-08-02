@@ -222,8 +222,8 @@ function drawSvgPath() {
         midpoints,
         centerLineSeparation
       );
-      // Draw lines between points.
-      drawLines(path,centerLineCanvas,3);
+        // Draw lines between points.
+        drawCenterLine(path, centerLineCanvas);
     }
 
     // 2) Sort the curves for minimizing travel distance.

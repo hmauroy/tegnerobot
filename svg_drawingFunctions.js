@@ -1,7 +1,7 @@
 /*
 Draws all starting points utilizing helper function which draws a single point.
 */
-function drawStartingPoints(sortedLines, ctx) {
+function drawStartingPointsOld(sortedLines, ctx) {
   let radius = 6;
   let cnt = 0;
   sortedLines.forEach((curve) => {
@@ -29,6 +29,96 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
     ctx.fillText(number, point[0] - offsetX, point[1] + radius / 2); // (text, x, y)
   }
 }
+
+function drawStartingPoints(sortedLines, ctx) {
+  let radius = 6;
+  
+  // Clear any existing clickable elements
+  clearClickableElements();
+
+  let color = "black";
+  
+  // Draws starting points, starting with the second line.
+  for (let i = 1; i < sortedLines.length; i++) {
+    const curve = sortedLines[i];
+    
+    
+    // Create clickable HTML element for this point
+    createClickableCircle(curve[0], radius, i, color);
+    
+    // Still draw on canvas for visual feedback if needed
+    //drawSinglePoint(curve[0], radius, ctx, color, i + 1);
+  }
+
+  // Draws the starting point of the first line.
+  // Create clickable HTML element for this point
+  createClickableCircle(sortedLines, sortedLines[0][0], radius, 0, color);
+
+  // Still draw on canvas for visual feedback if needed
+  //drawSinglePoint(sortedLines[0][0], radius, ctx, color, 1);
+}
+
+function createClickableCircle(sortedLines, point, radius, index, color) {
+  console.log("circle " + index);
+  const circle = document.createElement('div');
+  circle.className = 'clickable-circle';
+  circle.index = index; // Store the array index
+  
+  // Position and style the circle
+  circle.style.position = 'absolute';
+  circle.style.left = (point.x - radius) + 'px';
+  circle.style.top = (point.y - radius) + 'px';
+  circle.style.width = (radius * 2) + 'px';
+  circle.style.height = (radius * 2) + 'px';
+  circle.style.borderRadius = '50%';
+  circle.style.backgroundColor = color;
+  circle.style.border = '1px solid ' + color;
+  circle.style.cursor = 'pointer';
+  circle.style.zIndex = '1000';
+  
+  // Add click event handler
+  circle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    deleteCurve(sortedLines, this);
+  });
+  
+  // Add to canvas container (assumes canvas has a positioned parent)
+  const canvasContainer = document.getElementById('canvas-centerLine'); // or wherever your canvas is
+  canvasContainer.appendChild(circle);
+}
+
+function clearClickableElements() {
+  const container = document.getElementById('canvas-centerLine');
+  const circles = container.querySelectorAll('.clickable-circle');
+  circles.forEach(circle => circle.remove());
+}
+
+function deleteCurve(sortedLines, element) {
+  if (sortedLines.length === 1) {
+    console.log("Need to have at least one curve left!");
+    return;
+  }
+  const index =  parseInt(element.index)
+  console.log('Deleting circle at index:', index);
+  sortedLines.splice(index, 1);
+  // Removes the circle
+  element.remove();
+  // Redraws the canvas.
+  const centerLineCanvas = document.getElementById("centerLineCanvas");
+  drawCenterLine(sortedLines, centerLineCanvas);
+}
+
+function drawCenterLine(path, centerLineCanvas) {
+  // Remove all lines present
+  // Get the canvas element and its 2D context
+  let ctx = centerLineCanvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Draw lines
+  drawLines(path, centerLineCanvas, 3);
+  // Draw the starting point markers
+  drawStartingPoints(path, ctx);
+}
+  
 
 function drawLines(pointsArray, canvas, lineWidth=1) {
   /*
