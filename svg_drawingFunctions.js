@@ -52,6 +52,7 @@ function drawStartingPoints(sortedLines, ctx) {
 
   // Draws the starting point of the first line.
   // Create clickable HTML element for this point
+  color = "red";
   createClickableCircle(sortedLines, sortedLines[0][0], radius, 0, color);
 
   // Still draw on canvas for visual feedback if needed
