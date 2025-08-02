@@ -54,7 +54,6 @@ function drawStartingPoints(ri) {
   // Still draw on canvas for visual feedback if needed
   //drawSinglePoint(sortedLines[0][0], radius, ctx, color, 1);
 }
-//TODO: Write a global object keeping references to lots of things!
 function createClickableCircle(ri, radius, index, color) {
   const point = ri.sortedLines[index][0];
   console.log("circle " + index, point);
@@ -89,6 +88,7 @@ function createClickableCircle(ri, radius, index, color) {
     }
     // Remove from the array
     this.ri.sortedLines.splice(this.index, 1);
+    this.ri.pathScaledDown.splice(this.index, 1);
 
     // Remove this HTML element
     this.remove();

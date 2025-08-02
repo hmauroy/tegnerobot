@@ -28,8 +28,13 @@ const movingAverageWindowElement = document.getElementById('movingAverageWindow'
 const compressionInfoEl = document.getElementById('compressionInfo');
 
 // Final global array for the center path.
-let pathScaledDown = [];
 let scaleFactorX = 1;
+const ri = {
+    sortedLines: [],
+    centerLineCanvas: centerLineCanvas,
+    createStartpoints: false,
+    pathScaledDown: [],
+}
 
 // Curve smoothing of bezier curves.
 let smoothingSettings = {
@@ -87,13 +92,13 @@ copyButton.addEventListener("click", () => {
 function drawSvgPath() {
 
     // Empties eventual allready filled arrays
-    pathScaledDown = [];
+    ri.pathScaledDown = [];
 
     const createFill = fillCheckbox.checked;
     const createScanlines = scanlinesCheckbox.checked;
     const createOutline = outlineCheckbox.checked;
     let createCenterLine = centerlineCheckbox.checked;
-    const createStartpoints = startpointsCheckbox.checked;
+    ri.createStartpoints = startpointsCheckbox.checked;
     console.log("drawSvgPath"); 
     const centerLineSeparation = Number(centerLineSeparationEl.value);
     const scanLineSeparation = Number(scanLineSeparationEl.value);
@@ -225,26 +230,18 @@ function drawSvgPath() {
     }
 
     // 2a) Sort the curves for minimizing travel distance.
-    const sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
+    ri.sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
     
-    // 2b) Create references to important variables.
-      const ri = {
-        sortedLines: sortedLines,
-        centerLineCanvas: centerLineCanvas,
-        createStartpoints: createStartpoints,
-    }
-    
-    // 2c) Draw lines between points. Pass boolean createStartpoints if starting points should be drawn.
+    // 2b) Draw lines between points. Pass boolean createStartpoints if starting points should be drawn.
     drawCenterLine(ri);  
 
-    
 
     // 3) Reverse the scale down to original size using the scaleFactorX.
     let indx = 0;
-    sortedLines.forEach((curve) => {
-      pathScaledDown.push([]);
+    ri.sortedLines.forEach((curve) => {
+      ri.pathScaledDown.push([]);
       curve.forEach((point) => {
-        pathScaledDown[indx].push([
+        ri.pathScaledDown[indx].push([
           point[0] / scaleFactorX,
           point[1] / scaleFactorX,
         ]);
@@ -254,8 +251,9 @@ function drawSvgPath() {
 
     // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
     //return;
-      // 5) Create bezier curves of the pathArrays.
-    const svgOutputData = generateBezierCurves(pathScaledDown); // No smoothing
+      
+    // 5) Create bezier curves of the pathArrays.
+    const svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
     
 
     // Fill texarea.
@@ -289,9 +287,9 @@ function drawSvgPath() {
 }
 
 function applySmoothing() {
-    const svgOutputData = generateBezierCurvesWithSmoothing(pathScaledDown,smoothingSettings); // Smoothing
+    const svgOutputData = generateBezierCurvesWithSmoothing(ri.pathScaledDown,smoothingSettings); // Smoothing
     // Compare sizes
-    const comparison = compareArraySizes(pathScaledDown, svgOutputData);
+    const comparison = compareArraySizes(ri.pathScaledDown, svgOutputData);
     // Print detailed analysis
     printComparison(comparison);
     // Put compression analysis into smoothing control window.
