@@ -299,7 +299,13 @@ img {
   display: block;
 }
 
-.chechbox-buttons {
+.flexbox-centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.checkbox-buttons {
     display: flex;
     justify-content: space-around;
     align-items: baseline;

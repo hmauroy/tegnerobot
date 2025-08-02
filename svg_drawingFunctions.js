@@ -59,7 +59,7 @@ function createClickableCircle(ri, radius, index, color) {
   const point = ri.sortedLines[index][0];
   console.log("circle " + index, point);
   const circle = document.createElement('div');
-  circle.className = 'clickable-circle';
+  circle.className = 'clickable-circle flexbox-centered';
   circle.index = index; // Store the array index
   
   // Position and style the circle
@@ -69,6 +69,9 @@ function createClickableCircle(ri, radius, index, color) {
   circle.style.width = (radius * 2) + 'px';
   circle.style.height = (radius * 2) + 'px';
   circle.style.borderRadius = '50%';
+  circle.innerText = index + 1;
+  circle.style.fontFamily = "Arial";
+  circle.style.fontSize = "8px";
   circle.style.backgroundColor = color;
   circle.style.border = '1px solid ' + color;
   circle.style.cursor = 'pointer';
