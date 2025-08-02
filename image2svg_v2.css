@@ -112,6 +112,7 @@ img {
 }
 #canvas-centerLine{
     order: 5;
+    position: relative;
 }
 #outputWindow{
     order: 6;
@@ -123,6 +124,9 @@ img {
     order: 8;
 }
 
+#centerLineCanvas {
+    border: solid red 1px;
+}
 
 .control-group {
     padding: 1vw;

@@ -222,19 +222,24 @@ function drawSvgPath() {
         midpoints,
         centerLineSeparation
       );
-        // Draw lines between points.
-        drawCenterLine(path, centerLineCanvas);
     }
 
-    // 2) Sort the curves for minimizing travel distance.
+    // 2a) Sort the curves for minimizing travel distance.
     const sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
-
-    // 3) Draw the start points of the sorted curves
-    if (createStartpoints) {
-      drawStartingPoints(sortedLines, ctx);
+    
+    // 2b) Create references to important variables.
+      const ri = {
+        sortedLines: sortedLines,
+        centerLineCanvas: centerLineCanvas,
+        createStartpoints: createStartpoints,
     }
+    
+    // 2c) Draw lines between points. Pass boolean createStartpoints if starting points should be drawn.
+    drawCenterLine(ri);  
 
-    // 4) Reverse the scale down to original size using the scaleFactorX.
+    
+
+    // 3) Reverse the scale down to original size using the scaleFactorX.
     let indx = 0;
     sortedLines.forEach((curve) => {
       pathScaledDown.push([]);

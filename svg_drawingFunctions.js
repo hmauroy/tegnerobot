@@ -30,45 +30,42 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
   }
 }
 
-function drawStartingPoints(sortedLines, ctx) {
+function drawStartingPoints(ri) {
   let radius = 6;
   
   // Clear any existing clickable elements
   clearClickableElements();
-
-  let color = "black";
   
   // Draws starting points, starting with the second line.
-  for (let i = 1; i < sortedLines.length; i++) {
-    const curve = sortedLines[i];
-    
+  for (let i = 1; i < ri.sortedLines.length; i++) {    
     
     // Create clickable HTML element for this point
-    createClickableCircle(curve[0], radius, i, color);
+    createClickableCircle(ri, radius, i, "black");
+    //createClickableCircle(sortedLines, centerLineCanvas, sortedLines[i][0], radius, i, color);
     
     // Still draw on canvas for visual feedback if needed
-    //drawSinglePoint(curve[0], radius, ctx, color, i + 1);
+    //drawSinglePoint(sortedLines[i][0], radius, ctx, color, i + 1);
   }
 
   // Draws the starting point of the first line.
   // Create clickable HTML element for this point
-  color = "red";
-  createClickableCircle(sortedLines, sortedLines[0][0], radius, 0, color);
+  createClickableCircle(ri, radius, 0, "red");
 
   // Still draw on canvas for visual feedback if needed
   //drawSinglePoint(sortedLines[0][0], radius, ctx, color, 1);
 }
-
-function createClickableCircle(sortedLines, point, radius, index, color) {
-  console.log("circle " + index);
+//TODO: Write a global object keeping references to lots of things!
+function createClickableCircle(ri, radius, index, color) {
+  const point = ri.sortedLines[index][0];
+  console.log("circle " + index, point);
   const circle = document.createElement('div');
   circle.className = 'clickable-circle';
   circle.index = index; // Store the array index
   
   // Position and style the circle
   circle.style.position = 'absolute';
-  circle.style.left = (point.x - radius) + 'px';
-  circle.style.top = (point.y - radius) + 'px';
+  circle.style.left = (point[0] - radius) + 'px';
+  circle.style.top = (point[1] - radius) + 'px';
   circle.style.width = (radius * 2) + 'px';
   circle.style.height = (radius * 2) + 'px';
   circle.style.borderRadius = '50%';
@@ -76,11 +73,25 @@ function createClickableCircle(sortedLines, point, radius, index, color) {
   circle.style.border = '1px solid ' + color;
   circle.style.cursor = 'pointer';
   circle.style.zIndex = '1000';
+
+  // Store array reference directly on the element to keep it in context.
+  circle.ri = ri;
   
   // Add click event handler
   circle.addEventListener('click', function(e) {
     e.stopPropagation();
-    deleteCurve(sortedLines, this);
+    if (this.ri.sortedLines.length <= 1) {
+      console.log("Can't delete the last line!");
+      return;
+    }
+    // Remove from the array
+    this.ri.sortedLines.splice(this.index, 1);
+
+    // Remove this HTML element
+    this.remove();
+
+    // Trigger complete redraw
+    drawCenterLine(this.ri);
   });
   
   // Add to canvas container (assumes canvas has a positioned parent)
@@ -94,30 +105,16 @@ function clearClickableElements() {
   circles.forEach(circle => circle.remove());
 }
 
-function deleteCurve(sortedLines, element) {
-  if (sortedLines.length === 1) {
-    console.log("Need to have at least one curve left!");
-    return;
-  }
-  const index =  parseInt(element.index)
-  console.log('Deleting circle at index:', index);
-  sortedLines.splice(index, 1);
-  // Removes the circle
-  element.remove();
-  // Redraws the canvas.
-  const centerLineCanvas = document.getElementById("centerLineCanvas");
-  drawCenterLine(sortedLines, centerLineCanvas);
-}
-
-function drawCenterLine(path, centerLineCanvas) {
+function drawCenterLine(ri) {
   // Remove all lines present
-  // Get the canvas element and its 2D context
-  let ctx = centerLineCanvas.getContext("2d");
+  let ctx = ri.centerLineCanvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   // Draw lines
-  drawLines(path, centerLineCanvas, 3);
-  // Draw the starting point markers
-  drawStartingPoints(path, ctx);
+  drawLines(ri.sortedLines, ri.centerLineCanvas, 3);
+  // Draw the start points of the sorted curves if setting is toggled
+  if (ri.createStartpoints === true) {
+    drawStartingPoints(ri);
+  }
 }
   
 
