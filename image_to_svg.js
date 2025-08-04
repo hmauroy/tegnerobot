@@ -158,8 +158,8 @@ function opencv2image(opencvData) {
         showOverlay();
 }
 
-function createSvg() {
-  applyFilters(); // Run filters if not run already.
+function createSvg(ri) {
+  applyFilters(ri); // Run filters if not run already.
 
   // 4) potrace, turd-size
   // Clear previous SVG content

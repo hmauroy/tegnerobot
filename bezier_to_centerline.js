@@ -1,7 +1,6 @@
 
 const imgSrc = document.getElementById("img-src");
-const centerLineCanvas = document.getElementById("centerLineCanvas");
-const ctx = centerLineCanvas.getContext("2d");
+const ctx = document.getElementById("centerLineCanvas").getContext("2d");
 const smoothedCanvas = document.getElementById("smoothedCanvas");
 const svgInput = document.getElementById("svgInput");
 const svgTextOutput = document.getElementById("svgTextOutput");
@@ -27,14 +26,6 @@ const douglasEpsilonElement = document.getElementById('douglasEpsilon');
 const movingAverageWindowElement = document.getElementById('movingAverageWindow');
 const compressionInfoEl = document.getElementById('compressionInfo');
 
-// Final global array for the center path.
-let scaleFactorX = 1;
-const ri = {
-    sortedLines: [],
-    centerLineCanvas: centerLineCanvas,
-    createStartpoints: false,
-    pathScaledDown: [],
-}
 
 // Curve smoothing of bezier curves.
 let smoothingSettings = {
@@ -53,7 +44,7 @@ btnUpdateCenterline.addEventListener("click", () => {
 });
 btnApplySmoothing.addEventListener("click", () => {
     // Apply smoothing to the bezier curves.
-    applySmoothing();
+    applySmoothing(ri); // ri is a global variable created in the html page.
 });
 minDistanceElement.addEventListener('input', () => {
   smoothingSettings.minDistance = parseFloat(minDistanceElement.value);
@@ -107,20 +98,20 @@ function drawSvgPath() {
     //console.log("scanLineSeparation", scanLineSeparation);
 
     // Setting the size of the output canvasesses
-    centerLineCanvas.width = imgSrc.width;
-    centerLineCanvas.height = imgSrc.height;
+    ri.centerLineCanvas.width = imgSrc.width;
+    ri.centerLineCanvas.height = imgSrc.height;
     smoothedCanvas.width = imgSrc.width;
     smoothedCanvas.height = imgSrc.height;
 
 
-  ctx.clearRect(0, 0, centerLineCanvas.width, centerLineCanvas.height);
+  ctx.clearRect(0, 0, ri.centerLineCanvas.width, ri.centerLineCanvas.height);
 
   let isEditing = false; // Used for editing with pupil insertions.
   // Handle click when inserting pupils.
   const pupils = []; // [[x1,y1,radius1],[x2,y2,radius2],...]
   function handlePupilClick(evt) {
     console.log(evt.offsetX, evt.offsetY);
-    const rect = centerLineCanvas.getBoundingClientRect();
+    const rect = ri.centerLineCanvas.getBoundingClientRect();
     if (isOverCanvas) {
       const x = evt.clientX - rect.x - 2;
       const y = evt.clientY - rect.y - 2;
@@ -130,7 +121,7 @@ function drawSvgPath() {
     }
   }
   function isOverCanvas(evt) {
-    const rect = centerLineCanvas.getBoundingClientRect();
+    const rect = ri.centerLineCanvas.getBoundingClientRect();
     if (
       evt.clientX > rect.x &&
       evt.clientX < rect.x + rect.width &&
@@ -149,7 +140,7 @@ function drawSvgPath() {
     .addEventListener("click", function (evt) {
       if (isEditing) {
         isEditing = false;
-        centerLineCanvas.style.cursor = "default";
+       ri.centerLineCanvas.style.cursor = "default";
         document.getElementById("btnPupilInsert").innerText =
           "Draw pupil";
         document.removeEventListener("click", handlePupilClick);
@@ -162,13 +153,13 @@ function drawSvgPath() {
         // TODO!!!
       } else {
         isEditing = true;
-        centerLineCanvas.style.cursor = "none";
+       ri.centerLineCanvas.style.cursor = "none";
         document.getElementById("btnPupilInsert").innerText = "Finish";
         document.addEventListener("click", handlePupilClick);
         // Black circle as a mouse follower.
-        centerLineCanvas.addEventListener("mousemove", updateMouseFollowerPosition);
-        centerLineCanvas.addEventListener("mouseenter", showMouseFollower);
-        centerLineCanvas.addEventListener("mouseleave", hideMouseFollower);
+       ri.centerLineCanvas.addEventListener("mousemove", updateMouseFollowerPosition);
+       ri.centerLineCanvas.addEventListener("mouseenter", showMouseFollower);
+       ri.centerLineCanvas.addEventListener("mouseleave", hideMouseFollower);
       }
     });
 
@@ -190,24 +181,21 @@ function drawSvgPath() {
     const paddingFactor = 1.0;
 
     // Scalefactor divides the canvas width on the svg width plus some padding.
-      scaleFactorX = centerLineCanvas.width / (svgWidth * paddingFactor);
+      ri.scaleFactorX =ri.centerLineCanvas.width / (svgWidth * paddingFactor);
       
 
-    if (scaleFactorX * (y1 + svgHeight) * paddingFactor > centerLineCanvas.height) {
+    if (ri.scaleFactorX * (y1 + svgHeight) * paddingFactor >ri.centerLineCanvas.height) {
         c("Too tall drawing! Rescaling to fit window.");
         while (
-            scaleFactorX * (y1 + svgHeight) * paddingFactor >
-            centerLineCanvas.height
+            ri.scaleFactorX * (y1 + svgHeight) * paddingFactor >
+           ri.centerLineCanvas.height
         ) {
-            scaleFactorX = scaleFactorX * 0.995;
+            ri.scaleFactorX = ri.scaleFactorX * 0.995;
         }
     }
-      //console.log("scaleFactorX: ",scaleFactorX);
-      //console.log("svgWidthScaled: ", scaleFactorX * svgWidth);
-      //console.log("centerLineCanvas.width: ", centerLineCanvas.width);
       
     // (II) Parse the svg data format applying scaling for better viewing by the user.
-    const pathArrays = parseSvgPath(beziers, scaleFactorX);
+    const pathArrays = parseSvgPath(beziers, ri.scaleFactorX);
 
     // 1a) Calculates intersections and fills the scanlines with lines or dense lines (fill).
     // Return value is an array of the mid points of intersections of scan lines.
@@ -232,34 +220,9 @@ function drawSvgPath() {
     ri.sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
     
     // 2b) Draw lines between points. Pass boolean createStartpoints if starting points should be drawn.
-    drawCenterLine(ri);  
-
-
-    // 3) Reverse the scale down to original size using the scaleFactorX.
-    let indx = 0;
-    ri.sortedLines.forEach((curve) => {
-      ri.pathScaledDown.push([]);
-      curve.forEach((point) => {
-        ri.pathScaledDown[indx].push([
-          point[0] / scaleFactorX,
-          point[1] / scaleFactorX,
-        ]);
-      });
-      indx++;
-    });
-
-    // 4) Smooth the curves to remove jagged artefacts from the mid point algorithms.
-    //return;
-      
-    // 5) Create bezier curves of the pathArrays.
-    const svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
+    // This functions ends by starting other functions.
+    drawCenterLine(ri);
     
-
-    // Fill texarea.
-    let rows = Math.ceil(svgOutputData.length * 25);
-    svgTextOutput.rows = rows;
-    svgTextOutput.cols = 50;
-    svgTextOutput.value = svgOutputData;
 
     // 6) Draw the outline as the last step to lay the outline on top of the other drawings.
     if (createOutline) {
@@ -285,22 +248,50 @@ function drawSvgPath() {
   }
 }
 
-function applySmoothing() {
-    const svgOutputData = generateBezierCurvesWithSmoothing(ri.pathScaledDown,smoothingSettings); // Smoothing
+function updateSvgOutput(ri) {
+    // 3) Reverse the scale down to original size using the scaleFactorX.
+    let indx = 0;
+    ri.sortedLines.forEach((curve) => {
+      ri.pathScaledDown.push([]);
+      curve.forEach((point) => {
+        ri.pathScaledDown[indx].push([
+          point[0] / ri.scaleFactorX,
+          point[1] / ri.scaleFactorX,
+        ]);
+      });
+      indx++;
+    });
+
+    // 4) Maybe a light smoothing the curves to remove jagged artefacts from the mid point algorithms.
+    //return;
+
+    // 5) Create bezier curves of the pathArrays.
+    ri.svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
+
+    // Fill texarea.
+    let rows = Math.ceil(ri.svgOutputData.length * 25);
+    ri.svgTextOutput.rows = rows;
+    ri.svgTextOutput.cols = 50;
+    ri.svgTextOutput.value = ri.svgOutputData;
+
+}
+
+function applySmoothing(ri) {
+    ri.svgOutputData = generateBezierCurvesWithSmoothing(ri.pathScaledDown,smoothingSettings); // Smoothing
     // Compare sizes
-    const comparison = compareArraySizes(ri.pathScaledDown, svgOutputData);
+    const comparison = compareArraySizes(ri.pathScaledDown, ri.svgOutputData);
     // Print detailed analysis
     printComparison(comparison);
     // Put compression analysis into smoothing control window.
     compressionInfoEl.innerText = "Compression ratio: " + comparison.comparison.compressionRatio.toFixed(3) + ":1";
     compressionInfoEl.innerText = "Compression ratio bezier compression: " + comparison.comparison.compressionPercent.toFixed(1) + " %";
     // Draw smoothed svg data.
-    drawBezierCurves(JSON.parse(svgOutputData), smoothedCanvas, "black")
+    drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black")
     // Output bezier curves as text
-    let rows = Math.ceil(svgOutputData.length * 25);
-    svgTextOutput.rows = rows;
-    svgTextOutput.cols = 50;
-    svgTextOutput.value = svgOutputData;
+    let rows = Math.ceil(ri.svgOutputData.length * 25);
+    ri.svgTextOutput.rows = rows;
+    ri.svgTextOutput.cols = 50;
+    ri.svgTextOutput.value = ri.svgOutputData;
 
 }
 

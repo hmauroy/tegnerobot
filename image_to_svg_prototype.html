@@ -89,7 +89,7 @@
                     </div>
                 </div>
 
-                <button class="create-btn" onclick="createSvg()">Create SVG</button>
+                <button class="create-btn" id="btnCreateSvg">Create SVG</button>
             </div>
 
             <div class="panel" id="invisible">
@@ -240,6 +240,22 @@
 
 
     <script type="text/javascript">
+        // Global object keeping lots of variables needed for events etc.
+        const ri = {
+            sortedLines: [], // array for drawing on screen.
+            centerLineCanvas: document.getElementById("centerLineCanvas"),
+            createStartpoints: false,
+            pathScaledDown: [], // Final global array for the center path for drawing robot.
+            scaleFactorX: 1,
+            svgOutputData: [],
+            svgTextOutput: document.getElementById("svgTextOutput"),
+        }
+
+        // Listener for start conversion of image to svg and center line drawing.
+        document.getElementById("btnCreateSvg").addEventListener("click", () => {
+            createSvg(ri);
+        });
+
         // Close overlay function
         function closeOverlay() {
             const overlay = document.getElementById('img-overlay');
@@ -266,7 +282,7 @@
                     applyFilters();
                 }
                 if (slider.classList.contains("smoothingSlider")) {
-                    applySmoothing();
+                    applySmoothing(ri);
                 }
                 const valueDisplay = document.getElementById(this.id + '-value');
                 if (valueDisplay) {

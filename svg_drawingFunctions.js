@@ -116,6 +116,8 @@ function drawCenterLine(ri) {
   if (ri.createStartpoints === true) {
     drawStartingPoints(ri);
   }
+  // Scale the sortedLines and update SVG text output
+  updateSvgOutput(ri);
 }
   
 
