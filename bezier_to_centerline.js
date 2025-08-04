@@ -99,13 +99,12 @@ function drawSvgPath() {
     const createOutline = outlineCheckbox.checked;
     let createCenterLine = centerlineCheckbox.checked;
     ri.createStartpoints = startpointsCheckbox.checked;
-    console.log("drawSvgPath"); 
     const centerLineSeparation = Number(centerLineSeparationEl.value);
     const scanLineSeparation = Number(scanLineSeparationEl.value);
 
 
-    console.log("centerLineSeparation", centerLineSeparation);
-    console.log("scanLineSeparation", scanLineSeparation);
+    //console.log("centerLineSeparation", centerLineSeparation);
+    //console.log("scanLineSeparation", scanLineSeparation);
 
     // Setting the size of the output canvasesses
     centerLineCanvas.width = imgSrc.width;

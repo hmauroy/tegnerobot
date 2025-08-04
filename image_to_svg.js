@@ -44,7 +44,7 @@ imgSource.onload = function () {
     src = cv.imread(imgSource);
     // 1) color to gray
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-    c(gray.cols);
+    //c(gray.cols);
     opencv2image(gray);
   }
 };
@@ -81,6 +81,7 @@ function applyFilters() {
   let blur_factor = document.getElementById("rngBlur").value;
   let threshold_factor = document.getElementById("rngThresh").value;
   let turd_factor = document.getElementById("rngTurdsize").value;
+  /*
   c(
     "Blur: " +
       blur_factor +
@@ -89,6 +90,7 @@ function applyFilters() {
       ", TurdSize: " +
       turd_factor
   );
+  */
   width = gray.cols;
   height = gray.rows;
   let blur_value = parseInt(Math.round(blur_factor * width * 0.002)); // blur value is around 1-2 % of image width
@@ -213,8 +215,7 @@ function createSvg() {
       try {
         // Set value to the global variable 'beziers'
           beziers = JSON.parse(svg_beziers);
-          c("hei");
-        c(beziers);
+        //c(beziers);
         // Start centerLine-function in different JS-script.
         drawSvgPath();
     } catch (error) {
@@ -243,7 +244,7 @@ function cubicBezier(pointsList, n) {
 }
 
 function clearSvgWindow() {
-  console.log("Clears potrace memory.");
+  //console.log("Clears potrace memory.");
   let svgDiv = document.getElementById("svgOutput");
   svgDiv.innerHTML = "";
   //while (svgDiv.firstChild) {

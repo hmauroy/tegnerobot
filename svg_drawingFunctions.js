@@ -18,7 +18,6 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
     offsetX = radius / 1.3;
   }
   ctx.beginPath();
-  console.log("Begin path");
   ctx.fillStyle = color;
   ctx.arc(point[0], point[1], radius, 0, 2 * Math.PI);
   ctx.fill();
@@ -56,7 +55,6 @@ function drawStartingPoints(ri) {
 }
 function createClickableCircle(ri, radius, index, color) {
   const point = ri.sortedLines[index][0];
-  console.log("circle " + index, point);
   const circle = document.createElement('div');
   circle.className = 'clickable-circle flexbox-centered';
   circle.index = index; // Store the array index
