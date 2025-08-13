@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zhang-Suen Image Thinning</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .file-input-wrapper:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .image-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .image-window {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            width: calc(100% - 40px);
+            max-width: none;
+            transition: all 0.3s ease;
+        }
+
+        .image-window:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .image-window h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+            background: #f9f9f9;
+        }
+
+        .info {
+            background: rgba(103, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .processing {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .threshold-control {
+            margin: 10px 0;
+        }
+
+        .threshold-control label {
+            display: inline-block;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .threshold-control input[type="range"] {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zhang-Suen Image Thinning</h1>
+        
+        <div class="info">
+            <p><strong>Zhang-Suen thinning</strong> reduces binary images to their skeletal form while preserving topology. Upload a line drawing or sketch to see the algorithm in action!</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <input type="file" id="imageInput" class="file-input" accept="image/*">
+                Choose Image File
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="threshold-control">
+                <label for="threshold">Binary Threshold:</label>
+                <input type="range" id="threshold" min="0" max="255" value="128">
+                <span id="thresholdValue">128</span>
+            </div>
+            <div class="threshold-control">
+                <label>
+                    <input type="checkbox" id="simplifyPath" checked>
+                    Apply Douglas-Peucker Simplification
+                </label>
+            </div>
+            <br>
+            <button id="processBtn" class="btn" disabled>Apply Zhang-Suen Thinning</button>
+            <button id="resetBtn" class="btn">Reset</button>
+        </div>
+
+        <div class="image-container">
+            <div class="image-window">
+                <h3>Original Image</h3>
+                <canvas id="originalCanvas" width="400" height="300"></canvas>
+            </div>
+            
+            <div class="image-window">
+                <h3>Thinned Result</h3>
+                <canvas id="resultCanvas" width="400" height="300"></canvas>
+            </div>
+            
+            <div class="image-window">
+                <h3>Vectorized Curves</h3>
+                <canvas id="vectorCanvas" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const processBtn = document.getElementById('processBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const originalCanvas = document.getElementById('originalCanvas');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const vectorCanvas = document.getElementById('vectorCanvas');
+        const thresholdSlider = document.getElementById('threshold');
+        const thresholdValue = document.getElementById('thresholdValue');
+        const simplifyCheckbox = document.getElementById('simplifyPath');
+        
+        const originalCtx = originalCanvas.getContext('2d');
+        const resultCtx = resultCanvas.getContext('2d');
+        const vectorCtx = vectorCanvas.getContext('2d');
+        
+        let currentImage = null;
+
+        thresholdSlider.addEventListener('input', (e) => {
+            thresholdValue.textContent = e.target.value;
+        });
+
+        // Add multiple event listeners to ensure responsiveness
+        imageInput.addEventListener('change', handleImageUpload);
+        document.querySelector('.file-input-wrapper').addEventListener('click', () => {
+            imageInput.click();
+        });
+        processBtn.addEventListener('click', applyZhangSuenThinning);
+        resetBtn.addEventListener('click', reset);
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            console.log('File selected:', file.name); // Debug log
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                console.log('File loaded'); // Debug log
+                const img = new Image();
+                img.onload = () => {
+                    console.log('Image loaded:', img.width, 'x', img.height); // Debug log
+                    currentImage = img;
+                    displayOriginalImage(img);
+                    processBtn.disabled = false;
+                };
+                img.onerror = (error) => {
+                    console.error('Image load error:', error);
+                    alert('Error loading image. Please try a different file.');
+                };
+                img.src = event.target.result;
+            };
+            reader.onerror = (error) => {
+                console.error('FileReader error:', error);
+                alert('Error reading file. Please try again.');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayOriginalImage(img) {
+            // Calculate optimal size: use image size or fit to viewport width
+            const containerWidth = Math.min(window.innerWidth - 120, img.width); // 120px for padding
+            const aspectRatio = img.height / img.width;
+            
+            const canvasWidth = containerWidth;
+            const canvasHeight = containerWidth * aspectRatio;
+
+            originalCanvas.width = canvasWidth;
+            originalCanvas.height = canvasHeight;
+            originalCtx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+        }
+
+        function applyZhangSuenThinning() {
+            if (!currentImage) return;
+
+            processBtn.textContent = 'Processing...';
+            processBtn.disabled = true;
+
+            setTimeout(() => {
+                const threshold = parseInt(thresholdSlider.value);
+                
+                // Get image data
+                const imageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+                
+                // Convert to binary
+                const binaryData = toBinary(imageData, threshold);
+                
+                // Apply Zhang-Suen thinning
+                const thinnedData = zhangSuenThinning(binaryData, originalCanvas.width, originalCanvas.height);
+                
+                // Display result with same dimensions as original
+                displayResult(thinnedData, originalCanvas.width, originalCanvas.height);
+                
+                // Vectorize to Bezier curves
+                const shouldSimplify = simplifyCheckbox.checked;
+                const curves = vectorizeSkeleton(thinnedData, originalCanvas.width, originalCanvas.height, shouldSimplify);
+                displayVectorizedCurves(curves, originalCanvas.width, originalCanvas.height);
+                
+                processBtn.textContent = 'Apply Zhang-Suen Thinning';
+                processBtn.disabled = false;
+            }, 100);
+        }
+
+        function toBinary(imageData, threshold) {
+            const data = imageData.data;
+            const binary = new Array(data.length / 4);
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                binary[i / 4] = gray < threshold ? 1 : 0; // 1 for black (foreground), 0 for white (background)
+            }
+            
+            return binary;
+        }
+
+        function zhangSuenThinning(binary, width, height) {
+            let current = [...binary];
+            let changed = true;
+            
+            while (changed) {
+                changed = false;
+                
+                // Sub-iteration 1
+                const toDelete1 = [];
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const idx = y * width + x;
+                        if (current[idx] === 1 && shouldDelete1(current, x, y, width)) {
+                            toDelete1.push(idx);
+                        }
+                    }
+                }
+                
+                for (const idx of toDelete1) {
+                    current[idx] = 0;
+                    changed = true;
+                }
+                
+                // Sub-iteration 2
+                const toDelete2 = [];
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const idx = y * width + x;
+                        if (current[idx] === 1 && shouldDelete2(current, x, y, width)) {
+                            toDelete2.push(idx);
+                        }
+                    }
+                }
+                
+                for (const idx of toDelete2) {
+                    current[idx] = 0;
+                    changed = true;
+                }
+            }
+            
+            return current;
+        }
+
+        function getNeighbors(data, x, y, width) {
+            return [
+                data[(y-1) * width + x],     // P1 (N)
+                data[(y-1) * width + (x+1)], // P2 (NE)
+                data[y * width + (x+1)],     // P3 (E)
+                data[(y+1) * width + (x+1)], // P4 (SE)
+                data[(y+1) * width + x],     // P5 (S)
+                data[(y+1) * width + (x-1)], // P6 (SW)
+                data[y * width + (x-1)],     // P7 (W)
+                data[(y-1) * width + (x-1)]  // P8 (NW)
+            ];
+        }
+
+        function countTransitions(neighbors) {
+            let count = 0;
+            for (let i = 0; i < 8; i++) {
+                if (neighbors[i] === 0 && neighbors[(i + 1) % 8] === 1) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        function countBlackNeighbors(neighbors) {
+            return neighbors.reduce((sum, val) => sum + val, 0);
+        }
+
+        function shouldDelete1(data, x, y, width) {
+            const neighbors = getNeighbors(data, x, y, width);
+            const [p1, p2, p3, p4, p5, p6, p7, p8] = neighbors;
+            
+            const blackNeighbors = countBlackNeighbors(neighbors);
+            const transitions = countTransitions(neighbors);
+            
+            return (
+                blackNeighbors >= 2 && blackNeighbors <= 6 &&
+                transitions === 1 &&
+                (p1 * p3 * p5) === 0 &&
+                (p3 * p5 * p7) === 0
+            );
+        }
+
+        function shouldDelete2(data, x, y, width) {
+            const neighbors = getNeighbors(data, x, y, width);
+            const [p1, p2, p3, p4, p5, p6, p7, p8] = neighbors;
+            
+            const blackNeighbors = countBlackNeighbors(neighbors);
+            const transitions = countTransitions(neighbors);
+            
+            return (
+                blackNeighbors >= 2 && blackNeighbors <= 6 &&
+                transitions === 1 &&
+                (p1 * p3 * p7) === 0 &&
+                (p1 * p5 * p7) === 0
+            );
+        }
+
+        function displayResult(binaryData, width, height) {
+            resultCanvas.width = width;
+            resultCanvas.height = height;
+            
+            const imageData = resultCtx.createImageData(width, height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < binaryData.length; i++) {
+                const value = binaryData[i] === 1 ? 0 : 255; // 1 = black, 0 = white
+                data[i * 4] = value;     // Red
+                data[i * 4 + 1] = value; // Green
+                data[i * 4 + 2] = value; // Blue
+                data[i * 4 + 3] = 255;   // Alpha
+            }
+            
+            resultCtx.putImageData(imageData, 0, 0);
+        }
+
+        function reset() {
+            originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
+            resultCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+            vectorCtx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
+            imageInput.value = '';
+            currentImage = null;
+            processBtn.disabled = true;
+            processBtn.textContent = 'Apply Zhang-Suen Thinning';
+        }
+
+        // Vectorization functions
+        function vectorizeSkeleton(binaryData, width, height, shouldSimplify = true) {
+            const paths = tracePaths(binaryData, width, height);
+            const curves = [];
+            
+            for (const path of paths) {
+                if (path.length < 2) continue;
+                
+                let processedPath = path;
+                
+                // Apply Douglas-Peucker simplification only if checkbox is checked
+                if (shouldSimplify && path.length > 3) {
+                    processedPath = douglasPeucker(path, 2.0);
+                }
+                
+                // Convert to Bezier curves
+                const bezierCurves = pathToBezier(processedPath);
+                curves.push(...bezierCurves);
+            }
+            
+            return curves;
+        }
+
+        function tracePaths(binaryData, width, height) {
+            const visited = new Array(width * height).fill(false);
+            const paths = [];
+            
+            // Find all connected components
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = y * width + x;
+                    if (binaryData[idx] === 1 && !visited[idx]) {
+                        const path = traceSinglePath(binaryData, visited, x, y, width, height);
+                        if (path.length > 1) {
+                            paths.push(path);
+                        }
+                    }
+                }
+            }
+            
+            return paths;
+        }
+
+        function traceSinglePath(binaryData, visited, startX, startY, width, height) {
+            const path = [];
+            const stack = [{x: startX, y: startY}];
+            
+            while (stack.length > 0) {
+                const {x, y} = stack.pop();
+                const idx = y * width + x;
+                
+                if (visited[idx]) continue;
+                visited[idx] = true;
+                path.push({x, y});
+                
+                // Check 8-connected neighbors
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx === 0 && dy === 0) continue;
+                        
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                            const nIdx = ny * width + nx;
+                            if (binaryData[nIdx] === 1 && !visited[nIdx]) {
+                                stack.push({x: nx, y: ny});
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return path;
+        }
+
+        function douglasPeucker(points, epsilon) {
+            if (points.length <= 2) return points;
+            
+            // Find the point with maximum distance from line between first and last
+            let maxDist = 0;
+            let index = 0;
+            
+            const start = points[0];
+            const end = points[points.length - 1];
+            
+            for (let i = 1; i < points.length - 1; i++) {
+                const dist = pointToLineDistance(points[i], start, end);
+                if (dist > maxDist) {
+                    maxDist = dist;
+                    index = i;
+                }
+            }
+            
+            // If max distance is greater than epsilon, recursively simplify
+            if (maxDist > epsilon) {
+                const left = douglasPeucker(points.slice(0, index + 1), epsilon);
+                const right = douglasPeucker(points.slice(index), epsilon);
+                
+                return [...left.slice(0, -1), ...right];
+            } else {
+                return [start, end];
+            }
+        }
+
+        function pointToLineDistance(point, lineStart, lineEnd) {
+            const A = point.x - lineStart.x;
+            const B = point.y - lineStart.y;
+            const C = lineEnd.x - lineStart.x;
+            const D = lineEnd.y - lineStart.y;
+            
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            
+            if (lenSq === 0) return Math.sqrt(A * A + B * B);
+            
+            const param = dot / lenSq;
+            
+            let xx, yy;
+            if (param < 0) {
+                xx = lineStart.x;
+                yy = lineStart.y;
+            } else if (param > 1) {
+                xx = lineEnd.x;
+                yy = lineEnd.y;
+            } else {
+                xx = lineStart.x + param * C;
+                yy = lineStart.y + param * D;
+            }
+            
+            const dx = point.x - xx;
+            const dy = point.y - yy;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function pathToBezier(points) {
+            if (points.length < 2) return [];
+            if (points.length === 2) {
+                // Simple line
+                return [{
+                    type: 'line',
+                    start: points[0],
+                    end: points[1]
+                }];
+            }
+            
+            const curves = [];
+            
+            // Create cubic Bezier curves for segments
+            for (let i = 0; i < points.length - 1; i += 3) {
+                const p0 = points[i];
+                const p1 = points[Math.min(i + 1, points.length - 1)];
+                const p2 = points[Math.min(i + 2, points.length - 1)];
+                const p3 = points[Math.min(i + 3, points.length - 1)];
+                
+                if (i + 3 < points.length) {
+                    // Cubic Bezier
+                    curves.push({
+                        type: 'cubic',
+                        p0: p0,
+                        p1: interpolatePoint(p0, p1, 0.33),
+                        p2: interpolatePoint(p2, p3, 0.67),
+                        p3: p3
+                    });
+                } else {
+                    // Quadratic or line for remaining points
+                    if (p2 !== p1) {
+                        curves.push({
+                            type: 'quadratic',
+                            p0: p0,
+                            p1: p1,
+                            p2: p2
+                        });
+                    } else {
+                        curves.push({
+                            type: 'line',
+                            start: p0,
+                            end: p1
+                        });
+                    }
+                }
+            }
+            
+            return curves;
+        }
+
+        function interpolatePoint(p1, p2, t) {
+            return {
+                x: p1.x + (p2.x - p1.x) * t,
+                y: p1.y + (p2.y - p1.y) * t
+            };
+        }
+
+        function displayVectorizedCurves(curves, width, height) {
+            vectorCanvas.width = width;
+            vectorCanvas.height = height;
+            
+            vectorCtx.fillStyle = 'white';
+            vectorCtx.fillRect(0, 0, width, height);
+            
+            vectorCtx.strokeStyle = '#2196F3';
+            vectorCtx.lineWidth = 2;
+            vectorCtx.lineCap = 'round';
+            vectorCtx.lineJoin = 'round';
+            
+            for (const curve of curves) {
+                vectorCtx.beginPath();
+                
+                if (curve.type === 'line') {
+                    vectorCtx.moveTo(curve.start.x, curve.start.y);
+                    vectorCtx.lineTo(curve.end.x, curve.end.y);
+                } else if (curve.type === 'quadratic') {
+                    vectorCtx.moveTo(curve.p0.x, curve.p0.y);
+                    vectorCtx.quadraticCurveTo(curve.p1.x, curve.p1.y, curve.p2.x, curve.p2.y);
+                } else if (curve.type === 'cubic') {
+                    vectorCtx.moveTo(curve.p0.x, curve.p0.y);
+                    vectorCtx.bezierCurveTo(curve.p1.x, curve.p1.y, curve.p2.x, curve.p2.y, curve.p3.x, curve.p3.y);
+                }
+                
+                vectorCtx.stroke();
+            }
+            
+            // Draw control points for debugging (smaller points)
+            vectorCtx.fillStyle = '#FF5722';
+            vectorCtx.strokeStyle = '#FF5722';
+            vectorCtx.lineWidth = 0.5;
+            
+            for (const curve of curves) {
+                if (curve.type === 'cubic') {
+                    // Draw smaller control points
+                    vectorCtx.fillRect(curve.p1.x - 1, curve.p1.y - 1, 2, 2);
+                    vectorCtx.fillRect(curve.p2.x - 1, curve.p2.y - 1, 2, 2);
+                    
+                    // Draw thinner control lines
+                    vectorCtx.setLineDash([1, 1]);
+                    vectorCtx.beginPath();
+                    vectorCtx.moveTo(curve.p0.x, curve.p0.y);
+                    vectorCtx.lineTo(curve.p1.x, curve.p1.y);
+                    vectorCtx.moveTo(curve.p2.x, curve.p2.y);
+                    vectorCtx.lineTo(curve.p3.x, curve.p3.y);
+                    vectorCtx.stroke();
+                    vectorCtx.setLineDash([]);
+                } else if (curve.type === 'quadratic') {
+                    // Draw control point for quadratic curves
+                    vectorCtx.fillRect(curve.p1.x - 1, curve.p1.y - 1, 2, 2);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

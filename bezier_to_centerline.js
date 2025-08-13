@@ -188,7 +188,7 @@ function drawSvgPath() {
         c("Too tall drawing! Rescaling to fit window.");
         while (
             ri.scaleFactorX * (y1 + svgHeight) * paddingFactor >
-           ri.centerLineCanvas.height
+            ri.centerLineCanvas.height
         ) {
             ri.scaleFactorX = ri.scaleFactorX * 0.995;
         }
