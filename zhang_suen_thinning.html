@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zhang-Suen Image Thinning (Continuous Tracing)</title>
+    <title>Enhanced Image Processor - Zhang-Suen & Canny Edge</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
         .container { background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
@@ -22,16 +22,23 @@
         .image-window h3 { margin-top: 0; color: #333; font-size: 1.2rem; }
         canvas { border: 2px solid #ddd; border-radius: 10px; max-width: 100%; width: 100%; height: auto; background: #f9f9f9; }
         .info { background: rgba(103, 126, 234, 0.1); border-left: 4px solid #667eea; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-        .threshold-control { margin: 10px 0; }
-        .threshold-control label { display: inline-block; margin-right: 10px; font-weight: bold; }
-        .threshold-control input[type="range"] { width: 200px; }
+        .control-group { margin: 15px 0; }
+        .control-group label { display: inline-block; margin-right: 10px; font-weight: bold; }
+        .control-group input[type="range"] { width: 200px; }
+        .radio-group { margin: 15px 0; }
+        .radio-group label { margin: 0 20px 0 5px; font-weight: normal; cursor: pointer; }
+        .radio-group input[type="radio"] { margin-right: 8px; }
+        .canny-controls { margin: 15px 0; }
+        .canny-controls.hidden { display: none; }
+        .threshold-controls { margin: 15px 0; }
+        .threshold-controls.hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Zhang-Suen Image Thinning</h1>
+        <h1>Enhanced Image Processor</h1>
         <div class="info">
-            <p><strong>Zhang-Suen thinning</strong> reduces binary images to their skeletal form while preserving topology. Upload a line drawing or sketch to see the algorithm in action!</p>
+            <p><strong>Choose your processing method:</strong> Zhang-Suen thinning for line drawings or Canny edge detection for photographs. The algorithm will extract curves and optimize the drawing path!</p>
         </div>
         <div class="upload-section">
             <div class="file-input-wrapper">
@@ -40,25 +47,53 @@
             </div>
         </div>
         <div class="controls">
-            <div class="threshold-control">
-                <label for="threshold">Binary Threshold:</label>
-                <input type="range" id="threshold" min="0" max="255" value="128" />
-                <span id="thresholdValue">128</span>
+            <div class="radio-group">
+                <input type="radio" id="lineDrawing" name="processMethod" value="zhang-suen" checked />
+                <label for="lineDrawing">Line Drawing</label>
+                <input type="radio" id="imagePhoto" name="processMethod" value="canny" />
+                <label for="imagePhoto">Image</label>
             </div>
-            <div class="threshold-control">
+            
+            <div class="threshold-controls" id="thresholdControls">
+                <div class="control-group">
+                    <label for="threshold">Binary Threshold:</label>
+                    <input type="range" id="threshold" min="0" max="255" value="128" />
+                    <span id="thresholdValue">128</span>
+                </div>
+            </div>
+            
+            <div class="canny-controls hidden" id="cannyControls">
+                <div class="control-group">
+                    <label for="lowThreshold">Low Threshold:</label>
+                    <input type="range" id="lowThreshold" min="0" max="255" value="50" />
+                    <span id="lowThresholdValue">50</span>
+                </div>
+                <div class="control-group">
+                    <label for="highThreshold">High Threshold:</label>
+                    <input type="range" id="highThreshold" min="0" max="255" value="150" />
+                    <span id="highThresholdValue">150</span>
+                </div>
+                <div class="control-group">
+                    <label for="gaussianSize">Gaussian Blur Size:</label>
+                    <input type="range" id="gaussianSize" min="3" max="15" value="5" step="2" />
+                    <span id="gaussianSizeValue">5</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
                 <label>
                     <input type="checkbox" id="simplifyPath" checked />
                     Apply Douglas-Peucker Simplification
                 </label>
             </div>
-            <div class="threshold-control">
+            <div class="control-group">
                 <label>
                     <input type="checkbox" id="optimizePath" checked />
                     Optimize Drawing Order
                 </label>
             </div>
             <br />
-            <button id="processBtn" class="btn" disabled>Apply Zhang-Suen Thinning</button>
+            <button id="processBtn" class="btn" disabled>Process Image</button>
             <button id="resetBtn" class="btn">Reset</button>
         </div>
         <div class="image-container">
@@ -67,7 +102,7 @@
                 <canvas id="originalCanvas" width="400" height="300"></canvas>
             </div>
             <div class="image-window">
-                <h3>Thinned Result</h3>
+                <h3 id="processedTitle">Processed Result</h3>
                 <canvas id="resultCanvas" width="400" height="300"></canvas>
             </div>
             <div class="image-window">
@@ -84,10 +119,27 @@
         const originalCanvas = document.getElementById('originalCanvas');
         const resultCanvas = document.getElementById('resultCanvas');
         const vectorCanvas = document.getElementById('vectorCanvas');
+        const processedTitle = document.getElementById('processedTitle');
+
+        // Radio buttons
+        const lineDrawingRadio = document.getElementById('lineDrawing');
+        const imagePhotoRadio = document.getElementById('imagePhoto');
+        
+        // Controls
         const thresholdSlider = document.getElementById('threshold');
         const thresholdValue = document.getElementById('thresholdValue');
+        const lowThresholdSlider = document.getElementById('lowThreshold');
+        const lowThresholdValue = document.getElementById('lowThresholdValue');
+        const highThresholdSlider = document.getElementById('highThreshold');
+        const highThresholdValue = document.getElementById('highThresholdValue');
+        const gaussianSizeSlider = document.getElementById('gaussianSize');
+        const gaussianSizeValue = document.getElementById('gaussianSizeValue');
         const simplifyCheckbox = document.getElementById('simplifyPath');
         const optimizeCheckbox = document.getElementById('optimizePath');
+
+        // Control groups
+        const thresholdControls = document.getElementById('thresholdControls');
+        const cannyControls = document.getElementById('cannyControls');
 
         const originalCtx = originalCanvas.getContext('2d');
         const resultCtx = resultCanvas.getContext('2d');
@@ -95,13 +147,39 @@
 
         let currentImage = null;
 
+        // Event listeners for sliders
         thresholdSlider.addEventListener('input', (e) => {
             thresholdValue.textContent = e.target.value;
         });
+        lowThresholdSlider.addEventListener('input', (e) => {
+            lowThresholdValue.textContent = e.target.value;
+        });
+        highThresholdSlider.addEventListener('input', (e) => {
+            highThresholdValue.textContent = e.target.value;
+        });
+        gaussianSizeSlider.addEventListener('input', (e) => {
+            gaussianSizeValue.textContent = e.target.value;
+        });
+
+        // Radio button change handler
+        function handleMethodChange() {
+            if (lineDrawingRadio.checked) {
+                thresholdControls.classList.remove('hidden');
+                cannyControls.classList.add('hidden');
+                processedTitle.textContent = 'Zhang-Suen Thinned Result';
+            } else {
+                thresholdControls.classList.add('hidden');
+                cannyControls.classList.remove('hidden');
+                processedTitle.textContent = 'Canny Edge Detection Result';
+            }
+        }
+
+        lineDrawingRadio.addEventListener('change', handleMethodChange);
+        imagePhotoRadio.addEventListener('change', handleMethodChange);
 
         imageInput.addEventListener('change', handleImageUpload);
         document.querySelector('.file-input-wrapper').addEventListener('click', () => imageInput.click());
-        processBtn.addEventListener('click', applyZhangSuenThinning);
+        processBtn.addEventListener('click', processImage);
         resetBtn.addEventListener('click', reset);
 
         function handleImageUpload(e) {
@@ -130,25 +208,230 @@
             originalCtx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
         }
 
-        function applyZhangSuenThinning() {
+        function processImage() {
             if (!currentImage) return;
             processBtn.textContent = 'Processing...';
             processBtn.disabled = true;
+            
             setTimeout(() => {
-                const threshold = parseInt(thresholdSlider.value);
                 const imageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
-                const binaryData = toBinary(imageData, threshold);
-                const thinnedData = zhangSuenThinning(binaryData, originalCanvas.width, originalCanvas.height);
-                displayResult(thinnedData, originalCanvas.width, originalCanvas.height);
+                let binaryData;
+                
+                if (lineDrawingRadio.checked) {
+                    // Zhang-Suen thinning for line drawings
+                    const threshold = parseInt(thresholdSlider.value);
+                    binaryData = toBinary(imageData, threshold);
+                    binaryData = zhangSuenThinning(binaryData, originalCanvas.width, originalCanvas.height);
+                } else {
+                    // Canny edge detection for images
+                    const lowThresh = parseInt(lowThresholdSlider.value);
+                    const highThresh = parseInt(highThresholdSlider.value);
+                    const gaussianSize = parseInt(gaussianSizeSlider.value);
+                    binaryData = cannyEdgeDetection(imageData, originalCanvas.width, originalCanvas.height, lowThresh, highThresh, gaussianSize);
+                }
+                
+                displayResult(binaryData, originalCanvas.width, originalCanvas.height);
+                
                 const shouldSimplify = simplifyCheckbox.checked;
                 const shouldOptimize = optimizeCheckbox.checked;
-                const curves = vectorizeSkeleton(thinnedData, originalCanvas.width, originalCanvas.height, shouldSimplify, shouldOptimize);
+                const curves = vectorizeSkeleton(binaryData, originalCanvas.width, originalCanvas.height, shouldSimplify, shouldOptimize);
                 displayVectorizedCurves(curves, originalCanvas.width, originalCanvas.height, shouldOptimize);
-                processBtn.textContent = 'Apply Zhang-Suen Thinning';
+                
+                processBtn.textContent = 'Process Image';
                 processBtn.disabled = false;
             }, 50);
         }
 
+        // ==================== CANNY EDGE DETECTION ====================
+        function cannyEdgeDetection(imageData, width, height, lowThreshold, highThreshold, gaussianSize) {
+            // Convert to grayscale
+            const grayData = toGrayscale(imageData);
+            
+            // Apply Gaussian blur
+            const blurredData = gaussianBlur(grayData, width, height, gaussianSize);
+            
+            // Calculate gradients
+            const { magnitude, direction } = calculateGradients(blurredData, width, height);
+            
+            // Non-maximum suppression
+            const suppressedData = nonMaximumSuppression(magnitude, direction, width, height);
+            
+            // Double threshold and edge tracking
+            const edges = doubleThreshold(suppressedData, width, height, lowThreshold, highThreshold);
+            
+            return edges;
+        }
+
+        function toGrayscale(imageData) {
+            const data = imageData.data;
+            const gray = new Array(data.length / 4);
+            for (let i = 0; i < data.length; i += 4) {
+                gray[i / 4] = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+            }
+            return gray;
+        }
+
+        function gaussianBlur(data, width, height, size) {
+            const kernel = createGaussianKernel(size);
+            const half = Math.floor(size / 2);
+            const result = new Array(width * height);
+            
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    let sum = 0;
+                    let weightSum = 0;
+                    
+                    for (let ky = -half; ky <= half; ky++) {
+                        for (let kx = -half; kx <= half; kx++) {
+                            const px = x + kx;
+                            const py = y + ky;
+                            
+                            if (px >= 0 && px < width && py >= 0 && py < height) {
+                                const weight = kernel[ky + half][kx + half];
+                                sum += data[py * width + px] * weight;
+                                weightSum += weight;
+                            }
+                        }
+                    }
+                    
+                    result[y * width + x] = sum / weightSum;
+                }
+            }
+            
+            return result;
+        }
+
+        function createGaussianKernel(size) {
+            const sigma = size / 6;
+            const half = Math.floor(size / 2);
+            const kernel = [];
+            
+            for (let y = -half; y <= half; y++) {
+                const row = [];
+                for (let x = -half; x <= half; x++) {
+                    const value = (1 / (2 * Math.PI * sigma * sigma)) * 
+                                Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
+                    row.push(value);
+                }
+                kernel.push(row);
+            }
+            
+            return kernel;
+        }
+
+        function calculateGradients(data, width, height) {
+            const sobelX = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
+            const sobelY = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]];
+            
+            const magnitude = new Array(width * height);
+            const direction = new Array(width * height);
+            
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    let gx = 0, gy = 0;
+                    
+                    for (let ky = -1; ky <= 1; ky++) {
+                        for (let kx = -1; kx <= 1; kx++) {
+                            const pixel = data[(y + ky) * width + (x + kx)];
+                            gx += pixel * sobelX[ky + 1][kx + 1];
+                            gy += pixel * sobelY[ky + 1][kx + 1];
+                        }
+                    }
+                    
+                    const idx = y * width + x;
+                    magnitude[idx] = Math.sqrt(gx * gx + gy * gy);
+                    direction[idx] = Math.atan2(gy, gx);
+                }
+            }
+            
+            return { magnitude, direction };
+        }
+
+        function nonMaximumSuppression(magnitude, direction, width, height) {
+            const result = new Array(width * height).fill(0);
+            
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = y * width + x;
+                    const angle = direction[idx];
+                    const mag = magnitude[idx];
+                    
+                    // Determine direction (0, 45, 90, 135 degrees)
+                    let dir = Math.round((angle * 4) / Math.PI) % 4;
+                    if (dir < 0) dir += 4;
+                    
+                    let neighbor1, neighbor2;
+                    
+                    switch (dir) {
+                        case 0: // 0 degrees (horizontal)
+                            neighbor1 = magnitude[y * width + (x - 1)];
+                            neighbor2 = magnitude[y * width + (x + 1)];
+                            break;
+                        case 1: // 45 degrees
+                            neighbor1 = magnitude[(y - 1) * width + (x + 1)];
+                            neighbor2 = magnitude[(y + 1) * width + (x - 1)];
+                            break;
+                        case 2: // 90 degrees (vertical)
+                            neighbor1 = magnitude[(y - 1) * width + x];
+                            neighbor2 = magnitude[(y + 1) * width + x];
+                            break;
+                        case 3: // 135 degrees
+                            neighbor1 = magnitude[(y - 1) * width + (x - 1)];
+                            neighbor2 = magnitude[(y + 1) * width + (x + 1)];
+                            break;
+                    }
+                    
+                    if (mag >= neighbor1 && mag >= neighbor2) {
+                        result[idx] = mag;
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        function doubleThreshold(data, width, height, lowThreshold, highThreshold) {
+            const result = new Array(width * height).fill(0);
+            const strong = 255;
+            const weak = 127;
+            
+            // Apply thresholds
+            for (let i = 0; i < data.length; i++) {
+                if (data[i] >= highThreshold) {
+                    result[i] = strong;
+                } else if (data[i] >= lowThreshold) {
+                    result[i] = weak;
+                }
+            }
+            
+            // Edge tracking by hysteresis
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = y * width + x;
+                    if (result[idx] === weak) {
+                        // Check if connected to strong edge
+                        let hasStrongNeighbor = false;
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                if (dx === 0 && dy === 0) continue;
+                                const nIdx = (y + dy) * width + (x + dx);
+                                if (result[nIdx] === strong) {
+                                    hasStrongNeighbor = true;
+                                    break;
+                                }
+                            }
+                            if (hasStrongNeighbor) break;
+                        }
+                        result[idx] = hasStrongNeighbor ? strong : 0;
+                    }
+                }
+            }
+            
+            // Convert to binary (1 for edge, 0 for non-edge)
+            return result.map(val => val === strong ? 1 : 0);
+        }
+
+        // ==================== ORIGINAL ZHANG-SUEN FUNCTIONS ====================
         function toBinary(imageData, threshold) {
             const data = imageData.data;
             const binary = new Array(data.length / 4);
@@ -220,10 +503,10 @@
             originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
             resultCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
             vectorCtx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
-            imageInput.value = ''; currentImage = null; processBtn.disabled = true; processBtn.textContent = 'Apply Zhang-Suen Thinning';
+            imageInput.value = ''; currentImage = null; processBtn.disabled = true; processBtn.textContent = 'Process Image';
         }
 
-        // ===================== Vectorization =====================
+        // ===================== Vectorization (unchanged) =====================
         function vectorizeSkeleton(binaryData, width, height, shouldSimplify = true, shouldOptimize = true) {
             const paths = tracePaths(binaryData, width, height);
             let allCurves = [];
@@ -236,26 +519,23 @@
             }
             if (shouldOptimize && allCurves.length > 1) {
                 allCurves = optimizeDrawingOrder(allCurves);
-                allCurves = mergeCloseCurves(allCurves, 3); // stitch consecutive polylines
+                allCurves = mergeCloseCurves(allCurves, 3);
             }
             return allCurves;
         }
 
         function createSingleCurveFromPath(points) { if (points.length < 2) return null; return { type: 'polyline', points, id: Math.random().toString(36).slice(2, 11) }; }
 
-        // --------- Option A: Continuous path tracing with endpoints + gap-bridging ---------
         function tracePaths(binaryData, width, height) {
             const visited = new Array(width * height).fill(false);
             const paths = [];
 
-            // Helper to count 8-neighbors (foreground)
             function neighborCount(x, y) {
                 let c = 0; for (let dy=-1; dy<=1; dy++) for (let dx=-1; dx<=1; dx++) {
                     if (dx===0 && dy===0) continue; const nx=x+dx, ny=y+dy; if (nx<0||ny<0||nx>=width||ny>=height) continue; if (binaryData[ny*width+nx]===1) c++; }
                 return c;
             }
 
-            // Prefer endpoints first to trace full strokes
             const endpoints = [];
             for (let y=0; y<height; y++) {
                 for (let x=0; x<width; x++) {
@@ -264,9 +544,7 @@
             }
 
             function nextSeed() {
-                // Unvisited endpoint
                 for (const p of endpoints) { const idx=p.y*width+p.x; if (!visited[idx]) return p; }
-                // Any unvisited foreground pixel
                 for (let y=0; y<height; y++) for (let x=0; x<width; x++) { const idx=y*width+x; if (binaryData[idx]===1 && !visited[idx]) return {x,y}; }
                 return null;
             }
@@ -283,11 +561,10 @@
         function traceSinglePathContinuous(binaryData, visited, startX, startY, width, height, bridgeTolerance = 2) {
             const path = [];
             let current = { x: startX, y: startY };
-            let prevDir = null; // {dx, dy}
+            let prevDir = null;
 
             function idx(x, y) { return y * width + x; }
             function inBounds(x, y) { return x >= 0 && y >= 0 && x < width && y < height; }
-            function dist2(a, b) { const dx=a.x-b.x, dy=a.y-b.y; return dx*dx+dy*dy; }
 
             function unvisitedNeighbors(x, y) {
                 const n = [];
@@ -298,10 +575,9 @@
             }
 
             function angleScore(dir) {
-                if (!prevDir) return 0; // no penalty for first step
-                // prefer keeping direction: smaller angle -> smaller score
-                const dp = prevDir.dx*dir.dx + prevDir.dy*dir.dy; // -2..2 range (since dx,dy in [-1,0,1])
-                return -dp; // higher dot -> lower score
+                if (!prevDir) return 0;
+                const dp = prevDir.dx*dir.dx + prevDir.dy*dir.dy;
+                return -dp;
             }
 
             function findNearestUnvisitedWithin(rMax) {
@@ -315,7 +591,7 @@
                             }
                         }
                     }
-                    if (best) break; // found within this radius
+                    if (best) break;
                 }
                 return best;
             }
@@ -336,16 +612,13 @@
             }
 
             while (true) {
-                // add current if first time
                 if (!visited[idx(current.x, current.y)]) {
                     visited[idx(current.x, current.y)] = true;
                     path.push({ x: current.x, y: current.y });
                 }
 
-                // 1) prefer unvisited immediate neighbors
                 const neigh = unvisitedNeighbors(current.x, current.y);
                 if (neigh.length > 0) {
-                    // pick neighbor that best preserves direction, then nearest
                     neigh.sort((a, b) => angleScore(a) - angleScore(b) || (a.dx*a.dx + a.dy*a.dy) - (b.dx*b.dx + b.dy*b.dy));
                     const n = neigh[0];
                     prevDir = { dx: n.dx, dy: n.dy };
@@ -353,25 +626,22 @@
                     continue;
                 }
 
-                // 2) try to bridge small gaps up to bridgeTolerance
                 const jump = findNearestUnvisitedWithin(bridgeTolerance);
                 if (jump) {
                     const line = bresenham(current.x, current.y, jump.x, jump.y);
-                    // Append intermediate points (do not mark them visited unless they are skeleton)
                     for (let k = 1; k < line.length; k++) {
                         const p = line[k];
                         if (path.length === 0 || (p.x !== path[path.length-1].x || p.y !== path[path.length-1].y)) {
                             path.push({ x: p.x, y: p.y });
                         }
                         const ind = idx(p.x, p.y);
-                        if (binaryData[ind] === 1 && !visited[ind]) visited[ind] = true; // mark only skeleton pixels
+                        if (binaryData[ind] === 1 && !visited[ind]) visited[ind] = true;
                     }
                     prevDir = { dx: Math.sign(jump.x - current.x), dy: Math.sign(jump.y - current.y) };
                     current = { x: jump.x, y: jump.y };
                     continue;
                 }
 
-                // 3) no continuation found
                 break;
             }
 
@@ -401,16 +671,6 @@
             const t = dot / lenSq; const xx = a.x + Math.max(0, Math.min(1, t)) * C; const yy = a.y + Math.max(0, Math.min(1, t)) * D;
             const dx = point.x - xx; const dy = point.y - yy; return Math.sqrt(dx*dx + dy*dy);
         }
-
-        // Keep as helper (unused for polyline case)
-        function pathToBezier(points) {
-            if (points.length < 2) return [];
-            if (points.length === 2) { return [{ type: 'line', start: points[0], end: points[1], id: Math.random().toString(36).slice(2, 11) }]; }
-            if (points.length === 3) { return [{ type: 'quadratic', p0: points[0], p1: points[1], p2: points[2], id: Math.random().toString(36).slice(2, 11) }]; }
-            return [{ type: 'polyline', points, id: Math.random().toString(36).slice(2, 11) }];
-        }
-
-        function interpolatePoint(p1, p2, t) { return { x: p1.x + (p2.x - p1.x) * t, y: p1.y + (p2.y - p1.y) * t }; }
 
         function optimizeDrawingOrder(curves) {
             if (curves.length <= 1) return curves;
