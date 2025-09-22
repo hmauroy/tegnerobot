@@ -78,37 +78,13 @@ function applyFilters() {
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   // Empty svg-window before doing anything else.
   document.getElementById("svgOutput").innerHTML = "";
-  let blur_factor = document.getElementById("rngBlur").value;
-  let threshold_factor = document.getElementById("rngThresh").value;
+  let threshold_lower = parseFloat(document.getElementById("rngBlur").value);
+  let threshold_upper = parseFloat(document.getElementById("rngThresh").value);
   let turd_factor = document.getElementById("rngTurdsize").value;
-  /*
-  c(
-    "Blur: " +
-      blur_factor +
-      ", Thresh: " +
-      threshold_factor +
-      ", TurdSize: " +
-      turd_factor
-  );
-  */
+
   width = gray.cols;
   height = gray.rows;
-  let blur_value = parseInt(Math.round(blur_factor * width * 0.002)); // blur value is around 1-2 % of image width
-  if (blur_value % 2 == 0) {
-    blur_value -= 1;
-    if (blur_value <= 3) {
-      blur_value = 3;
-    }
-  }
-  let thresh_value = parseInt(
-    Math.round(threshold_factor * width * 0.005)
-  ); // blur value is around 1-2 % of image width
-  if (thresh_value % 2 == 0) {
-    thresh_value -= 1;
-    if (thresh_value <= 0) {
-      thresh_value = 1;
-    }
-  }
+
   // Not certain that turd size should be normalized.
   let turd_value = parseInt(Math.round(turd_factor * width * 0.01)); // blur value is around 1-2 % of image width
   if (turd_value <= 1) {
@@ -117,20 +93,19 @@ function applyFilters() {
   medianBlurred = new cv.Mat();
   thresholded = new cv.Mat();
   // 2) median blur, adjusted with slider
-  cv.medianBlur(gray, medianBlurred, blur_value); // The second parameter is the kernel size
+  //cv.medianBlur(gray, medianBlurred, blur_value); // The second parameter is the kernel size
 
-  // Apply adaptive thresholding to create a binary image
-  // 3) adaptive threshold
-  // Only do thresholding to find edges if not checkbox is checked.
+  // Apply thresholding to create a binary image
+  // 3) Canny Edge detector
+  // Only do thresholding to find edges if checkbox is checked.
   let checkbox = document.getElementById("lineDrawingMode");
   if (checkbox.checked) {
-    console.log("No edge detection if binary image.");
+    console.log("No edge detection if line drawing.");
     opencv2image(gray);
   } else {
     // August 2025: Canny edge detector
-    t_lower = 50;
-    t_upper = 150;
-    cv.Canny(gray, thresholded, t_lower, t_upper);
+    // Canny() fyller array thresholded med innhold.
+    cv.Canny(gray, thresholded, threshold_lower, threshold_upper);
     // Invert image because canny colors edges white and background black.
     cv.bitwise_not(thresholded, thresholded);
     opencv2image(thresholded);
