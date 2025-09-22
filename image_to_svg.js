@@ -122,11 +122,21 @@ function applyFilters() {
   // Apply adaptive thresholding to create a binary image
   // 3) adaptive threshold
   // Only do thresholding to find edges if not checkbox is checked.
-  let checkbox = document.getElementById("silhouette");
+  let checkbox = document.getElementById("lineDrawingMode");
   if (checkbox.checked) {
     console.log("No edge detection if binary image.");
     opencv2image(gray);
   } else {
+    // August 2025: Canny edge detector
+    t_lower = 50;
+    t_upper = 150;
+    cv.Canny(gray, thresholded, t_lower, t_upper);
+    // Invert image because canny colors edges white and background black.
+    cv.bitwise_not(thresholded, thresholded);
+    opencv2image(thresholded);
+
+    /*
+    // Original edge detection from spring 2024 bachelor thesis.
     cv.adaptiveThreshold(
       medianBlurred,
       thresholded,
@@ -137,7 +147,9 @@ function applyFilters() {
       (C = 2)
     );
     opencv2image(thresholded);
+    */
   }
+  
 }
 
 function opencv2image(opencvData) {
