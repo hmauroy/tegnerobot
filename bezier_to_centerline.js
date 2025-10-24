@@ -181,10 +181,10 @@ function drawSvgPath() {
     const paddingFactor = 1.0;
 
     // Scalefactor divides the canvas width on the svg width plus some padding.
-      ri.scaleFactorX =ri.centerLineCanvas.width / (svgWidth * paddingFactor);
+    ri.scaleFactorX = ri.centerLineCanvas.width / (svgWidth * paddingFactor);
       
 
-    if (ri.scaleFactorX * (y1 + svgHeight) * paddingFactor >ri.centerLineCanvas.height) {
+    if (ri.scaleFactorX * (y1 + svgHeight) * paddingFactor > ri.centerLineCanvas.height) {
         c("Too tall drawing! Rescaling to fit window.");
         while (
             ri.scaleFactorX * (y1 + svgHeight) * paddingFactor >
@@ -194,7 +194,7 @@ function drawSvgPath() {
         }
     }
       
-    // (II) Parse the svg data format applying scaling for better viewing by the user.
+    // (II) Parses the svg data format from potrace into curves of points. Apply scaling for better viewing in web app.
     const pathArrays = parseSvgPath(beziers, ri.scaleFactorX);
 
     // 1a) Calculates intersections and fills the scanlines with lines or dense lines (fill).
@@ -250,7 +250,9 @@ function drawSvgPath() {
 
 function updateSvgOutput(ri) {
     // 3) Reverse the scale down to original size using the scaleFactorX.
-    let indx = 0;
+  let indx = 0;
+  // Empty pathScaledDown before recalculating (this is run every time a line is deleted.)
+  ri.pathScaledDown = [];
     ri.sortedLines.forEach((curve) => {
       ri.pathScaledDown.push([]);
       curve.forEach((point) => {
@@ -265,13 +267,16 @@ function updateSvgOutput(ri) {
     // 4) Maybe a light smoothing the curves to remove jagged artefacts from the mid point algorithms.
     //return;
 
-    // 5) Create bezier curves of the pathArrays.
+  // 5) Create bezier curves of the pathArrays.
+    console.log(JSON.stringify(ri.pathScaledDown));
+    //console.log(ri.pathScaledDown);
     ri.svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
 
     // Fill texarea.
     let rows = Math.ceil(ri.svgOutputData.length * 25);
     ri.svgTextOutput.rows = rows;
     ri.svgTextOutput.cols = 50;
+    ri.svgOutputData = addLineEnding(ri.svgOutputData); // Adds the EOF control code for micro:bit as a signal for ending the drawing.
     ri.svgTextOutput.value = ri.svgOutputData;
 
 }
@@ -288,11 +293,19 @@ function applySmoothing(ri) {
     // Draw smoothed svg data.
     drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black")
     // Output bezier curves as text
+    // First need to Apply a custom ending to the text for
+    ri.svgOutputData = addLineEnding(ri.svgOutputData);
     let rows = Math.ceil(ri.svgOutputData.length * 25);
     ri.svgTextOutput.rows = rows;
     ri.svgTextOutput.cols = 50;
     ri.svgTextOutput.value = ri.svgOutputData;
 
+}
+
+function addLineEnding(text) {
+  text = text.slice(0, text.length - 2);  // Remove last 2 characters
+  text += ',"EOF",492"]]';  // Add new ending
+  return text
 }
 
 function updateMouseFollowerPosition(evt) {

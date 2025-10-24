@@ -50,18 +50,22 @@
     <script>
       function generateColorPalette() {
         const colorPalette = [];
-        const intensity = 50; // Set a fixed intensity for all colors
+        const nColors = 15; // number of colors in the gradient
 
-        for (let i = 0; i < 60; i++) {
-          let hue = (i * 6) % 360; // Change the hue by 6 degrees per step
-          let complementaryHue = (hue + 180) % 360; // Get the complementary hue
+        // Typical temperature hue range: blue (240°) → red (0°)
+        const startHue = 240; // cold (blue)
+        const endHue = 0;     // hot (red)
 
-          // Create colors in HSL format with fixed intensity
-          let color1 = `hsl(${hue}, 100%, ${intensity}%)`;
-          let color2 = `hsl(${complementaryHue}, 100%, ${intensity}%)`;
+        for (let i = 0; i < nColors; i++) {
+          const ratio = i / (nColors - 1); // 0 → 1
+          const hue = startHue + (endHue - startHue) * ratio;
+          const saturation = 100;
+          const lightness = 50;
 
-          colorPalette.push(color1, color2);
+          const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+          colorPalette.push(color);
         }
+
         return colorPalette;
       }
 
@@ -132,7 +136,7 @@
         paths.forEach((path, index) => {
           let color = getRandomColor();
           ctx.strokeStyle = color;
-          ctx.strokeStyle = "black";
+          //ctx.strokeStyle = "black";
           ctx.beginPath();
           for (let i = 0; i < path.length; i++) {
             const cmd = path[i];

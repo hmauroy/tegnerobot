@@ -104,8 +104,13 @@ function applyFilters() {
     opencv2image(gray);
   } else {
     // August 2025: Canny edge detector
+    // Blur image a little bit for less sharp edges in images.
+    // odd numbers 3,5,7,9,... 3 (light blur), 5 (moderate blur), 7-9 (strong blur)
+    let blurred = new cv.Mat();
+    cv.medianBlur(gray, blurred, 7);
     // Canny() fyller array thresholded med innhold.
-    cv.Canny(gray, thresholded, threshold_lower, threshold_upper);
+    cv.Canny(blurred, thresholded, threshold_lower, threshold_upper);
+    //cv.Canny(gray, thresholded, threshold_lower, threshold_upper);
     // Invert image because canny colors edges white and background black.
     cv.bitwise_not(thresholded, thresholded);
     opencv2image(thresholded);
@@ -156,59 +161,80 @@ function createSvg(ri) {
 
   url = canvas.toDataURL();
 
-  // Load image to Potrace
-  Potrace.img.src = url;
-  PotraceBG8.img.src = url;
-  firstRun = false;
+  if (mauroyLab_detection.checked) {
+    // 1) Use Potrace to trace around edges.
+    // 2) Use mauroyLab line detection algorithm.
+    // Load image to Potrace
+    Potrace.img.src = url;
+    PotraceBG8.img.src = url;
+    firstRun = false;
 
-  // Set parameters if needed
-  let turd_factor = document.getElementById("rngTurdsize").value * 2;
-  // SVG-output
-  Potrace.setParameter({
-    turdsize: turd_factor,
-    optcurve: true,
-    alphamax: 1,
-    opttolerance: 0.2,
-    turnpolicy: "minority",
-  });
-  // Bezier-output
-  PotraceBG8.setParameter({
-    turdsize: turd_factor,
-    optcurve: true,
-    alphamax: 1,
-    opttolerance: 0.2,
-    turnpolicy: "minority",
-  });
+    // Set parameters if needed
+    let turd_factor = document.getElementById("rngTurdsize").value * 2;
+    // SVG-output
+    Potrace.setParameter({
+      turdsize: turd_factor,
+      optcurve: true,
+      alphamax: 1,
+      opttolerance: 0.2,
+      turnpolicy: "minority",
+    });
+    // Bezier-output
+    PotraceBG8.setParameter({
+      turdsize: turd_factor,
+      optcurve: true,
+      alphamax: 1,
+      opttolerance: 0.2,
+      turnpolicy: "minority",
+    });
 
-  // Process the image and show SVG
-  let drawingWidth = document.getElementById("rngDrawingWidth").value;
-  let scaleFactor = drawingWidth / width; // E.g. 100mm / 650px = 0,153 mm/px
-  // Check if SVG should be curve or filled path.
-  let fillPath = document.getElementById("chkFillPath");
-  let svg;
-  Potrace.process(function () {
-    if (fillPath.checked) {
-      svg = Potrace.getSVG(1); // scale=1, We want the same size as the image displayed.
-    } else {
-      svg = Potrace.getSVG(1, "curve"); // scale=1, We want the same size as the image displayed.
-    }
-    document.getElementById("svgOutput").innerHTML = svg;
-    document.getElementById("svgWindow").style.visibility = "visible";
-  });
-  // Create array with bezier curves
-  PotraceBG8.process(() => {
-    let svg_beziers = PotraceBG8.getSVG(scaleFactor, "curve"); // Scaling to fit drawing robot.
+    // Process the image and show SVG
+    //TODO: If line drawing Zhang - Zuen thinning should be used.
+    //If image use potrace algorithm. 
+
+    let drawingWidth = document.getElementById("rngDrawingWidth").value;
+    let scaleFactor = drawingWidth / width; // E.g. 100mm / 650px = 0,153 mm/px
+    // Check if SVG should be curve or filled path.
+    const fillPath = document.getElementById("chkFillPath");
+    const mauroyLab_detection = document.getElementById("mauroyLab_detection");
+    const zhang_suen_detection = document.getElementById("zhang_suen_detection");
+    let svg;
+    Potrace.process(function () {
+      
+      if (fillPath.checked) {
+        svg = Potrace.getSVG(1); // scale=1, We want the same size as the image displayed.
+      } else {
+        svg = Potrace.getSVG(1, "curve"); // scale=1, We want the same size as the image displayed.
+      }
+      document.getElementById("svgOutput").innerHTML = svg;
+      document.getElementById("svgWindow").style.visibility = "visible";
+    });
+    // Create array with bezier curves
+    PotraceBG8.process(() => {
+      let svg_beziers = PotraceBG8.getSVG(scaleFactor, "curve"); // Scaling to fit drawing robot.
       //c(svg_beziers);
       try {
         // Set value to the global variable 'beziers'
-          beziers = JSON.parse(svg_beziers);
+        beziers = JSON.parse(svg_beziers);
         //c(beziers);
         // Start centerLine-function in different JS-script.
         drawSvgPath();
-    } catch (error) {
-      c("Error parsing JSON!", error);
-    }
-  });
+      } catch (error) {
+        c("Error parsing JSON!", error);
+      }
+    });
+  }
+  else {
+    // Use Zhang-Suen thinning for edge detection. Gets one pixel width lines!
+    const threshold = 128;  // Use lower and upper threshold average.
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let binaryData = toBinary(imageData, threshold);
+    const thinnedBinary = zhangSuenThinning(binaryData, canvas.width, canvas.height);
+    const thinnedMat = binaryToMat(thinnedBinary, canvas.width, canvas.height);
+    c("Zhang-suen thinning!");
+    c(binaryData);
+    opencv2image(thinnedMat);
+  }
 }
 
 // Converted python code to javascript from Rosetta Code:
@@ -244,4 +270,92 @@ function clearSvgWindow() {
 
 function c(text) {
   console.log(text);
+}
+
+// ==================== ZHANG-SUEN FUNCTIONS ====================
+function toBinary(imageData, threshold) {
+    const data = imageData.data;
+    const binary = new Array(data.length / 4);
+    for (let i = 0; i < data.length; i += 4) {
+        const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        binary[i / 4] = gray < threshold ? 1 : 0; // 1 for black (foreground)
+    }
+    return binary;
+}
+
+function zhangSuenThinning(binary, width, height) {
+    let current = [...binary];
+    let changed = true;
+    while (changed) {
+        changed = false;
+        const toDelete1 = [];
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                const idx = y * width + x;
+                if (current[idx] === 1 && shouldDelete1(current, x, y, width)) toDelete1.push(idx);
+            }
+        }
+        for (const idx of toDelete1) { current[idx] = 0; changed = true; }
+        const toDelete2 = [];
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                const idx = y * width + x;
+                if (current[idx] === 1 && shouldDelete2(current, x, y, width)) toDelete2.push(idx);
+            }
+        }
+        for (const idx of toDelete2) { current[idx] = 0; changed = true; }
+    }
+    return current;
+}
+
+function getNeighbors(data, x, y, width) {
+    return [
+        data[(y-1) * width + x],
+        data[(y-1) * width + (x+1)],
+        data[y * width + (x+1)],
+        data[(y+1) * width + (x+1)],
+        data[(y+1) * width + x],
+        data[(y+1) * width + (x-1)],
+        data[y * width + (x-1)],
+        data[(y-1) * width + (x-1)],
+    ];
+}
+function countTransitions(neighbors) {
+    let count = 0; for (let i = 0; i < 8; i++) if (neighbors[i] === 0 && neighbors[(i + 1) % 8] === 1) count++; return count;
+}
+function countBlackNeighbors(neighbors) { return neighbors.reduce((s, v) => s + v, 0); }
+function shouldDelete1(data, x, y, width) {
+    const n = getNeighbors(data, x, y, width); const [p1,p2,p3,p4,p5,p6,p7] = n; const bn = countBlackNeighbors(n); const t = countTransitions(n);
+    return (bn >= 2 && bn <= 6 && t === 1 && (p1 * p3 * p5) === 0 && (p3 * p5 * p7) === 0);
+}
+function shouldDelete2(data, x, y, width) {
+    const n = getNeighbors(data, x, y, width); const [p1,,p3,,p5,,p7] = n; const bn = countBlackNeighbors(n); const t = countTransitions(n);
+    return (bn >= 2 && bn <= 6 && t === 1 && (p1 * p3 * p7) === 0 && (p1 * p5 * p7) === 0);
+}
+
+function displayResult(binaryData, width, height) {
+    resultCanvas.width = width; resultCanvas.height = height;
+    const imageData = resultCtx.createImageData(width, height); const data = imageData.data;
+    for (let i = 0; i < binaryData.length; i++) { const value = binaryData[i] === 1 ? 0 : 255; data[i*4] = value; data[i*4+1] = value; data[i*4+2] = value; data[i*4+3] = 255; }
+    resultCtx.putImageData(imageData, 0, 0);
+}
+
+function reset() {
+    originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
+    resultCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+    vectorCtx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
+    imageInput.value = ''; currentImage = null; processBtn.disabled = true; processBtn.textContent = 'Process Image';
+}
+
+// ========== Helper function converts from array into Mat-object ===========
+function binaryToMat(binaryData, width, height) {
+    // Create a new single-channel Mat (grayscale)
+    const mat = new cv.Mat(height, width, cv.CV_8UC1);
+    
+    // Convert binary (0s and 1s) to grayscale values (0 and 255)
+    for (let i = 0; i < binaryData.length; i++) {
+        mat.data[i] = binaryData[i] === 1 ? 255 : 0;  // 1 -> white (255), 0 -> black (0)
+    }
+    
+    return mat;
 }

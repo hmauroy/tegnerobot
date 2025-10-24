@@ -87,6 +87,8 @@ function createClickableCircle(ri, radius, index, color) {
     // Remove from the array
     this.ri.sortedLines.splice(this.index, 1);
     this.ri.pathScaledDown.splice(this.index, 1);
+    console.log("sortedLines length: " + this.ri.sortedLines.length);
+    console.log("pathScaledDown length: " + this.ri.pathScaledDown.length);
 
     // Remove this HTML element
     this.remove();

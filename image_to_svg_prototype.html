@@ -85,8 +85,20 @@
 
                     <div class="checkbox-container">
                         <input type="checkbox" id="chkFillPath" class="checkbox">
-                        <label for="chkFillPath" class="checkbox-label">Fill [DENNE MÅ VEKK!]</label>
+                        <label for="chkFillPath" class="checkbox-label">Fill [DENNE MÅ VEKK uten å knekke image_to_svg.js line 198!]</label>
                     </div>
+
+                    <div class="radio-group">
+                        <div>
+                            <input type="radio" id="mauroyLab_detection" name="processMethod" value="mauroy-lab" checked />
+                            <label for="mauroyLab_detection">mauroyLab line detection</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="zhang_suen_detection" name="processMethod" value="zhang-suen" />
+                            <label for="zhang_suen_detection">Zhang-suen line detection</label>
+                        </div>
+                    </div>
+
                 </div>
 
                 <button class="create-btn" id="btnCreateSvg">Create SVG</button>
