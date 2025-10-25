@@ -26,20 +26,28 @@
             <div class="panel white" id="img-window">
                 <div id="img-padding">
                     <!--Padding div to prevent flexbox to mess around with the image size.-->
-                    <img id="img-src" src="lillebror_newborn512.png" alt="No Image">
+                    <img id="img-src" src="astronaut.jpg" alt="No Image">
                 </div>
                 <!-- Overlay div with close button -->
                 <div class="overlay hidden" id="img-overlay">
-                    <button class="close-button" onclick="closeOverlay()" aria-label="Close overlay">
+                    <button class="close-button" onclick="closeOverlay(this)" aria-label="Close overlay">
                         ×
                     </button>
                     <canvas id="canvas"></canvas>  
                 </div>
             </div>
 
+
             <div class="panel white" id="svgWindow">
                 <!--The svgOutput is going to contain SVG element as a child-->
-                <div id="svgOutput"></div> 
+                <div id="svgOutput"></div>
+                <!-- Overlay div no 2 with close button -->
+                <div class="overlay" id="img-overlay-svg-window">
+                    <button class="close-button" onclick="closeOverlay(this)" aria-label="Close overlay">
+                        ×
+                    </button>
+                    <canvas id="canvas-svg-window"></canvas>
+                </div>
             </div>
 
             <div class="panel control-group" id="img-processing">
@@ -79,7 +87,7 @@
 
                 <div class="checkbox-group">
                     <div class="checkbox-container">
-                        <input type="checkbox" id="lineDrawingMode" class="checkbox">
+                        <input type="checkbox" id="lineDrawingMode" class="checkbox" checked>
                         <label for="lineDrawingMode" class="checkbox-label">Line Drawing</label>
                     </div>
 
@@ -90,11 +98,11 @@
 
                     <div class="radio-group">
                         <div>
-                            <input type="radio" id="mauroyLab_detection" name="processMethod" value="mauroy-lab" checked />
+                            <input type="radio" id="mauroyLab_detection" name="processMethod" value="mauroy-lab" />
                             <label for="mauroyLab_detection">mauroyLab line detection</label>
                         </div>
                         <div>
-                            <input type="radio" id="zhang_suen_detection" name="processMethod" value="zhang-suen" />
+                            <input type="radio" id="zhang_suen_detection" name="processMethod" value="zhang-suen" checked/>
                             <label for="zhang_suen_detection">Zhang-suen line detection</label>
                         </div>
                     </div>
@@ -269,21 +277,13 @@
         });
 
         // Close overlay function
-        function closeOverlay() {
+        function closeOverlay_OLD() {
             const overlay = document.getElementById('img-overlay');
             overlay.classList.add('hidden');
         }
-
-        // Show overlay function (optional - for demonstration)
-        function showOverlay() {
-            const overlay = document.getElementById('img-overlay');
-            overlay.classList.remove('hidden');
-            const rect = imgSource.getBoundingClientRect();
-            const windowRect = document.getElementById("img-window").getBoundingClientRect();
-            // Adjust positioning in relation to the image window and the 2px border.
-            overlay.style.top = rect.top - windowRect.top - 2 + "px";
-            overlay.style.left = rect.left - windowRect.left - 2 + "px";
-
+        function closeOverlay(button) {
+            const overlay = button.closest('.overlay');
+            overlay.classList.add('hidden');
         }
 
         // Update slider values in real-time

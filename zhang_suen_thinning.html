@@ -215,6 +215,7 @@
             
             setTimeout(() => {
                 const imageData = originalCtx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+                console.log(imageData);
                 let binaryData;
                 
                 if (lineDrawingRadio.checked) {
@@ -222,6 +223,8 @@
                     const threshold = parseInt(thresholdSlider.value);
                     binaryData = toBinary(imageData, threshold);
                     binaryData = zhangSuenThinning(binaryData, originalCanvas.width, originalCanvas.height);
+                    console.log("Zhang-suen thinning binaryData:");
+                    console.log(binaryData);
                 } else {
                     // Canny edge detection for images
                     const lowThresh = parseInt(lowThresholdSlider.value);

@@ -10,6 +10,7 @@ const imgSource = document.getElementById("img-src");
 const fileInputEl = document.getElementById("fileInput");
 const canvasWindow = document.getElementById("canvasWindow");
 const canvas = document.getElementById("canvas");
+const canvasSvgWindow = document.getElementById("canvas-svg-window");
 const svgOutput = document.getElementById("svgOutput");
 let beziers = []; // Center line beziers are stored in this variable.
 let src, gray, medianBlurred, thresholded;
@@ -30,20 +31,13 @@ fileInputEl.addEventListener(
   "change",
   (e) => {
       imgSource.src = URL.createObjectURL(e.target.files[0]);
-      //imgSource.style.width = "38.7vw";
   },
   false
 );
 imgSource.onload = function () {
   if (moduleInitialized) {
     clearSvgWindow();
-    // Create the matrices if deleted.
-    gray = new cv.Mat();
-    medianBlurred = new cv.Mat();
-    thresholded = new cv.Mat();
-    src = cv.imread(imgSource);
-    // 1) color to gray
-    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    src, gray = readImageFromSource();
     //c(gray.cols);
     opencv2image(gray);
   }
@@ -53,13 +47,7 @@ let Module = {
   // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
   onRuntimeInitialized() {
     moduleInitialized = true;
-    // Create the matrices first time running.
-    gray = new cv.Mat();
-    medianBlurred = new cv.Mat();
-    thresholded = new cv.Mat();
-    src = cv.imread(imgSource);
-    // 1) color to gray
-    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    src, gray = readImageFromSource();
     document.getElementById("opencv-status").innerHTML = "OpenCV.js is ready.";
 
     //applyFilters();
@@ -70,12 +58,53 @@ let Module = {
   },
 };
 
+function readImageFromSource() {
+  // Create the matrices if deleted.
+  gray = new cv.Mat();
+  medianBlurred = new cv.Mat();
+  thresholded = new cv.Mat();
+  // Originally image data was read from the displayed pixels.
+  // This leads sometimes to poor resolution.
+  //src = cv.imread(imgSource);
+  // As of Oct 2025 we use the raw image as source.
+  src = readImageFullSize("img-src");
+  // 1) color to gray
+  cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+  //console.log("gray image width, height:");
+  //console.log(gray.cols,gray.rows);
+  return src,gray;
+}
+
+function readImageFullSize(imageId) {
+  // Draws the image fullsize 
+  let img = document.getElementById(imageId);
+
+  // Create a temporary canvas with the image's natural (full) size
+  let tempCanvas = document.createElement('canvas');
+  tempCanvas.width = img.naturalWidth;   // Full image width
+  tempCanvas.height = img.naturalHeight; // Full image height
+
+  let tempCtx = tempCanvas.getContext('2d');
+  tempCtx.drawImage(img, 0, 0);
+
+  // Now read from the canvas using OpenCV
+  let mat = cv.imread(tempCanvas);
+
+  console.log('Full image size:', mat.cols, 'x', mat.rows);
+  return mat;
+}
+
 // Functions to apply image trickery + convert to svg.
 function applyFilters() {
-    // Recrate the gray image to be the same size as scaled img-source.
-    src = cv.imread(imgSource);
-    // 1) color to gray
-    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+  // Originally we worked on a scaled image. We lose resolution! 
+  // Recrate the gray image to be the same size as scaled img-source.
+  src = cv.imread(imgSource);
+  gray = new cv.Mat();
+  // 1) color to gray
+  cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+  // As of Oct 25 2025 we now use full resolution for image processing and
+  // scale images for viewing.
+  //src, gray = readImageFromSource();
   // Empty svg-window before doing anything else.
   document.getElementById("svgOutput").innerHTML = "";
   let threshold_lower = parseFloat(document.getElementById("rngBlur").value);
@@ -98,8 +127,8 @@ function applyFilters() {
   // Apply thresholding to create a binary image
   // 3) Canny Edge detector
   // Only do thresholding to find edges if checkbox is checked.
-  let checkbox = document.getElementById("lineDrawingMode");
-  if (checkbox.checked) {
+  let lineDrawingMode = document.getElementById("lineDrawingMode");
+  if (lineDrawingMode.checked) {
     console.log("No edge detection if line drawing.");
     opencv2image(gray);
   } else {
@@ -147,7 +176,7 @@ function opencv2image(opencvData) {
         imgData.data[j + 3] = 255; // Alpha channel
     }
         ctx.putImageData(imgData, 0, 0);
-        showOverlay();
+        showOverlay("img-overlay","img-window",imgSource.width, imgSource.height);
 }
 
 function createSvg(ri) {
@@ -226,14 +255,44 @@ function createSvg(ri) {
   }
   else {
     // Use Zhang-Suen thinning for edge detection. Gets one pixel width lines!
-    const threshold = 128;  // Use lower and upper threshold average.
-    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let binaryData = toBinary(imageData, threshold);
-    const thinnedBinary = zhangSuenThinning(binaryData, canvas.width, canvas.height);
-    const thinnedMat = binaryToMat(thinnedBinary, canvas.width, canvas.height);
-    c("Zhang-suen thinning!");
-    c(binaryData);
-    opencv2image(thinnedMat);
+    let inverted = new cv.Mat();
+    let lineDrawingMode = document.getElementById("lineDrawingMode");
+    if (lineDrawingMode.checked) {
+      // Do not perform canny edge. Use gray image
+      // Invert the gray image.
+      //cv.bitwise_not(gray, inverted); // Treat the original as binary
+      cv.threshold(gray, inverted, 128, 255, cv.THRESH_BINARY_INV);
+      c("Original gray image of line drawing:")
+      c(inverted.data)
+    }
+    else {
+      // Invert the thresholded image.
+      //cv.bitwise_not(thresholded, inverted); // Treat the original as binary
+      cv.threshold(thresholded, inverted, 128, 255, cv.THRESH_BINARY_INV);
+      c("Canny Edge detected imagedata:")
+      c(inverted.data)
+      // Display the inverted image
+      //opencv2image(thresholded);
+    }
+
+    // Apply Zhang-Suen thinning
+    // Convert Mat to binary array for Zhang-Suen
+    const binaryData = matToBinaryArray(inverted);
+
+    console.log("Inverted cols,rows:")
+    console.log(inverted.cols,inverted.rows);
+
+    // Apply Zhang-Suen thinning
+    const thinnedData = zhangSuenThinning(binaryData, inverted.cols, inverted.rows);
+
+    let ctx = canvasSvgWindow.getContext("2d", [{ willReadFrequently: true }]);
+    ctx.clearRect(0, 0, inverted.cols, inverted.rows);
+    canvasSvgWindow.width = inverted.cols;
+    canvasSvgWindow.height = inverted.rows;
+    showOverlay("img-overlay-svg-window", "svgWindow")
+    displayResult(thinnedData, ctx, inverted.cols, inverted.rows);
+
+    // TODO: vectorizeSkeleton()
   }
 }
 
@@ -280,6 +339,17 @@ function toBinary(imageData, threshold) {
         const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
         binary[i / 4] = gray < threshold ? 1 : 0; // 1 for black (foreground)
     }
+    return binary;
+}
+
+function matToBinary(mat, threshold) {
+    const data = mat.data; // Uint8Array with one value per pixel
+    const binary = new Array(data.length);
+    
+    for (let i = 0; i < data.length; i++) {
+        binary[i] = data[i] < threshold ? 1 : 0; // 1 for black (foreground)
+    }
+    
     return binary;
 }
 
@@ -333,12 +403,6 @@ function shouldDelete2(data, x, y, width) {
     return (bn >= 2 && bn <= 6 && t === 1 && (p1 * p3 * p7) === 0 && (p1 * p5 * p7) === 0);
 }
 
-function displayResult(binaryData, width, height) {
-    resultCanvas.width = width; resultCanvas.height = height;
-    const imageData = resultCtx.createImageData(width, height); const data = imageData.data;
-    for (let i = 0; i < binaryData.length; i++) { const value = binaryData[i] === 1 ? 0 : 255; data[i*4] = value; data[i*4+1] = value; data[i*4+2] = value; data[i*4+3] = 255; }
-    resultCtx.putImageData(imageData, 0, 0);
-}
 
 function reset() {
     originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
@@ -347,15 +411,35 @@ function reset() {
     imageInput.value = ''; currentImage = null; processBtn.disabled = true; processBtn.textContent = 'Process Image';
 }
 
-// ========== Helper function converts from array into Mat-object ===========
-function binaryToMat(binaryData, width, height) {
-    // Create a new single-channel Mat (grayscale)
-    const mat = new cv.Mat(height, width, cv.CV_8UC1);
-    
-    // Convert binary (0s and 1s) to grayscale values (0 and 255)
-    for (let i = 0; i < binaryData.length; i++) {
-        mat.data[i] = binaryData[i] === 1 ? 255 : 0;  // 1 -> white (255), 0 -> black (0)
+// ========== Helper functions  ===========
+
+
+
+function matToBinaryArray(mat) {
+    const data = mat.data;
+    const binary = new Array(data.length);
+    for (let i = 0; i < data.length; i++) {
+        binary[i] = data[i] > 0 ? 1 : 0;
     }
-    
-    return mat;
+    return binary;
+}
+
+function displayResult(binaryData, ctx, width, height) {
+  const imageData = ctx.createImageData(width, height);
+  console.log("Created image data:");
+  console.log(imageData);
+    const data = imageData.data;
+    for (let i = 0; i < binaryData.length; i++) {
+        const value = binaryData[i] === 1 ? 0 : 255;
+        data[i*4] = value; data[i*4+1] = value; data[i*4+2] = value; data[i*4+3] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+}
+
+
+// Show overlay on different panels in main page.
+function showOverlay(id, id_behind) {
+    const overlay = document.getElementById(id);
+    const parent = document.getElementById(id_behind);
+    overlay.classList.remove('hidden');
 }
