@@ -391,6 +391,7 @@
         function vectorizeSkeleton(binaryData, width, height, shouldSimplify = true, shouldOptimize = true) {
             const paths = tracePaths(binaryData, width, height);
             let allCurves = [];
+
             for (const path of paths) {
                 if (path.length < 2) continue;
                 let processedPath = path;
@@ -398,10 +399,27 @@
                 const pathCurve = createSingleCurveFromPath(processedPath);
                 if (pathCurve) allCurves.push(pathCurve);
             }
+
+            // NEW: Remove curves that are too short to matter (< 3 pixels total length)
+            allCurves = allCurves.filter(curve => {
+                if (curve.points.length < 2) return false;
+
+                // Calculate total path length
+                let totalLength = 0;
+                for (let i = 1; i < curve.points.length; i++) {
+                    totalLength += distance(curve.points[i-1], curve.points[i]);
+                }
+
+                return totalLength >= 3;  // Keep curves at least 3 pixels long
+            });
+
+            allCurves = removeRedundantCurves(allCurves, 8);
+
             if (shouldOptimize && allCurves.length > 1) {
                 allCurves = optimizeDrawingOrder(allCurves);
-                allCurves = mergeCloseCurves(allCurves, 3);
+                allCurves = mergeCloseCurves4(allCurves, 10);
             }
+
             return allCurves;
         }
 
@@ -599,6 +617,308 @@
             merged.push(current);
             return merged;
         }
+        
+        function mergeCloseCurves2(curves, tolerance = 2) {
+            if (curves.length === 0) return curves;
+
+            let merged = [...curves];
+            let didMerge = true;
+
+            // Keep trying until no merges occur
+            while (didMerge) {
+                didMerge = false;
+
+                for (let i = 0; i < merged.length; i++) {
+                    const currentStart = getCurveStartPoint(merged[i]);
+                    const currentEnd = getCurveEndPoint(merged[i]);
+
+                    // Check against ALL other curves
+                    for (let j = 0; j < merged.length; j++) {
+                        if (i === j) continue;
+
+                        const otherStart = getCurveStartPoint(merged[j]);
+                        const otherEnd = getCurveEndPoint(merged[j]);
+
+                        // Check all 4 possible connections
+                        const distEndToStart = distance(currentEnd, otherStart);
+                        const distEndToEnd = distance(currentEnd, otherEnd);
+                        const distStartToStart = distance(currentStart, otherStart);
+                        const distStartToEnd = distance(currentStart, otherEnd);
+
+                        let shouldMerge = false;
+                        let mergedCurve = null;
+
+                        // Case 1: current_end → other_start (append other to current)
+                        if (distEndToStart <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[i].points, ...merged[j].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        // Case 2: current_end → other_end (append reversed other to current)
+                        else if (distEndToEnd <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[i].points, ...merged[j].points.slice().reverse()],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        // Case 3: other_end → current_start (prepend other to current)
+                        else if (distStartToEnd <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[j].points, ...merged[i].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        // Case 4: other_start → current_start (prepend reversed other to current)
+                        else if (distStartToStart <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[j].points.slice().reverse(), ...merged[i].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+
+                        if (shouldMerge) {
+                            // Remove both curves and add merged one
+                            const toRemove = [i, j].sort((a, b) => b - a); // Remove in reverse order
+                            merged.splice(toRemove[0], 1);
+                            merged.splice(toRemove[1], 1);
+                            merged.push(mergedCurve);
+
+                            didMerge = true;
+                            break; // Start over with the outer loop
+                        }
+                    }
+
+                    if (didMerge) break; // Start over with the outer loop
+                }
+            }
+
+            return merged;
+        }
+
+        function mergeCloseCurves4(curves, tolerance = 2) {
+            if (curves.length === 0) return curves;
+
+            let merged = [...curves];
+            let didMerge = true;
+
+            // Pre-compute bounding info for each curve
+            function getCurveBounds(curve) {
+                const start = getCurveStartPoint(curve);
+                const end = getCurveEndPoint(curve);
+                return {
+                    start,
+                    end,
+                    minX: Math.min(start.x, end.x) - tolerance,
+                    maxX: Math.max(start.x, end.x) + tolerance,
+                    minY: Math.min(start.y, end.y) - tolerance,
+                    maxY: Math.max(start.y, end.y) + tolerance
+                };
+            }
+
+            // Check if two curves could possibly be within tolerance
+            function couldBeClose(bounds1, bounds2) {
+                // Bounding box overlap test
+                return !(bounds1.maxX < bounds2.minX || 
+                         bounds2.maxX < bounds1.minX ||
+                         bounds1.maxY < bounds2.minY || 
+                         bounds2.maxY < bounds1.minY);
+            }
+
+            while (didMerge) {
+                didMerge = false;
+                const bounds = merged.map(c => getCurveBounds(c));
+
+                // Key change: When we merge, restart from the beginning
+                outerLoop:
+                for (let i = 0; i < merged.length; i++) {
+                    const currentBounds = bounds[i];
+
+                    for (let j = i + 1; j < merged.length; j++) {
+                        if (!couldBeClose(currentBounds, bounds[j])) {
+                            continue;
+                        }
+
+                        const otherBounds = bounds[j];
+
+                        const distEndToStart = distance(currentBounds.end, otherBounds.start);
+                        const distEndToEnd = distance(currentBounds.end, otherBounds.end);
+                        const distStartToStart = distance(currentBounds.start, otherBounds.start);
+                        const distStartToEnd = distance(currentBounds.start, otherBounds.end);
+
+                        let shouldMerge = false;
+                        let mergedCurve = null;
+
+                        if (distEndToStart <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[i].points, ...merged[j].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        else if (distEndToEnd <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[i].points, ...merged[j].points.slice().reverse()],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        else if (distStartToEnd <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[j].points, ...merged[i].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        else if (distStartToStart <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[j].points.slice().reverse(), ...merged[i].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+
+                        if (shouldMerge) {
+                            // Remove in correct order
+                            merged.splice(j, 1);
+                            merged.splice(i, 1);
+
+                            // Add at the BEGINNING so it gets checked immediately
+                            merged.unshift(mergedCurve);
+
+                            didMerge = true;
+                            break outerLoop;  // ← Restart from i=0
+                        }
+                    }
+                }
+            }
+
+            return merged;
+        }
+
+        function mergeCloseCurves3(curves, tolerance = 2) {
+            // Optimized for speed. Only checks curves within a bounding box that overlaps.
+            if (curves.length === 0) return curves;
+
+            let merged = [...curves];
+            let didMerge = true;
+
+            // Pre-compute bounding info for each curve
+            function getCurveBounds(curve) {
+                const start = getCurveStartPoint(curve);
+                const end = getCurveEndPoint(curve);
+                return {
+                    start,
+                    end,
+                    minX: Math.min(start.x, end.x) - tolerance,
+                    maxX: Math.max(start.x, end.x) + tolerance,
+                    minY: Math.min(start.y, end.y) - tolerance,
+                    maxY: Math.max(start.y, end.y) + tolerance
+                };
+            }
+
+            // Check if two curves could possibly be within tolerance
+            function couldBeClose(bounds1, bounds2) {
+                // Bounding box overlap test
+                return !(bounds1.maxX < bounds2.minX || 
+                         bounds2.maxX < bounds1.minX ||
+                         bounds1.maxY < bounds2.minY || 
+                         bounds2.maxY < bounds1.minY);
+            }
+
+            // Keep trying until no merges occur
+            while (didMerge) {
+                didMerge = false;
+                const bounds = merged.map(c => getCurveBounds(c));
+
+                for (let i = 0; i < merged.length; i++) {
+                    const currentBounds = bounds[i];
+
+                    // Check against ALL other curves
+                    for (let j = i + 1; j < merged.length; j++) {
+                        // Quick rejection: bounding boxes don't overlap
+                        if (!couldBeClose(currentBounds, bounds[j])) {
+                            continue;
+                        }
+
+                        const otherBounds = bounds[j];
+
+                        // Now check all 4 possible connections
+                        const distEndToStart = distance(currentBounds.end, otherBounds.start);
+                        const distEndToEnd = distance(currentBounds.end, otherBounds.end);
+                        const distStartToStart = distance(currentBounds.start, otherBounds.start);
+                        const distStartToEnd = distance(currentBounds.start, otherBounds.end);
+
+                        let shouldMerge = false;
+                        let mergedCurve = null;
+
+                        // Case 1: current_end → other_start (append other to current)
+                        if (distEndToStart <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[i].points, ...merged[j].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        // Case 2: current_end → other_end (append reversed other to current)
+                        else if (distEndToEnd <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[i].points, ...merged[j].points.slice().reverse()],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        // Case 3: other_end → current_start (prepend other to current)
+                        else if (distStartToEnd <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[j].points, ...merged[i].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+                        // Case 4: other_start → current_start (prepend reversed other to current)
+                        else if (distStartToStart <= tolerance) {
+                            mergedCurve = {
+                                type: 'polyline',
+                                points: [...merged[j].points.slice().reverse(), ...merged[i].points],
+                                id: Math.random().toString(36).slice(2, 11)
+                            };
+                            shouldMerge = true;
+                        }
+
+                        if (shouldMerge) {
+                            // Remove both curves and add merged one
+                            // Remove j first (higher index) to avoid index shifting issues
+                            merged.splice(j, 1);
+                            merged.splice(i, 1);
+                            merged.push(mergedCurve);
+
+                            didMerge = true;
+                            break; // Start over with the outer loop
+                        }
+                    }
+
+                    if (didMerge) break; // Start over with the outer loop
+                }
+            }
+
+            return merged;
+        }
 
         function getCurveStartPoint(curve) { return curve.type === 'polyline' ? curve.points[0] : {x:0,y:0}; }
         function getCurveEndPoint(curve) { return curve.type === 'polyline' ? curve.points[curve.points.length-1] : {x:0,y:0}; }
@@ -632,6 +952,108 @@
                 }
             }
         }
+        
+        // ========== Remove redundant curves ===========
+
+        function removeRedundantCurves(curves, tolerance = 3) {
+            if (curves.length === 0) return curves;
+
+            const filtered = [];
+
+            for (let i = 0; i < curves.length; i++) {
+                const curve = curves[i];
+                let isRedundant = false;
+
+                // Only check against curves we've already kept
+                for (let j = 0; j < filtered.length; j++) {
+                    if (isCurveRedundant(curve, filtered[j], tolerance)) {
+                        isRedundant = true;
+                        break;
+                    }
+                }
+
+                if (!isRedundant) {
+                    filtered.push(curve);
+                }
+            }
+
+            return filtered;
+        }
+
+        function isCurveRedundant(curve, existingCurve, tolerance) {
+            const curvePoints = curve.points;
+            const existingPoints = existingCurve.points;
+
+            // Always remove single-point curves
+            if (curvePoints.length < 2) return true;
+
+            // Check if this is a short curve (regardless of what it's compared to)
+            if (curvePoints.length <= 5) {
+                // For short curves, check if ALL points are near the existing curve
+                return isMostPointsNearby(curvePoints, existingPoints, tolerance);
+            }
+
+            // For longer curves, be more conservative
+            if (curvePoints.length < existingPoints.length * 0.3) {
+                // This curve is much shorter than existing - check overlap
+                return isMostPointsNearby(curvePoints, existingPoints, tolerance);
+            }
+
+            return false;
+        }
+
+        function isMostPointsNearby(shortCurvePoints, longCurvePoints, tolerance) {
+            // For very short curves (<=3 points), ALL points must be nearby
+            // For longer short curves, 80% must be nearby
+            const requiredPercentage = shortCurvePoints.length <= 3 ? 1.0 : 0.8;
+            const threshold = Math.ceil(shortCurvePoints.length * requiredPercentage);
+
+            let nearbyCount = 0;
+
+            for (const point of shortCurvePoints) {
+                if (isPointNearCurve(point, longCurvePoints, tolerance)) {
+                    nearbyCount++;
+                    if (nearbyCount >= threshold) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function isPointNearCurve(point, curvePoints, tolerance) {
+            // Check if point is within tolerance of any point on the curve
+            const toleranceSq = tolerance * tolerance;
+
+            for (const curvePoint of curvePoints) {
+                const dx = point.x - curvePoint.x;
+                const dy = point.y - curvePoint.y;
+                const distSq = dx * dx + dy * dy;
+
+                if (distSq <= toleranceSq) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Pre-compute bounding info for each curve
+        function getCurveBounds(curve,tolerance) {
+            const start = getCurveStartPoint(curve);
+            const end = getCurveEndPoint(curve);
+            return {
+                start,
+                end,
+                minX: Math.min(start.x, end.x) - tolerance,
+                maxX: Math.max(start.x, end.x) + tolerance,
+                minY: Math.min(start.y, end.y) - tolerance,
+                maxY: Math.max(start.y, end.y) + tolerance
+            };
+        }
+
+
     </script>
 </body>
 </html>
