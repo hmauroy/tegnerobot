@@ -1,3 +1,7 @@
+/*
+This artifact was created by Claude 4.5 26.10.2025.
+*/
+
 // Pre-compute bounding info for each curve
         function getCurveBounds(curve,tolerance) {
             const start = getCurveStartPoint(curve);

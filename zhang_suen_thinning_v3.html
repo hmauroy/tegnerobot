@@ -191,6 +191,8 @@
     </div>
 
     <script async src="https://docs.opencv.org/4.5.2/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    
+    <script src="svg_points_to_bezier_v3.js" type="text/javascript"></script>
 
     <script>
         const imageInput = document.getElementById('imageInput');
@@ -289,6 +291,15 @@
                     const shouldOptimize = optimizeCheckbox.checked;
                     const curves = vectorizeSkeleton(thinnedData, binary.cols, binary.rows, shouldSimplify, shouldOptimize);
                     displayVectorizedCurves(curves, binary.cols, binary.rows, shouldOptimize);
+
+                    const pointArrays = curvesToPointArrays(curves);
+
+                    // 1) Approximates into points arrays
+                    // 2) Then into bezier curves
+                    // maxError = 3 Less accurate, maxError = 2 (Balanced,default), maxError = 1 high accuracy.
+                    const bezierPaths = pointArraysToCubicBeziers(pointArrays, 2.0);
+
+                    console.log('Bezier paths:', JSON.stringify(bezierPaths));
                     
                     // Clean up
                     src.delete();
