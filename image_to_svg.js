@@ -65,7 +65,7 @@ function readImageFromSource() {
   thresholded = new cv.Mat();
   // Originally image data was read from the displayed pixels.
   // This leads sometimes to poor resolution.
-  src = cv.imread(imgSource);
+  //src = cv.imread(imgSource);
   // As of Oct 2025 we use the raw image as source.
   src = readImageFullSize("img-src");
   // 1) color to gray
@@ -98,13 +98,13 @@ function readImageFullSize(imageId) {
 function applyFilters() {
   // Originally we worked on a scaled image. We lose resolution! 
   // Recrate the gray image to be the same size as scaled img-source.
-  src = cv.imread(imgSource);
-  gray = new cv.Mat();
+  //src = cv.imread(imgSource);
+  //gray = new cv.Mat();
   // 1) color to gray
-  cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+  //cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   // As of Oct 25 2025 we now use full resolution for image processing and
   // scale images for viewing.
-  //src, gray = readImageFromSource();
+  src, gray = readImageFromSource();
   // Empty svg-window before doing anything else.
   document.getElementById("svgOutput").innerHTML = "";
   let threshold_lower = parseFloat(document.getElementById("rngBlur").value);
