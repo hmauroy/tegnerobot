@@ -97,14 +97,26 @@ function readImageFullSize(imageId) {
 }
 
 function resizeImage(opencvImage, width, height) {
-    // Claude 4.5 created 31.10.2025
-    // Create a destination Mat with your target dimensions
+    // Claude 4.5 created 01.11.2025
+    let blurred = new cv.Mat();
     let dst = new cv.Mat();
-    // Define your target size
-    let dsize = new cv.Size(width, height);
-    // Resize the image
-    cv.resize(opencvImage, dst, dsize, 0, 0, cv.INTER_AREA);
 
+    let scaleX = width / opencvImage.cols;
+    let scaleY = height / opencvImage.rows;
+    // Finds scaling from smallest dimension.
+    let scale = Math.min(scaleX, scaleY);
+
+    // More aggressive downsampling = more blur needed
+    let sigma = 1.0 / scale; // Adjust this multiplier as needed
+    //let kernelSize = Math.max(3, Math.floor(sigma * 2) * 2 + 1); // Ensure odd
+    let kernelSize = 5;
+    console.log("Resize using kernel size " + kernelSize);
+
+    let ksize = new cv.Size(kernelSize, kernelSize);
+    cv.GaussianBlur(opencvImage, blurred, ksize, sigma, sigma, cv.BORDER_DEFAULT);
+
+    let dsize = new cv.Size(width, height);
+    cv.resize(blurred, dst, dsize, 0, 0, cv.INTER_AREA);
     return dst;
 }
 
