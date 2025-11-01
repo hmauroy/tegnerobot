@@ -11,6 +11,8 @@ const fileInputEl = document.getElementById("fileInput");
 const canvasWindow = document.getElementById("canvasWindow");
 const canvas = document.getElementById("canvas");
 const canvasSvgWindow = document.getElementById("canvas-svg-window");
+const ctx1 = canvas.getContext("2d", [{ willReadFrequently: true }]);
+const ctx2 = canvasSvgWindow.getContext("2d", [{ willReadFrequently: true }]);
 const svgOutput = document.getElementById("svgOutput");
 let beziers = []; // Center line beziers are stored in this variable.
 let src, gray, medianBlurred, thresholded,grayScaled,edgeScaled;
@@ -69,7 +71,7 @@ function readImageFromSource() {
   // This leads sometimes to poor resolution.
   //src = cv.imread(imgSource);
   // As of Oct 2025 we use the raw image as source.
-  src = readImageFullSize("img-src");
+  src = readImageHighDef("img-src", highDef=false);
   // 1) color to gray
   cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   //console.log("gray image width, height:");
@@ -77,23 +79,46 @@ function readImageFromSource() {
   return [src,gray];
 }
 
-function readImageFullSize(imageId) {
-  // Draws the image fullsize 
-  let img = document.getElementById(imageId);
+function readImageHighDef(imageId, highDef=false) {
+    // Draws the image fullsize 
+    let img = document.getElementById(imageId);
+    console.log("img naturalsize: " + img.naturalWidth + "x" + img.naturalHeight);
 
-  // Create a temporary canvas with the image's natural (full) size
-  let tempCanvas = document.createElement('canvas');
-  tempCanvas.width = img.naturalWidth;   // Full image width
-  tempCanvas.height = img.naturalHeight; // Full image height
+    let tempCanvas = document.createElement('canvas');
+    if (highDef) {
+        // Find largest dimension and set that to 1000 px.
+        if (img.naturalWidth >= 1000 || img.naturalHeight >= 1000) {
+            if (img.naturalWidth < img.naturalHeight) {
+                tempCanvas.height = 1000;
+                let scaleX = 1000 / img.naturalHeight
+                tempCanvas.width = img.naturalWidth * scaleX;
+            }
+            else {
+                tempCanvas.width = 1000;
+                let scaleY = 1000 / img.naturalWidth;
+                tempCanvas.height = img.naturalHeight * scaleY;
+            }
+        }
+        else {
+            tempCanvas.width = img.naturalWidth;
+            tempCanvas.height = img.naturalHeight;
+        }
+        let tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(img, 0, 0);
 
-  let tempCtx = tempCanvas.getContext('2d');
-  tempCtx.drawImage(img, 0, 0);
+        // Now read from the canvas using OpenCV
+        let mat = cv.imread(tempCanvas);
 
-  // Now read from the canvas using OpenCV
-  let mat = cv.imread(tempCanvas);
-
-  console.log('Full image size:', mat.cols, 'x', mat.rows);
-  return mat;
+        console.log('High def image size:', mat.cols, 'x', mat.rows);
+        return mat;
+    }
+    else {
+        return cv.imread(img);
+    }
+    
+    
+    
+    
 }
 
 function resizeImage(opencvImage, width, height) {
@@ -116,51 +141,73 @@ function resizeImage(opencvImage, width, height) {
     cv.GaussianBlur(opencvImage, blurred, ksize, sigma, sigma, cv.BORDER_DEFAULT);
 
     let dsize = new cv.Size(width, height);
-    cv.resize(blurred, dst, dsize, 0, 0, cv.INTER_AREA);
+    cv.resize(blurred, dst, dsize, 0, 0, cv.INTER_LINEAR);
     return dst;
+}
+
+function showResizedImage(thinnedData,origWidth,origHeight) {
+    let img = document.getElementById("img-src");
+    let mat = cv.matFromArray(origWidth, origHeight, cv.CV_8UC4, thinnedData);
+    console.log("thinnedData as Mat:")  
+    // Remapping the data from 0 and 1 to 0 and 255
+    let remapped = new cv.Mat();
+    //mat.convertTo(remapped, cv.CV_8U, 255, 0);
+    mat.convertTo(remapped, -1, 255, 0); // -1 keeps same type
+    let [min, max] = arrayMinMax(remapped.data);
+    console.log("remapped min,max: " + min, max);
+    // Inverting image when pixels are 0 or 255
+    cv.bitwise_not(remapped, remapped);
+    // Display downsampled image
+    //cv.imshow('canvas-svg-window', mat);
+    edgeScaled = resizeImage(remapped, img.width, img.height);
+    console.log(edgeScaled.cols,edgeScaled.rows);
+    [min, max] = arrayMinMax(edgeScaled.data);
+    console.log("edgeScaled: min,max: " + min, max)
+    opencv2image(edgeScaled, ctx2)
 }
 
 // Functions to apply image trickery + convert to svg.
 function applyFilters() {
-  // Originally we worked on a scaled image. We lose resolution! 
-  // Recrate the gray image to be the same size as scaled img-source.
-  //src = cv.imread(imgSource);
-  //gray = new cv.Mat();
-  // 1) color to gray
-  //cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-  // As of Oct 25 2025 we now use full resolution for image processing and
-  // scale images for viewing.
-  [src, gray] = readImageFromSource();
-  // Empty svg-window before doing anything else.
-  document.getElementById("svgOutput").innerHTML = "";
-  let threshold_lower = parseFloat(document.getElementById("rngBlur").value);
-  let threshold_upper = parseFloat(document.getElementById("rngThresh").value);
-  let turd_factor = document.getElementById("rngTurdsize").value;
+    // Originally we worked on a scaled image. We lose resolution! 
+    // Recrate the gray image to be the same size as scaled img-source.
+    //src = cv.imread(imgSource);
+    //gray = new cv.Mat();
+    // 1) color to gray
+    //cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    // As of Oct 25 2025 we now use full resolution for image processing and
+    // scale images for viewing.
+    [src, gray] = readImageFromSource();
+    // Empty svg-window before doing anything else.
+    document.getElementById("svgOutput").innerHTML = "";
+    let threshold_lower = parseFloat(document.getElementById("rngBlur").value);
+    let threshold_upper = parseFloat(document.getElementById("rngThresh").value);
+    let turd_factor = document.getElementById("rngTurdsize").value;
 
-  width = gray.cols;
-  height = gray.rows;
+    width = gray.cols;
+    height = gray.rows;
 
-  // Not certain that turd size should be normalized.
-  let turd_value = parseInt(Math.round(turd_factor * width * 0.01)); // blur value is around 1-2 % of image width
-  if (turd_value <= 1) {
-    turd_value = 1;
-  }
-  medianBlurred = new cv.Mat();
-  thresholded = new cv.Mat();
-  // 2) median blur, adjusted with slider
-  //cv.medianBlur(gray, medianBlurred, blur_value); // The second parameter is the kernel size
+    // Not certain that turd size should be normalized.
+    let turd_value = parseInt(Math.round(turd_factor * width * 0.01)); // blur value is around 1-2 % of image width
+    if (turd_value <= 1) {
+        turd_value = 1;
+    }
+    medianBlurred = new cv.Mat();
+    thresholded = new cv.Mat();
+    // 2) median blur, adjusted with slider
+    //cv.medianBlur(gray, medianBlurred, blur_value); // The second parameter is the kernel size
 
-  // Apply thresholding to create a binary image
-  // 3) Canny Edge detector
-  // Only do thresholding to find edges if checkbox is checked.
+    // Apply thresholding to create a binary image
+    // 3) Canny Edge detector
+    // Only do thresholding to find edges if checkbox is checked.
     let lineDrawingMode = document.getElementById("lineDrawingMode");
     let img = document.getElementById("img-src");
     if (lineDrawingMode.checked) {
         console.log("No edge detection if line drawing.");
-        edgeScaled = resizeImage(gray, img.width, img.height);
-        opencv2image(edgeScaled);
+        //edgeScaled = resizeImage(gray, img.width, img.height);
+        //opencv2image(edgeScaled);
         //opencv2image(gray);
-    } else {
+    }
+    else {
         // August 2025: Canny edge detector
         // Blur image a little bit for less sharp edges in images.
         // odd numbers 3,5,7,9,... 3 (light blur), 5 (moderate blur), 7-9 (strong blur)
@@ -171,32 +218,33 @@ function applyFilters() {
         //cv.Canny(gray, thresholded, threshold_lower, threshold_upper);
         // Invert image because canny colors edges white and background black.
         cv.bitwise_not(thresholded, thresholded);
+        showOverlay("img-overlay", "img-window");
+        edgeScaled = new cv.Mat();
         edgeScaled = resizeImage(thresholded, img.width, img.height);
         opencv2image(edgeScaled);
         //opencv2image(thresholded);
 
-    /*
-    // Original edge detection from spring 2024 bachelor thesis.
-    cv.adaptiveThreshold(
-      medianBlurred,
-      thresholded,
-      255,
-      cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-      cv.THRESH_BINARY,
-      (blockSize = thresh_value),
-      (C = 2)
-    );
-    opencv2image(thresholded);
-    */
+        /*
+        // Original edge detection from spring 2024 bachelor thesis.
+        cv.adaptiveThreshold(
+        medianBlurred,
+        thresholded,
+        255,
+        cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv.THRESH_BINARY,
+        (blockSize = thresh_value),
+        (C = 2)
+        );
+        opencv2image(thresholded);
+        */
   }
   
 }
 
-function opencv2image(opencvData) {
+function opencv2image(opencvData, ctx=ctx1) {
     // Ensure the canvas size matches the image
     canvas.width = imgSource.width;
     canvas.height = imgSource.height;
-    let ctx = canvas.getContext("2d", [{ willReadFrequently: true }]);
     // Convert OpenCV matrix to ImageData
     imgData = ctx.createImageData(canvas.width, canvas.height);
     for (let i = 0, j = 0; i < opencvData.data.length; i++, j += 4) {
@@ -207,7 +255,6 @@ function opencv2image(opencvData) {
         imgData.data[j + 3] = 255; // Alpha channel
     }
         ctx.putImageData(imgData, 0, 0);
-        showOverlay("img-overlay","img-window",imgSource.width, imgSource.height);
 }
 
 function createSvg(ri) {
@@ -323,31 +370,22 @@ function createSvg(ri) {
     ctx.clearRect(0, 0, inverted.cols, inverted.rows);
     canvasSvgWindow.width = inverted.cols;
     canvasSvgWindow.height = inverted.rows;
-      showOverlay("img-overlay-svg-window", "svgWindow")
-      let img = document.getElementById("img-src");
-      let mat = cv.matFromArray(inverted.cols, inverted.rows, cv.CV_8UC4, thinnedData);
-      console.log("thinnedData as Mat:")
-      console.log(mat);
-      let [min, max] = arrayMinMax(thinnedData);
-      console.log("min,max: " + min, max)
-      let remapped = new cv.Mat();
-      mat.convertTo(remapped, cv.CV_8U, 255, 0);
-      edgeScaled = resizeImage(remapped, img.width, img.height);
-      [min, max] = arrayMinMax(edgeScaled.data);
-      console.log("edgeScaled: min,max: " + min, max)
-    displayResult(edgeScaled.data, ctx, img.width, img.height);
-    //displayResult(thinnedData, ctx, inverted.cols, inverted.rows);
+    showOverlay("img-overlay-svg-window", "svgWindow")
+    //showResizedImage(thinnedData,inverted.cols,inverted.rows);
+      
+    //displayResult(edgeScaled.data, ctx, img.width, img.height);
+    //displayResult(thinnedData, ctx2, inverted.cols, inverted.rows);
 
     // vectorize the pixel skeleton. It is now just a binary image with 1px width lines and curves.
     const curves = vectorizeSkeleton(thinnedData, inverted.cols, inverted.rows, true, true);
-    //displayVectorizedCurves(curves, binary.cols, binary.rows, true);
+    displayVectorizedCurves(curves, inverted.cols, inverted.rows, true);
 
     const pointArrays = curvesToPointArrays(curves);
 
     // 1) Approximates into points arrays
     // 2) Then into bezier curves
     // maxError = 3 Less accurate, maxError = 2 (Balanced,default), maxError = 1 high accuracy.
-    const bezierPaths = pointArraysToCubicBeziers(pointArrays, 2.0);
+    const bezierPaths = pointArraysToCubicBeziers(pointArrays, 1.0);
 
     console.log('Bezier paths:', JSON.stringify(bezierPaths));
   }
@@ -513,7 +551,7 @@ function shouldDelete2(data, x, y, width) {
 function reset() {
     originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
     resultCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
-    vectorCtx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
+    ctx2.clearRect(0, 0, canvasSvgWindow.width, canvasSvgWindow.height);
     imageInput.value = ''; currentImage = null; processBtn.disabled = true; processBtn.textContent = 'Process Image';
 }
 
@@ -552,9 +590,22 @@ function vectorizeSkeleton(binaryData, width, height, shouldSimplify = true, sho
     return allCurves;
 }
 
-function createSingleCurveFromPath(points) {
+function createSingleCurveFromPath_orig(points) {
     if (points.length < 2) return null;
     return { type: 'polyline', points, id: Math.random().toString(36).slice(2, 11) };
+}
+function createSingleCurveFromPath(points) {
+    /* Claude 4.5 Sonnet added this to smooth the curves using the Chaikin corner cutting algorithm. */
+    if (points.length < 2) return null;
+    
+    // Smooth the curve to reduce pixelation artifacts
+    const smoothedPoints = smoothCurveChaikin(points, 2);
+    
+    return { 
+        type: 'polyline', 
+        points: smoothedPoints, 
+        id: Math.random().toString(36).slice(2, 11) 
+    };
 }
 
 function tracePaths(binaryData, width, height) {
@@ -839,6 +890,37 @@ function mergeCloseCurves4(curves, tolerance = 2) {
     return merged;
 }
 
+function smoothCurveChaikin(points, iterations = 2) {
+    /* Claude 4.5 Sonnet added this to smooth the curves using the Chaikin corner cutting algorithm.*/
+    if (points.length < 3) return points;
+    
+    let smoothed = [...points];
+    
+    for (let iter = 0; iter < iterations; iter++) {
+        const newPoints = [smoothed[0]]; // Keep first point
+        
+        for (let i = 0; i < smoothed.length - 1; i++) {
+            const p0 = smoothed[i];
+            const p1 = smoothed[i + 1];
+            
+            // Create two new points at 1/4 and 3/4 along the segment
+            newPoints.push({
+                x: 0.75 * p0.x + 0.25 * p1.x,
+                y: 0.75 * p0.y + 0.25 * p1.y
+            });
+            newPoints.push({
+                x: 0.25 * p0.x + 0.75 * p1.x,
+                y: 0.25 * p0.y + 0.75 * p1.y
+            });
+        }
+        
+        newPoints.push(smoothed[smoothed.length - 1]); // Keep last point
+        smoothed = newPoints;
+    }
+    
+    return smoothed;
+}
+
 // ========= Helper functions for different tasks =======================
 function getCurveStartPoint(curve) { return curve.type === 'polyline' ? curve.points[0] : {x:0,y:0}; }
 function getCurveEndPoint(curve) { return curve.type === 'polyline' ? curve.points[curve.points.length-1] : {x:0,y:0}; }
@@ -848,29 +930,29 @@ function reverseCurve(curve) { return curve.type === 'polyline' ? { ...curve, po
 
 // =========== Display vectorized curves (arrays of subarrays of points) =========================
 function displayVectorizedCurves(curves, width, height, showOptimization = false) {
-    vectorCanvas.width = width; vectorCanvas.height = height;
-    vectorCtx.fillStyle = 'white'; vectorCtx.fillRect(0, 0, width, height);
-    vectorCtx.lineWidth = 2; vectorCtx.lineCap = 'round'; vectorCtx.lineJoin = 'round';
+    canvasSvgWindow.width = width; canvasSvgWindow.height = height;
+    ctx2.fillStyle = 'white'; ctx2.fillRect(0, 0, width, height);
+    ctx2.lineWidth = 2; ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
 
     for (let i = 0; i < curves.length; i++) {
         const curve = curves[i];
-        vectorCtx.strokeStyle = showOptimization ? `hsl(${(i / Math.max(1, curves.length)) * 270}, 70%, 50%)` : '#2196F3';
-        vectorCtx.beginPath();
+        ctx2.strokeStyle = showOptimization ? `hsl(${(i / Math.max(1, curves.length)) * 270}, 70%, 50%)` : '#2196F3';
+        ctx2.beginPath();
         if (curve.type === 'polyline') {
             const pts = curve.points;
             if (pts.length > 1) {
-                vectorCtx.moveTo(pts[0].x, pts[0].y);
-                for (let k=1; k<pts.length; k++) vectorCtx.lineTo(pts[k].x, pts[k].y);
+                ctx2.moveTo(pts[0].x, pts[0].y);
+                for (let k=1; k<pts.length; k++) ctx2.lineTo(pts[k].x, pts[k].y);
             }
         }
-        vectorCtx.stroke();
+        ctx2.stroke();
 
         if (showOptimization) {
             const s = getCurveStartPoint(curve), e = getCurveEndPoint(curve);
-            vectorCtx.fillStyle = '#4CAF50'; vectorCtx.beginPath(); vectorCtx.arc(s.x, s.y, 3, 0, Math.PI*2); vectorCtx.fill();
-            vectorCtx.fillStyle = '#F44336'; vectorCtx.beginPath(); vectorCtx.arc(e.x, e.y, 3, 0, Math.PI*2); vectorCtx.fill();
-            vectorCtx.fillStyle = 'black'; vectorCtx.font = '12px Arial'; vectorCtx.textAlign = 'center';
-            vectorCtx.fillText(i+1, s.x, s.y - 8);
+            ctx2.fillStyle = '#4CAF50'; ctx2.beginPath(); ctx2.arc(s.x, s.y, 3, 0, Math.PI*2); ctx2.fill();
+            ctx2.fillStyle = '#F44336'; ctx2.beginPath(); ctx2.arc(e.x, e.y, 3, 0, Math.PI*2); ctx2.fill();
+            ctx2.fillStyle = 'black'; ctx2.font = '12px Arial'; ctx2.textAlign = 'center';
+            ctx2.fillText(i+1, s.x, s.y - 8);
         }
     }
 }
