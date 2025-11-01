@@ -13,7 +13,7 @@ const canvas = document.getElementById("canvas");
 const canvasSvgWindow = document.getElementById("canvas-svg-window");
 const svgOutput = document.getElementById("svgOutput");
 let beziers = []; // Center line beziers are stored in this variable.
-let src, gray, medianBlurred, thresholded;
+let src, gray, medianBlurred, thresholded,grayScaled,edgeScaled;
 let moduleInitialized = false;
 let firstRun = true;
 let imgData; // Set later when filters are applied.
@@ -37,7 +37,7 @@ fileInputEl.addEventListener(
 imgSource.onload = function () {
   if (moduleInitialized) {
     clearSvgWindow();
-    src, gray = readImageFromSource();
+    [src, gray] = readImageFromSource();
     //c(gray.cols);
     opencv2image(gray);
   }
@@ -47,7 +47,7 @@ let Module = {
   // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
   onRuntimeInitialized() {
     moduleInitialized = true;
-    src, gray = readImageFromSource();
+    [src, gray] = readImageFromSource();
     document.getElementById("opencv-status").innerHTML = "OpenCV.js is ready.";
 
     //applyFilters();
@@ -63,6 +63,8 @@ function readImageFromSource() {
   gray = new cv.Mat();
   medianBlurred = new cv.Mat();
   thresholded = new cv.Mat();
+  grayScaled = new cv.Mat();
+  edgeScaled = new cv.Mat();
   // Originally image data was read from the displayed pixels.
   // This leads sometimes to poor resolution.
   //src = cv.imread(imgSource);
@@ -72,7 +74,7 @@ function readImageFromSource() {
   cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   //console.log("gray image width, height:");
   //console.log(gray.cols,gray.rows);
-  return src,gray;
+  return [src,gray];
 }
 
 function readImageFullSize(imageId) {
@@ -94,6 +96,18 @@ function readImageFullSize(imageId) {
   return mat;
 }
 
+function resizeImage(opencvImage, width, height) {
+    // Claude 4.5 created 31.10.2025
+    // Create a destination Mat with your target dimensions
+    let dst = new cv.Mat();
+    // Define your target size
+    let dsize = new cv.Size(width, height);
+    // Resize the image
+    cv.resize(opencvImage, dst, dsize, 0, 0, cv.INTER_NEAREST);
+
+    return dst;
+}
+
 // Functions to apply image trickery + convert to svg.
 function applyFilters() {
   // Originally we worked on a scaled image. We lose resolution! 
@@ -104,7 +118,7 @@ function applyFilters() {
   //cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
   // As of Oct 25 2025 we now use full resolution for image processing and
   // scale images for viewing.
-  src, gray = readImageFromSource();
+  [src, gray] = readImageFromSource();
   // Empty svg-window before doing anything else.
   document.getElementById("svgOutput").innerHTML = "";
   let threshold_lower = parseFloat(document.getElementById("rngBlur").value);
@@ -127,22 +141,27 @@ function applyFilters() {
   // Apply thresholding to create a binary image
   // 3) Canny Edge detector
   // Only do thresholding to find edges if checkbox is checked.
-  let lineDrawingMode = document.getElementById("lineDrawingMode");
-  if (lineDrawingMode.checked) {
-    console.log("No edge detection if line drawing.");
-    opencv2image(gray);
-  } else {
-    // August 2025: Canny edge detector
-    // Blur image a little bit for less sharp edges in images.
-    // odd numbers 3,5,7,9,... 3 (light blur), 5 (moderate blur), 7-9 (strong blur)
-    let blurred = new cv.Mat();
-    cv.medianBlur(gray, blurred, 7);
-    // Canny() fyller array thresholded med innhold.
-    cv.Canny(blurred, thresholded, threshold_lower, threshold_upper);
-    //cv.Canny(gray, thresholded, threshold_lower, threshold_upper);
-    // Invert image because canny colors edges white and background black.
-    cv.bitwise_not(thresholded, thresholded);
-    opencv2image(thresholded);
+    let lineDrawingMode = document.getElementById("lineDrawingMode");
+    let img = document.getElementById("img-src");
+    if (lineDrawingMode.checked) {
+        console.log("No edge detection if line drawing.");
+        edgeScaled = resizeImage(gray, img.width, img.height);
+        opencv2image(edgeScaled);
+        //opencv2image(gray);
+    } else {
+        // August 2025: Canny edge detector
+        // Blur image a little bit for less sharp edges in images.
+        // odd numbers 3,5,7,9,... 3 (light blur), 5 (moderate blur), 7-9 (strong blur)
+        let blurred = new cv.Mat();
+        cv.medianBlur(gray, blurred, 7);
+        // Canny() fyller array thresholded med innhold.
+        cv.Canny(blurred, thresholded, threshold_lower, threshold_upper);
+        //cv.Canny(gray, thresholded, threshold_lower, threshold_upper);
+        // Invert image because canny colors edges white and background black.
+        cv.bitwise_not(thresholded, thresholded);
+        edgeScaled = resizeImage(thresholded, img.width, img.height);
+        opencv2image(edgeScaled);
+        //opencv2image(thresholded);
 
     /*
     // Original edge detection from spring 2024 bachelor thesis.
@@ -283,14 +302,27 @@ function createSvg(ri) {
     console.log(inverted.cols,inverted.rows);
 
     // Apply Zhang-Suen thinning
-    const thinnedData = zhangSuenThinning(binaryData, inverted.cols, inverted.rows);
+      const thinnedData = zhangSuenThinning(binaryData, inverted.cols, inverted.rows);
+      console.log("thinnedData:")
+      console.log(thinnedData.length);
+      console.log(thinnedData);
 
     let ctx = canvasSvgWindow.getContext("2d", [{ willReadFrequently: true }]);
     ctx.clearRect(0, 0, inverted.cols, inverted.rows);
     canvasSvgWindow.width = inverted.cols;
     canvasSvgWindow.height = inverted.rows;
-    showOverlay("img-overlay-svg-window", "svgWindow")
-    displayResult(thinnedData, ctx, inverted.cols, inverted.rows);
+      showOverlay("img-overlay-svg-window", "svgWindow")
+      let img = document.getElementById("img-src");
+      let mat = cv.matFromArray(inverted.cols, inverted.rows, cv.CV_8UC4, thinnedData);
+      console.log("thinnedData as Mat:")
+      console.log(mat);
+      let [min, max] = arrayMinMax(thinnedData);
+      console.log("min,max: " + min, max)
+      edgeScaled = resizeImage(mat, img.width, img.height);
+      [min, max] = arrayMinMax(edgeScaled.data);
+      console.log("edgeScaled: min,max: " + min, max)
+    displayResult(edgeScaled.data, ctx, img.width, img.height);
+    //displayResult(thinnedData, ctx, inverted.cols, inverted.rows);
 
     // vectorize the pixel skeleton. It is now just a binary image with 1px width lines and curves.
     const curves = vectorizeSkeleton(thinnedData, inverted.cols, inverted.rows, true, true);
@@ -340,6 +372,12 @@ function clearSvgWindow() {
 
 function c(text) {
   console.log(text);
+}
+
+function arrayMinMax(arr) {
+    let min = arr.reduce((a, b) => Math.min(a, b));
+    let max = arr.reduce((a, b) => Math.max(a, b));
+    return [min, max];
 }
 
 // ==================== ZHANG-SUEN FUNCTIONS ====================
