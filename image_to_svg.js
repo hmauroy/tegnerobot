@@ -103,7 +103,7 @@ function resizeImage(opencvImage, width, height) {
     // Define your target size
     let dsize = new cv.Size(width, height);
     // Resize the image
-    cv.resize(opencvImage, dst, dsize, 0, 0, cv.INTER_NEAREST);
+    cv.resize(opencvImage, dst, dsize, 0, 0, cv.INTER_AREA);
 
     return dst;
 }
@@ -318,7 +318,9 @@ function createSvg(ri) {
       console.log(mat);
       let [min, max] = arrayMinMax(thinnedData);
       console.log("min,max: " + min, max)
-      edgeScaled = resizeImage(mat, img.width, img.height);
+      let remapped = new cv.Mat();
+      mat.convertTo(remapped, cv.CV_8U, 255, 0);
+      edgeScaled = resizeImage(remapped, img.width, img.height);
       [min, max] = arrayMinMax(edgeScaled.data);
       console.log("edgeScaled: min,max: " + min, max)
     displayResult(edgeScaled.data, ctx, img.width, img.height);
