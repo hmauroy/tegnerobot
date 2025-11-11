@@ -266,7 +266,7 @@ function createSvg(ri) {
 
   let url = null; // Destroys the reference.
 
-  url = canvas.toDataURL();
+    url = canvas.toDataURL();
 
   if (mauroyLab_detection.checked) {
     // 1) Use Potrace to trace around edges.
@@ -313,6 +313,8 @@ function createSvg(ri) {
       } else {
         svg = Potrace.getSVG(1, "curve"); // scale=1, We want the same size as the image displayed.
       }
+        c("Potrace SVG: ");
+        c(svg);
       document.getElementById("svgOutput").innerHTML = svg;
       document.getElementById("svgWindow").style.visibility = "visible";
     });
@@ -324,7 +326,6 @@ function createSvg(ri) {
         // Set value to the global variable 'beziers'
         beziers = JSON.parse(svg_beziers);
           c(beziers);
-          return
         // Start centerLine-function in different JS-script.
         drawSvgPath();
       } catch (error) {
@@ -379,7 +380,7 @@ function createSvg(ri) {
 
     // vectorize the pixel skeleton. It is now just a binary image with 1px width lines and curves.
     const curves = vectorizeSkeleton(thinnedData, inverted.cols, inverted.rows, true, true);
-    displayVectorizedCurves(curves, inverted.cols, inverted.rows, true);
+    //displayVectorizedCurves(curves, inverted.cols, inverted.rows, true);
 
     const pointArrays = curvesToPointArrays(curves);
     // Uses object created in some other JS-file ^_^ Don't know where it is right now.

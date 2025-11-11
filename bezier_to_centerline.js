@@ -94,7 +94,7 @@ function setScaleFactorX(array) {
   // Scalefactor divides the canvas width on the svg width plus some padding.
   let scaleFactorX = ri.centerLineCanvas.width / (svgWidth * ri.paddingFactor);
 
-  return scaleFactorX, svgWidth, svgHeight;
+  return scaleFactorX, svgWidth, svgHeight, [x1,y1,x2,y2];
 }
 
 function drawSvgPath() {
@@ -188,8 +188,10 @@ function drawSvgPath() {
 
   function scaleSVG(beziers) {
     // Sets a scalefactor for the bezier curves from Potrace.
+    let svgWidth, svgHeight, boundingBox;
 
-    ri.scaleFactorX, svgWidth, svgHeight = setScaleFactorX(beziers);
+    ri.scaleFactorX, svgWidth, svgHeight, boundingBox = setScaleFactorX(beziers);
+    let y1 = boundingBox[1];
 
     if (ri.scaleFactorX * (y1 + svgHeight) * ri.paddingFactor > ri.centerLineCanvas.height) {
         c("Too tall drawing! Rescaling to fit window.");
