@@ -80,6 +80,23 @@ copyButton.addEventListener("click", () => {
   copySVG();
 });
 
+function setScaleFactorX(array) {
+  const boundingBox = calcBoundingBox(array); // Returns [x1,y1,x2,y2]
+  const x1 = boundingBox[0];
+  const x2 = boundingBox[2];
+  const y1 = boundingBox[1];
+  const y2 = boundingBox[3];
+  //console.log("boundingbox: ",boundingBox);
+  const svgWidth = x2 - x1;
+  const svgHeight = y2 - y1;
+  //console.log("width,height: ", svgWidth, svgHeight);
+
+  // Scalefactor divides the canvas width on the svg width plus some padding.
+  let scaleFactorX = ri.centerLineCanvas.width / (svgWidth * ri.paddingFactor);
+
+  return scaleFactorX, svgWidth, svgHeight;
+}
+
 function drawSvgPath() {
 
     // Empties eventual allready filled arrays
@@ -166,33 +183,29 @@ function drawSvgPath() {
   function getDiameter() {
     return Number(document.getElementById("pupilDiameter").value);
   }
+  
+  
 
-  try {
-    // (I)) Automatic scaling of the data to visualize on a similar scale for all svg drawings.
-    const boundingBox = calcBoundingBox(beziers); // Returns [x1,y1,x2,y2]
-    const x1 = boundingBox[0];
-    const x2 = boundingBox[2];
-    const y1 = boundingBox[1];
-    const y2 = boundingBox[3];
-    //console.log("boundingbox: ",boundingBox);
-    const svgWidth = x2 - x1;
-    const svgHeight = y2 - y1;
-    //console.log("width,height: ", svgWidth, svgHeight);
-    const paddingFactor = 1.0;
+  function scaleSVG(beziers) {
+    // Sets a scalefactor for the bezier curves from Potrace.
 
-    // Scalefactor divides the canvas width on the svg width plus some padding.
-    ri.scaleFactorX = ri.centerLineCanvas.width / (svgWidth * paddingFactor);
-      
+    ri.scaleFactorX, svgWidth, svgHeight = setScaleFactorX(beziers);
 
-    if (ri.scaleFactorX * (y1 + svgHeight) * paddingFactor > ri.centerLineCanvas.height) {
+    if (ri.scaleFactorX * (y1 + svgHeight) * ri.paddingFactor > ri.centerLineCanvas.height) {
         c("Too tall drawing! Rescaling to fit window.");
         while (
-            ri.scaleFactorX * (y1 + svgHeight) * paddingFactor >
+            ri.scaleFactorX * (y1 + svgHeight) * ri.paddingFactor >
             ri.centerLineCanvas.height
         ) {
             ri.scaleFactorX = ri.scaleFactorX * 0.995;
         }
     }
+  }
+
+  try {
+    // (I)) Automatic scaling of the data to visualize on a similar scale for all svg drawings.
+    scaleSVG(beziers);
+    
       
     // (II) Parses the svg data format from potrace into curves of points. Apply scaling for better viewing in web app.
     const pathArrays = parseSvgPath(beziers, ri.scaleFactorX);
@@ -273,6 +286,8 @@ function updateSvgOutput(ri) {
     ri.svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
   console.log("ri.svgOutputData: ");
   console.log(JSON.stringify(ri.svgOutputData));
+  drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black")
+
 
     // Fill texarea.
     let rows = Math.ceil(ri.svgOutputData.length * 25);

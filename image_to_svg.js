@@ -323,7 +323,8 @@ function createSvg(ri) {
       try {
         // Set value to the global variable 'beziers'
         beziers = JSON.parse(svg_beziers);
-        //c(beziers);
+          c(beziers);
+          return
         // Start centerLine-function in different JS-script.
         drawSvgPath();
       } catch (error) {
@@ -384,19 +385,23 @@ function createSvg(ri) {
     // Uses object created in some other JS-file ^_^ Don't know where it is right now.
     //ri.sortedLines = curvesToPointArrays(curves);
     ri.sortedLines = sortPathCurves(pointArrays, calcBoundingBox(pointArrays), ctx);
-
+    // Draws the points using lines between points.
     drawCenterLine(ri);
       
     console.log(JSON.stringify(pointArrays));
 
     // Convert to bezier curves
-    // Now we have the bezier paths scaled to the input image.  
-    const bezierPaths = generateBezierCurves(ri.sortedLines);
+    let svgWidth, svgHeight;
+    ri.scaleFactorX, svgWidth, svgHeight = setScaleFactorX(beziers);  
+    ri.svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
+
+      
     console.log('Bezier paths: ');
-    console.log(bezierPaths);
+    console.log(ri.svgOutputData);
     
-    // Draw the curves to the canvas
-    drawBezierCurves(JSON.parse(bezierPaths), smoothedCanvas, "black")
+    // Draw the curves to the canvas after scaling.
+    updateSvgOutput(ri);
+//    drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black")
 
     
     // Need to scale the bezier curves to the output size from slider: rngDrawingWidth.
