@@ -253,24 +253,26 @@ function updateSvgOutput(ri) {
   let indx = 0;
   // Empty pathScaledDown before recalculating (this is run every time a line is deleted.)
   ri.pathScaledDown = [];
-    ri.sortedLines.forEach((curve) => {
-      ri.pathScaledDown.push([]);
-      curve.forEach((point) => {
-        ri.pathScaledDown[indx].push([
-          point[0] / ri.scaleFactorX,
-          point[1] / ri.scaleFactorX,
-        ]);
-      });
-      indx++;
+  ri.sortedLines.forEach((curve) => {
+    ri.pathScaledDown.push([]);
+    curve.forEach((point) => {
+      ri.pathScaledDown[indx].push([
+        point[0] / ri.scaleFactorX,
+        point[1] / ri.scaleFactorX,
+      ]);
     });
+    indx++;
+  });
 
     // 4) Maybe a light smoothing the curves to remove jagged artefacts from the mid point algorithms.
     //return;
 
   // 5) Create bezier curves of the pathArrays.
-    console.log(JSON.stringify(ri.pathScaledDown));
-    //console.log(ri.pathScaledDown);
+    //console.log("ri.pathScaledDown: ");
+    //console.log(JSON.stringify(ri.pathScaledDown));
     ri.svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
+  console.log("ri.svgOutputData: ");
+  console.log(JSON.stringify(ri.svgOutputData));
 
     // Fill texarea.
     let rows = Math.ceil(ri.svgOutputData.length * 25);

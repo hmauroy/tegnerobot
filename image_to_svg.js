@@ -381,13 +381,26 @@ function createSvg(ri) {
     displayVectorizedCurves(curves, inverted.cols, inverted.rows, true);
 
     const pointArrays = curvesToPointArrays(curves);
+    // Uses object created in some other JS-file ^_^ Don't know where it is right now.
+    //ri.sortedLines = curvesToPointArrays(curves);
+    ri.sortedLines = sortPathCurves(pointArrays, calcBoundingBox(pointArrays), ctx);
 
-    // 1) Approximates into points arrays
-    // 2) Then into bezier curves
-    // maxError = 3 Less accurate, maxError = 2 (Balanced,default), maxError = 1 high accuracy.
-    const bezierPaths = pointArraysToCubicBeziers(pointArrays, 1.0);
+    drawCenterLine(ri);
+      
+    console.log(JSON.stringify(pointArrays));
 
-    console.log('Bezier paths:', JSON.stringify(bezierPaths));
+    // Convert to bezier curves
+    // Now we have the bezier paths scaled to the input image.  
+    const bezierPaths = generateBezierCurves(ri.sortedLines);
+    console.log('Bezier paths: ');
+    console.log(bezierPaths);
+    
+    // Draw the curves to the canvas
+    drawBezierCurves(JSON.parse(bezierPaths), smoothedCanvas, "black")
+
+    
+    // Need to scale the bezier curves to the output size from slider: rngDrawingWidth.
+    
   }
 }
 
