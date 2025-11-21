@@ -79,14 +79,14 @@ function parseSvgPath(svgArr, scaleFactor) {
 /**
  * Calculates the bounding box of an SVG path array.
  * @param {Array} svgPathArray - The SVG path array (e.g., [["M", x1, y1, "C", x2, y2, ...]]).
- * @returns {Object} An object containing the bounding box { minX, minY, maxX, maxY }.
+ * @returns {Array} An array containing the bounding box [ minX, minY, maxX, maxY ].
  */
 function calcBoundingBox(svgPathArray) {
   let minX = Infinity,
     minY = Infinity,
     maxX = -Infinity,
     maxY = -Infinity;
-
+  
   svgPathArray.forEach((segment) => {
     for (let i = 1; i < segment.length; i += 2) {
       const x = segment[i];
@@ -103,3 +103,27 @@ function calcBoundingBox(svgPathArray) {
 
   return [minX, minY, maxX, maxY];
 }
+
+function calculateBoundingBoxPointArray(curves) {
+  // Example: [[[102,0],[101.625,1],[100.875,3],[99.75,6],[98.25,10],[95.5625,14.6875]]];
+  // Initialize with extreme values
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  
+  // Iterate through all curves and points
+  for (const curve of curves) {
+    for (const point of curve) {
+      const [x, y] = point;
+      
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+  }
+  
+  return [minX, minY, maxX, maxY];
+}
+

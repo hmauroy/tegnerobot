@@ -40,7 +40,7 @@ let smoothingSettings = {
 // Add event listeners
 btnUpdateCenterline.addEventListener("click", () => {
     // Apply smoothing to the bezier curves.
-    drawSvgPath();
+    drawPotraceSvgPath();
 });
 btnApplySmoothing.addEventListener("click", () => {
     // Apply smoothing to the bezier curves.
@@ -82,6 +82,8 @@ copyButton.addEventListener("click", () => {
 
 function setScaleFactorX(array) {
   const boundingBox = calcBoundingBox(array); // Returns [x1,y1,x2,y2]
+  console.log("SetScaleFactorX: Bounding box: ");
+  console.log(boundingBox);
   const x1 = boundingBox[0];
   const x2 = boundingBox[2];
   const y1 = boundingBox[1];
@@ -97,7 +99,7 @@ function setScaleFactorX(array) {
   return scaleFactorX, svgWidth, svgHeight, [x1,y1,x2,y2];
 }
 
-function drawSvgPath() {
+function drawPotraceSvgPath() {
 
     // Empties eventual allready filled arrays
     ri.pathScaledDown = [];
@@ -206,6 +208,7 @@ function drawSvgPath() {
 
   try {
     // (I)) Automatic scaling of the data to visualize on a similar scale for all svg drawings.
+    // NB! beziers is a global variable calculated in image_to_svg.js.
     scaleSVG(beziers);
     
       
@@ -263,8 +266,8 @@ function drawSvgPath() {
   }
 }
 
-function updateSvgOutput(ri) {
-    // 3) Reverse the scale down to original size using the scaleFactorX.
+function scaleSvgOutputToRobot(ri) {
+    // 3) Reverse the scale to original size using the scaleFactorX.
   let indx = 0;
   // Empty pathScaledDown before recalculating (this is run every time a line is deleted.)
   ri.pathScaledDown = [];
@@ -283,9 +286,10 @@ function updateSvgOutput(ri) {
     //return;
 
   // 5) Create bezier curves of the pathArrays.
-    //console.log("ri.pathScaledDown: ");
-    //console.log(JSON.stringify(ri.pathScaledDown));
-    ri.svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
+  //console.log("ri.pathScaledDown: ");
+  //console.log(JSON.stringify(ri.pathScaledDown));
+  ri.svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
+  // Update the SVG output to the robot
   console.log("ri.svgOutputData: ");
   console.log(JSON.stringify(ri.svgOutputData));
   drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black")

@@ -5,7 +5,6 @@ document.getElementById("btnUpdate").addEventListener("click", (e) => {
 });
 */
 
-let width, height;
 const imgSource = document.getElementById("img-src");
 const fileInputEl = document.getElementById("fileInput");
 const canvasWindow = document.getElementById("canvasWindow");
@@ -183,11 +182,12 @@ function applyFilters() {
     let threshold_upper = parseFloat(document.getElementById("rngThresh").value);
     let turd_factor = document.getElementById("rngTurdsize").value;
 
-    width = gray.cols;
-    height = gray.rows;
+    // Here we set the global variables width and height of the original image!
+    ri.width = gray.cols;
+    ri.height = gray.rows;
 
     // Not certain that turd size should be normalized.
-    let turd_value = parseInt(Math.round(turd_factor * width * 0.01)); // blur value is around 1-2 % of image width
+    let turd_value = parseInt(Math.round(turd_factor * ri.width * 0.01)); // blur value is around 1-2 % of image width
     if (turd_value <= 1) {
         turd_value = 1;
     }
@@ -297,10 +297,11 @@ function createSvg(ri) {
 
     // Process the image and show SVG
     //TODO: If line drawing Zhang - Zuen thinning should be used.
-    //If image use potrace algorithm. 
+    //If image use potrace algorithm.
 
+    // Scaling down the bezier curves to fit into the drawing area for the robot.
     let drawingWidth = document.getElementById("rngDrawingWidth").value;
-    let scaleFactor = drawingWidth / width; // E.g. 100mm / 650px = 0,153 mm/px
+    let scaleFactor = drawingWidth / ri.width; // E.g. 100mm / 650px = 0,153 mm/px
     // Check if SVG should be curve or filled path.
     const fillPath = document.getElementById("chkFillPath");
     const mauroyLab_detection = document.getElementById("mauroyLab_detection");
@@ -323,11 +324,13 @@ function createSvg(ri) {
       let svg_beziers = PotraceBG8.getSVG(scaleFactor, "curve"); // Scaling to fit drawing robot.
       //c(svg_beziers);
       try {
-        // Set value to the global variable 'beziers'
+        // Set value to the global variable 'beziers'.
+        // The bezier curves being processed are scaled down to fit drawing robot!
         beziers = JSON.parse(svg_beziers);
-          c(beziers);
+        c("Potrace beziers:")
+        c(beziers);
         // Start centerLine-function in different JS-script.
-        drawSvgPath();
+        drawPotraceSvgPath();
       } catch (error) {
         c("Error parsing JSON!", error);
       }
@@ -385,29 +388,76 @@ function createSvg(ri) {
     const pointArrays = curvesToPointArrays(curves);
     // Uses object created in some other JS-file ^_^ Don't know where it is right now.
     //ri.sortedLines = curvesToPointArrays(curves);
-    ri.sortedLines = sortPathCurves(pointArrays, calcBoundingBox(pointArrays), ctx);
-    // Draws the points using lines between points.
-    drawCenterLine(ri);
-      
-    console.log(JSON.stringify(pointArrays));
-
+    ri.sortedLines = sortPathCurves(pointArrays, calculateBoundingBoxPointArray(pointArrays), ctx);
+    
+    // Draws the points using lines between points. Does not continue drawing.
+    drawCenterLine(ri,continueDrawings=false);
+    
     // Convert to bezier curves
-    let svgWidth, svgHeight;
-    ri.scaleFactorX, svgWidth, svgHeight = setScaleFactorX(beziers);  
+
+    let svgWidth, svgHeight, boundingBox;
+    console.log("ri.sortedLines: ");
+    console.log(JSON.stringify(ri.sortedLines));
+      let dimensions = setScaleFactorPointArray(ri.sortedLines);
+      ri.scaleFactorX = dimensions[0];
+      svgWidth = dimensions[1];
+      svgHeight = dimensions[2];
+      boundingBox = dimensions[3];
+    console.log("zhang suen scaleFactorX:");
+    console.log(dimensions);
+
+    // Scale the sorted lines down to fit drawing robot (slider value in mm).
+    let robotWidth = parseFloat(document.getElementById("rngDrawingWidth").value);
+      let scaleFactorZS = svgWidth / robotWidth;
+      ri.pathScaledDown = [];
+      let indx = 0;
+      ri.sortedLines.forEach((curve) => {
+        ri.pathScaledDown.push([]);
+        curve.forEach((point) => {
+          ri.pathScaledDown[indx].push([
+            point[0] / scaleFactorZS,
+            point[1] / scaleFactorZS,
+          ]);
+        });
+          console.log(ri.pathScaledDown[indx]);
+        indx++;
+      });
     ri.svgOutputData = generateBezierCurves(ri.pathScaledDown); // No smoothing
 
       
     console.log('Bezier paths: ');
     console.log(ri.svgOutputData);
-    
-    // Draw the curves to the canvas after scaling.
-    updateSvgOutput(ri);
-//    drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black")
+      drawBezierCurves(JSON.parse(ri.svgOutputData), canvasSvgWindow, "black", normFactor=scaleFactorZS);
 
-    
-    // Need to scale the bezier curves to the output size from slider: rngDrawingWidth.
+
+    // Fill texarea.
+    let rows = Math.ceil(ri.svgOutputData.length * 25);
+    ri.svgTextOutput.rows = rows;
+    ri.svgTextOutput.cols = 50;
+    ri.svgOutputData = addLineEnding(ri.svgOutputData); // Adds the EOF control code for micro:bit as a signal for ending the drawing.
+    ri.svgTextOutput.value = ri.svgOutputData;
     
   }
+}
+
+function setScaleFactorPointArray(array) {
+  const boundingBox = calculateBoundingBoxPointArray(array); // Returns [x1,y1,x2,y2]
+  console.log("SetScaleFactor Point Array: Bounding box: ");
+  console.log(boundingBox);
+  const x1 = boundingBox[0];
+  const x2 = boundingBox[2];
+  const y1 = boundingBox[1];
+  const y2 = boundingBox[3];
+  //console.log("boundingbox: ",boundingBox);
+  const svgWidth = x2 - x1;
+    const svgHeight = y2 - y1;
+    console.log(svgWidth, svgHeight);
+  //console.log("width,height: ", svgWidth, svgHeight);
+
+  // Scalefactor divides the canvas width on the svg width plus some padding.
+  let scaleFactorX = ri.centerLineCanvas.width / (svgWidth * ri.paddingFactor);
+
+  return [scaleFactorX, svgWidth, svgHeight, [x1,y1,x2,y2]];
 }
 
 // Converted python code to javascript from Rosetta Code:

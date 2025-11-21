@@ -307,6 +307,13 @@ h1 {
     display: block;
 }
 
+#smoothedCanvas {
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    border: solid red 1px;
+}
+
 
 .flexbox-centered {
     display: flex;

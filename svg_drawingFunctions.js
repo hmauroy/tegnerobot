@@ -108,18 +108,26 @@ function clearClickableElements() {
   circles.forEach(circle => circle.remove());
 }
 
-function drawCenterLine(ri) {
+function drawCenterLine(ri,continueDrawings=true) {
   // Remove all lines present
   let ctx = ri.centerLineCanvas.getContext("2d");
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ri.centerLineCanvas.width = ri.width;
+  ri.centerLineCanvas.height = ri.height;
+  ctx.clearRect(0, 0, ri.centerLineCanvas.width, ri.centerLineCanvas.height);
   // Draw lines
   drawLines(ri.sortedLines, ri.centerLineCanvas, 3);
   // Draw the start points of the sorted curves if setting is toggled
   if (ri.createStartpoints === true) {
     drawStartingPoints(ri);
   }
-  // Scale the sortedLines and update SVG text output
-  updateSvgOutput(ri);
+  if (continueDrawings) {
+    // Scale the sortedLines and update SVG text output
+    scaleSvgOutputToRobot(ri);
+  }
+  else {
+    console.log("DrawCenterline stops here.");
+  }
+  
 }
   
 
@@ -173,7 +181,7 @@ function generatePupilPath(pupil) {
   return pupilPath;
 }
 
-function drawBezierCurves(pathsArray, canvas, color) {
+function drawBezierCurves(pathsArray, canvas, color, normFactor=1) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
