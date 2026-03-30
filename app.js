@@ -14,7 +14,8 @@
 // --- From image_to_svg.js ---
 const imgSource   = document.getElementById("img-src");
 const fileInputEl = document.getElementById("fileInput");
-const canvas      = document.getElementById("canvas");
+const canvas          = document.getElementById("canvas");
+const canvasSvgWindow = document.getElementById("canvas-svg-window");
 const ctx1 = canvas.getContext("2d", [{ willReadFrequently: true }]);
 const svgOutput   = document.getElementById("svgOutput");
 
@@ -1553,6 +1554,11 @@ function createSvg(ri) {
 
         ri.svgOutputData = generateBezierCurves(ri.pathScaledDown);
         console.log('Bezier paths: '); console.log(ri.svgOutputData);
+
+        canvasSvgWindow.width  = inverted.cols;
+        canvasSvgWindow.height = inverted.rows;
+        showOverlay("img-overlay-svg-window", "svgWindow");
+        drawBezierCurves(JSON.parse(ri.svgOutputData), canvasSvgWindow, "black", scaleFactorZS);
 
         let rows = Math.ceil(ri.svgOutputData.length * 25);
         ri.svgTextOutput.rows = rows;
