@@ -1187,11 +1187,14 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
 }
 
 function drawStartingPoints(ri) {
+    if (!ri.sortedLines || ri.sortedLines.length === 0) return;
     clearClickableElements();
     for (let i = 1; i < ri.sortedLines.length; i++) {
-        createClickableCircle(ri, 6, i, "black");
+        if (ri.sortedLines[i] && ri.sortedLines[i].length > 0)
+            createClickableCircle(ri, 6, i, "black");
     }
-    createClickableCircle(ri, 6, 0, "red");
+    if (ri.sortedLines[0] && ri.sortedLines[0].length > 0)
+        createClickableCircle(ri, 6, 0, "red");
 }
 
 function createClickableCircle(ri, radius, index, color) {
