@@ -189,26 +189,53 @@ function showResizedImage(thinnedData, origWidth, origHeight) {
     opencv2image(edgeScaled, ctx2);
 }
 
+// Slider configurations per detection mode.
+const filterSliderConfigs = {
+    'mauroy-lab': {
+        blur:   { label: 'Blur factor',      min: 1, max: 99,  value: 3,   step: 1 },
+        thresh: { label: 'Threshold factor', min: 2, max: 99,  value: 2,   step: 1 },
+    },
+    'zhang-suen': {
+        blur:   { label: 'Lower threshold',  min: 1, max: 255, value: 50,  step: 1 },
+        thresh: { label: 'Upper threshold',  min: 1, max: 255, value: 180, step: 1 },
+    },
+};
+
+function updateFilterSliders() {
+    const mode = document.querySelector('input[name="processMethod"]:checked').value;
+    const cfg  = filterSliderConfigs[mode];
+    const blurSlider   = document.getElementById("rngBlur");
+    const threshSlider = document.getElementById("rngThresh");
+    blurSlider.min   = cfg.blur.min;
+    blurSlider.max   = cfg.blur.max;
+    blurSlider.step  = cfg.blur.step;
+    blurSlider.value = cfg.blur.value;
+    threshSlider.min   = cfg.thresh.min;
+    threshSlider.max   = cfg.thresh.max;
+    threshSlider.step  = cfg.thresh.step;
+    threshSlider.value = cfg.thresh.value;
+    document.getElementById("rngBlur-value").textContent   = cfg.blur.value;
+    document.getElementById("rngThresh-value").textContent = cfg.thresh.value;
+    // Update visible labels
+    const labels = document.querySelectorAll('.slider-label span:first-child');
+    labels.forEach(el => {
+        if (el.nextElementSibling && el.nextElementSibling.id === 'rngBlur-value')
+            el.textContent = cfg.blur.label;
+        if (el.nextElementSibling && el.nextElementSibling.id === 'rngThresh-value')
+            el.textContent = cfg.thresh.label;
+    });
+}
+
 function applyFilters() {
     [src, gray] = readImageFromSource();
     document.getElementById("svgOutput").innerHTML = "";
-    let blur_factor      = parseFloat(document.getElementById("rngBlur").value);
-    let threshold_factor = parseFloat(document.getElementById("rngThresh").value);
-    let turd_factor      = document.getElementById("rngTurdsize").value;
-    let img              = document.getElementById("img-src");
+    let val1       = parseFloat(document.getElementById("rngBlur").value);
+    let val2       = parseFloat(document.getElementById("rngThresh").value);
+    let turd_factor = document.getElementById("rngTurdsize").value;
+    let img         = document.getElementById("img-src");
 
     ri.width  = gray.cols;
     ri.height = gray.rows;
-
-    // Normalize blur kernel to image width; must be odd and >= 3
-    let blur_value = parseInt(Math.round(blur_factor * ri.width * 0.002));
-    if (blur_value % 2 === 0) blur_value -= 1;
-    if (blur_value < 3) blur_value = 3;
-
-    // Normalize adaptive threshold block size to image width; must be odd and >= 3
-    let thresh_value = parseInt(Math.round(threshold_factor * ri.width * 0.005));
-    if (thresh_value % 2 === 0) thresh_value -= 1;
-    if (thresh_value < 3) thresh_value = 3;
 
     let turd_value = parseInt(Math.round(turd_factor * ri.width * 0.01));
     if (turd_value <= 1) turd_value = 1;
@@ -216,15 +243,32 @@ function applyFilters() {
     medianBlurred = new cv.Mat();
     thresholded   = new cv.Mat();
 
+    const useMauroy = document.getElementById("mauroyLab_detection").checked;
     let lineDrawingMode = document.getElementById("lineDrawingMode");
     if (lineDrawingMode.checked) {
         console.log("No edge detection if line drawing.");
         edgeScaled = resizeImage(gray, img.width, img.height);
         opencv2image(edgeScaled);
         showOverlay("img-overlay", "img-window");
-    } else {
+    } else if (useMauroy) {
+        // Adaptive threshold — blur and block size normalized to image width
+        let blur_value = parseInt(Math.round(val1 * ri.width * 0.002));
+        if (blur_value % 2 === 0) blur_value -= 1;
+        if (blur_value < 3) blur_value = 3;
+        let thresh_value = parseInt(Math.round(val2 * ri.width * 0.005));
+        if (thresh_value % 2 === 0) thresh_value -= 1;
+        if (thresh_value < 3) thresh_value = 3;
         cv.medianBlur(gray, medianBlurred, blur_value);
         cv.adaptiveThreshold(medianBlurred, thresholded, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, thresh_value, 2);
+        showOverlay("img-overlay", "img-window");
+        edgeScaled = resizeImage(thresholded, img.width, img.height);
+        opencv2image(edgeScaled);
+    } else {
+        // Canny edge detection for Zhang-Suen
+        let blurred = new cv.Mat();
+        cv.medianBlur(gray, blurred, 7);
+        cv.Canny(blurred, thresholded, val1, val2);
+        cv.bitwise_not(thresholded, thresholded);
         showOverlay("img-overlay", "img-window");
         edgeScaled = resizeImage(thresholded, img.width, img.height);
         opencv2image(edgeScaled);
@@ -1611,6 +1655,11 @@ document.getElementById("btnCopy").addEventListener("click", () => { copySVG(); 
 
 // Main "Create SVG" button
 document.getElementById("btnCreateSvg").addEventListener("click", () => { createSvg(ri); });
+
+// Radio buttons: swap slider config when detection method changes.
+document.querySelectorAll('input[name="processMethod"]').forEach(radio => {
+    radio.addEventListener('change', () => { updateFilterSliders(); applyFilters(); });
+});
 
 // Sliders: update displayed value and trigger filters/smoothing.
 document.querySelectorAll('.slider').forEach(slider => {
