@@ -1481,7 +1481,7 @@ function createSvg(ri) {
         Potrace.setParameter(potraceParams);
         PotraceBG8.setParameter(potraceParams);
         let drawingWidth = document.getElementById("rngDrawingWidth").value;
-        let scaleFactor  = drawingWidth / ri.width;
+        let scaleFactor  = drawingWidth / canvas.width;
         const fillPath = document.getElementById("chkFillPath");
         Potrace.process(function() {
             let svg = fillPath.checked ? Potrace.getSVG(1) : Potrace.getSVG(1, "curve");
