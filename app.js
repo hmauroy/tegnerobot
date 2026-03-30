@@ -1533,14 +1533,19 @@ function createSvg(ri) {
 
         ri.svgOutputData = generateBezierCurves(ri.pathScaledDown);
         console.log('Bezier paths: '); console.log(ri.svgOutputData);
-        drawCenterLine(ri);
+
+        drawCenterLine(ri, false);
+
+        smoothedCanvas.width  = imgSrc.width;
+        smoothedCanvas.height = imgSrc.height;
+        drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black");
 
         canvasSvgWindow.width  = inverted.cols;
         canvasSvgWindow.height = inverted.rows;
         const svgOut = document.getElementById("svgOutput");
         svgOut.innerHTML = "";
         svgOut.appendChild(canvasSvgWindow);
-        drawBezierCurves(JSON.parse(ri.svgOutputData), canvasSvgWindow, "black", scaleFactorZS);
+        drawBezierCurves(JSON.parse(ri.svgOutputData), canvasSvgWindow, "black");
 
         let rows = Math.ceil(ri.svgOutputData.length * 25);
         ri.svgTextOutput.rows = rows;
