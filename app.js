@@ -29,12 +29,7 @@ let imgData;
 const imgSrc      = document.getElementById("img-src");   // same element as imgSource
 const ctx         = document.getElementById("centerLineCanvas").getContext("2d");
 const smoothedCanvas   = document.getElementById("smoothedCanvas");
-const fillCheckbox     = document.getElementById("fillCheckbox");
-const scanlinesCheckbox = document.getElementById("scanlinesCheckbox");
-const outlineCheckbox  = document.getElementById("outlineCheckbox");
-const centerlineCheckbox = document.getElementById("centerlineCheckbox");
-const startpointsCheckbox = document.getElementById("startpointsCheckbox");
-const scanLineSeparationEl  = document.getElementById("scanLineSeparation");
+const centerlineCheckbox     = document.getElementById("centerlineCheckbox");
 const centerLineSeparationEl = document.getElementById("centerLineSeparation");
 const btnUpdateCenterline = document.getElementById("btnUpdateCenterline");
 const btnApplySmoothing   = document.getElementById("btnApplySmoothing");
@@ -1339,13 +1334,9 @@ function setScaleFactorPointArray(array) {
 
 function drawPotraceSvgPath() {
     ri.pathScaledDown = [];
-    const createFill       = fillCheckbox.checked;
-    const createScanlines  = scanlinesCheckbox.checked;
-    const createOutline    = outlineCheckbox.checked;
-    let createCenterLine   = centerlineCheckbox.checked;
-    ri.createStartpoints   = startpointsCheckbox.checked;
-    const centerLineSeparation = Number(centerLineSeparationEl.value);
-    const scanLineSeparation   = Number(scanLineSeparationEl.value);
+    let createCenterLine        = centerlineCheckbox.checked;
+    ri.createStartpoints        = false;
+    const centerLineSeparation  = Number(centerLineSeparationEl.value);
 
     ri.centerLineCanvas.width = imgSrc.width;
     ri.centerLineCanvas.height = imgSrc.height;
@@ -1408,21 +1399,11 @@ function drawPotraceSvgPath() {
     try {
         scaleSVG(beziers);
         const pathArrays = parseSvgPath(beziers, ri.scaleFactorX);
-        const midpoints  = scanlineFillCopilot(ctx, pathArrays, scanLineSeparation, createScanlines, createFill);
+        const midpoints  = scanlineFillCopilot(ctx, pathArrays, 2, false, false);
         let path = [];
         if (createCenterLine) path = findNearestNeighborPathImproved(midpoints, centerLineSeparation);
         ri.sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
         drawCenterLine(ri);
-        if (createOutline) {
-            ctx.fillStyle = "red"; ctx.strokeStyle = "black";
-            pathArrays.forEach(points => {
-                let lastX = points[0][0], lastY = points[0][1];
-                points.forEach(([x, y]) => {
-                    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
-                    lastX = x; lastY = y;
-                });
-            });
-        }
     } catch (error) {
         console.error("Error:", error);
         alert("Error with something...");
@@ -1530,7 +1511,6 @@ function createSvg(ri) {
         const curves      = vectorizeSkeleton(thinnedData, inverted.cols, inverted.rows, true, true);
         const pointArrays = curvesToPointArrays(curves);
         ri.sortedLines    = sortPathCurves(pointArrays, calculateBoundingBoxPointArray(pointArrays));
-        drawCenterLine(ri, false);
 
         let dimensions = setScaleFactorPointArray(ri.sortedLines);
         ri.scaleFactorX  = dimensions[0];
@@ -1553,6 +1533,7 @@ function createSvg(ri) {
 
         ri.svgOutputData = generateBezierCurves(ri.pathScaledDown);
         console.log('Bezier paths: '); console.log(ri.svgOutputData);
+        drawCenterLine(ri);
 
         canvasSvgWindow.width  = inverted.cols;
         canvasSvgWindow.height = inverted.rows;
