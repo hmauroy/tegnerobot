@@ -1237,6 +1237,7 @@ function drawCenterLine(ri, continueDrawings = true) {
     ri.centerLineCanvas.width  = ri.width;
     ri.centerLineCanvas.height = ri.height;
     ctx.clearRect(0, 0, ri.centerLineCanvas.width, ri.centerLineCanvas.height);
+    clearClickableElements();
     drawLines(ri.sortedLines, ri.centerLineCanvas, 3);
     if (ri.createStartpoints === true) drawStartingPoints(ri);
     if (continueDrawings) {
