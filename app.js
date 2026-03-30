@@ -1590,6 +1590,11 @@ btnUpdateCenterline.addEventListener("click", () => {
 });
 btnApplySmoothing.addEventListener("click",   () => { applySmoothing(ri); });
 
+startpointsCheckbox.addEventListener("change", () => {
+    ri.createStartpoints = startpointsCheckbox.checked;
+    drawCenterLine(ri, false);
+});
+
 minDistanceElement.addEventListener('input', () => {
     smoothingSettings.minDistance = parseFloat(minDistanceElement.value);
     d("minDistance-value").innerText = smoothingSettings.minDistance;
