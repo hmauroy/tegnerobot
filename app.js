@@ -15,9 +15,7 @@
 const imgSource   = document.getElementById("img-src");
 const fileInputEl = document.getElementById("fileInput");
 const canvas      = document.getElementById("canvas");
-const canvasSvgWindow = document.getElementById("canvas-svg-window");
 const ctx1 = canvas.getContext("2d", [{ willReadFrequently: true }]);
-const ctx2 = canvasSvgWindow.getContext("2d", [{ willReadFrequently: true }]);
 const svgOutput   = document.getElementById("svgOutput");
 
 let beziers = [];           // Center line beziers stored here.
@@ -173,21 +171,6 @@ function resizeImage(opencvImage, width, height) {
     return dst;
 }
 
-function showResizedImage(thinnedData, origWidth, origHeight) {
-    let img = document.getElementById("img-src");
-    let mat = cv.matFromArray(origWidth, origHeight, cv.CV_8UC4, thinnedData);
-    console.log("thinnedData as Mat:");
-    let remapped = new cv.Mat();
-    mat.convertTo(remapped, -1, 255, 0);
-    let [min, max] = arrayMinMax(remapped.data);
-    console.log("remapped min,max: " + min, max);
-    cv.bitwise_not(remapped, remapped);
-    edgeScaled = resizeImage(remapped, img.width, img.height);
-    console.log(edgeScaled.cols, edgeScaled.rows);
-    [min, max] = arrayMinMax(edgeScaled.data);
-    console.log("edgeScaled: min,max: " + min, max);
-    opencv2image(edgeScaled, ctx2);
-}
 
 // Slider configurations per detection mode.
 const filterSliderConfigs = {
@@ -711,31 +694,6 @@ function isPointNearCurve(point, curvePoints, tolerance) {
     return false;
 }
 
-function displayVectorizedCurves(curves, width, height, showOptimization = false) {
-    canvasSvgWindow.width = width; canvasSvgWindow.height = height;
-    ctx2.fillStyle = 'white'; ctx2.fillRect(0, 0, width, height);
-    ctx2.lineWidth = 2; ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
-    for (let i = 0; i < curves.length; i++) {
-        const curve = curves[i];
-        ctx2.strokeStyle = showOptimization ? `hsl(${(i / Math.max(1, curves.length)) * 270}, 70%, 50%)` : '#2196F3';
-        ctx2.beginPath();
-        if (curve.type === 'polyline') {
-            const pts = curve.points;
-            if (pts.length > 1) {
-                ctx2.moveTo(pts[0].x, pts[0].y);
-                for (let k = 1; k < pts.length; k++) ctx2.lineTo(pts[k].x, pts[k].y);
-            }
-        }
-        ctx2.stroke();
-        if (showOptimization) {
-            const s = getCurveStartPoint(curve), e = getCurveEndPoint(curve);
-            ctx2.fillStyle = '#4CAF50'; ctx2.beginPath(); ctx2.arc(s.x, s.y, 3, 0, Math.PI * 2); ctx2.fill();
-            ctx2.fillStyle = '#F44336'; ctx2.beginPath(); ctx2.arc(e.x, e.y, 3, 0, Math.PI * 2); ctx2.fill();
-            ctx2.fillStyle = 'black'; ctx2.font = '12px Arial'; ctx2.textAlign = 'center';
-            ctx2.fillText(i + 1, s.x, s.y - 8);
-        }
-    }
-}
 
 
 // === PATH SORTING & OPTIMIZATION ===
