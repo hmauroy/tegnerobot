@@ -1498,7 +1498,6 @@ function createSvg(ri) {
         Potrace.process(function() {
             let svg = fillPath.checked ? Potrace.getSVG(1) : Potrace.getSVG(1, "curve");
             c("Potrace SVG: "); c(svg);
-            document.getElementById("img-overlay-svg-window").classList.add("hidden");
             document.getElementById("svgOutput").innerHTML = svg;
             document.getElementById("svgWindow").style.visibility = "visible";
         });
@@ -1557,7 +1556,6 @@ function createSvg(ri) {
 
         canvasSvgWindow.width  = inverted.cols;
         canvasSvgWindow.height = inverted.rows;
-        document.getElementById("img-overlay-svg-window").classList.add("hidden");
         const svgOut = document.getElementById("svgOutput");
         svgOut.innerHTML = "";
         svgOut.appendChild(canvasSvgWindow);
