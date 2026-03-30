@@ -209,6 +209,9 @@ function applyFilters() {
     let img = document.getElementById("img-src");
     if (lineDrawingMode.checked) {
         console.log("No edge detection if line drawing.");
+        edgeScaled = resizeImage(gray, img.width, img.height);
+        opencv2image(edgeScaled);
+        showOverlay("img-overlay", "img-window");
     } else {
         let blurred = new cv.Mat();
         cv.medianBlur(gray, blurred, 7);
