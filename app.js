@@ -67,6 +67,7 @@ const ri = {
     width: 1,
     height: 1,
     sortedLines: [],
+    rawPointArrays: [],
     centerLineCanvas: document.getElementById("centerLineCanvas"),
     createStartpoints: false,
     pathScaledDown: [],
@@ -774,6 +775,25 @@ function sortPathCurves(lineArrays, boundingBox) {
         sortedCurves.push(...lineArrays.splice(nextCandidate, 1));
     }
     return sortedCurves;
+}
+
+// Merge adjacent sorted curves whose endpoint-to-startpoint gap is within maxGap.
+// Gives Zhang-Suen the same "centerline separation" behaviour as mauroyLab.
+function mergeCurvesByGap(sortedCurves, maxGap) {
+    if (sortedCurves.length === 0) return sortedCurves;
+    const merged = [[...sortedCurves[0]]];
+    for (let i = 1; i < sortedCurves.length; i++) {
+        const last      = merged[merged.length - 1];
+        const lastPoint = last[last.length - 1];
+        const nextFirst = sortedCurves[i][0];
+        const gap = Math.sqrt((lastPoint[0] - nextFirst[0]) ** 2 + (lastPoint[1] - nextFirst[1]) ** 2);
+        if (gap <= maxGap) {
+            merged[merged.length - 1] = last.concat(sortedCurves[i]);
+        } else {
+            merged.push([...sortedCurves[i]]);
+        }
+    }
+    return merged;
 }
 
 function calcDistance(point) {
@@ -1515,7 +1535,10 @@ function createSvg(ri) {
 
         const curves      = vectorizeSkeleton(thinnedData, inverted.cols, inverted.rows, true, true);
         const pointArrays = curvesToPointArrays(curves);
-        ri.sortedLines    = sortPathCurves(pointArrays, calculateBoundingBoxPointArray(pointArrays));
+        ri.rawPointArrays = [...pointArrays];
+        const centerLineSeparation = Number(centerLineSeparationEl.value);
+        const sorted   = sortPathCurves([...ri.rawPointArrays], calculateBoundingBoxPointArray(ri.rawPointArrays));
+        ri.sortedLines = mergeCurvesByGap(sorted, centerLineSeparation);
 
         let dimensions = setScaleFactorPointArray(ri.sortedLines);
         ri.scaleFactorX  = dimensions[0];
@@ -1586,6 +1609,9 @@ btnUpdateCenterline.addEventListener("click", () => {
     if (document.getElementById("mauroyLab_detection").checked) {
         drawPotraceSvgPath();
     } else {
+        const centerLineSeparation = Number(centerLineSeparationEl.value);
+        const sorted   = sortPathCurves([...ri.rawPointArrays], calculateBoundingBoxPointArray(ri.rawPointArrays));
+        ri.sortedLines = mergeCurvesByGap(sorted, centerLineSeparation);
         drawCenterLine(ri, false);
     }
 });
