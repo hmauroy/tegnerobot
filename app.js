@@ -1365,7 +1365,7 @@ function setScaleFactorX(array) {
     const y1 = boundingBox[1], y2 = boundingBox[3];
     const svgWidth  = x2 - x1, svgHeight = y2 - y1;
     let scaleFactorX = ri.centerLineCanvas.width / (svgWidth * ri.paddingFactor);
-    return scaleFactorX, svgWidth, svgHeight, [x1, y1, x2, y2];
+    return [scaleFactorX, svgWidth, svgHeight, [x1, y1, x2, y2]];
 }
 
 function setScaleFactorPointArray(array) {
@@ -1414,8 +1414,10 @@ function drawPotraceSvgPath() {
         return Number(document.getElementById("pupilDiameter").value);
     }
     function scaleSVG(beziers) {
-        let svgWidth, svgHeight, boundingBox;
-        ri.scaleFactorX, svgWidth, svgHeight, boundingBox = setScaleFactorX(beziers);
+        let dimensions = setScaleFactorX(beziers);
+        ri.scaleFactorX = dimensions[0];
+        let svgHeight   = dimensions[2];
+        let boundingBox = dimensions[3];
         let y1 = boundingBox[1];
         if (ri.scaleFactorX * (y1 + svgHeight) * ri.paddingFactor > ri.centerLineCanvas.height) {
             c("Too tall drawing! Rescaling to fit window.");
