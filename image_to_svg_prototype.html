@@ -6,7 +6,7 @@
     <meta name="author" content="Henrik Mauroy hmauroy@gmail.com" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Img2SVG</title>
-    <link rel="stylesheet" href="image2svg_v2.css">
+    <link rel="stylesheet" href="app.css">
     <script src="potrace_bg8.js"></script>
     <script src="potrace.js"></script>
     <!-- potrace repo: https://github.com/kilobtye/potrace/blob/master/potrace.js-->
@@ -26,7 +26,7 @@
             <div class="panel white" id="img-window">
                 <div id="img-padding">
                     <!--Padding div to prevent flexbox to mess around with the image size.-->
-                    <img id="img-src" src="lillebror_newborn512.png" alt="No Image">
+                    <img id="img-src" src="images/lillebror_newborn512.png" alt="No Image">
                 </div>
                 <!-- Overlay div with close button -->
                 <div class="overlay hidden" id="img-overlay">
@@ -246,86 +246,6 @@
 
     <script async src="opencv.js" type="text/javascript"></script>
     <!--script async src="https://docs.opencv.org/4.5.0/opencv.js" type="text/javascript"></script-->
-
-    <script type="text/javascript" src="sortPoints_next_neighbour.js"></script>
-    <script type="text/javascript" src="svg_points_to_bezier.js"></script>
-    <script type="text/javascript" src="svg_points_to_bezier_smoothing.js"></script>
-    <script type="text/javascript" src="svg_colorArray.js"></script>
-    <script type="text/javascript" src="svg_scanlineFill.js"></script>
-    <script type="text/javascript" src="svg_parseSvg.js"></script>
-    <script type="text/javascript" src="svg_drawingFunctions.js"></script>
-    <script type="text/javascript" src="image_to_svg.js"></script>
-    <script type="text/javascript" src="bezier_to_centerline.js"></script>
-    <script type="text/javascript" src="svg_points_to_bezier_v3.js"></script>
-
-
-
-    <script type="text/javascript">
-        // Global object keeping lots of variables needed for events etc.
-        const ri = {
-            width: 1,
-            height: 1,
-            sortedLines: [], // array for drawing on screen.
-            centerLineCanvas: document.getElementById("centerLineCanvas"),
-            createStartpoints: false,
-            pathScaledDown: [], // Final global array for the center path for drawing robot.
-            paddingFactor: 1.0,
-            scaleFactorX: 1,
-            svgOutputData: [],
-            svgTextOutput: document.getElementById("svgTextOutput"),
-        }
-
-        // Listener for start conversion of image to svg and center line drawing.
-        document.getElementById("btnCreateSvg").addEventListener("click", () => {
-            createSvg(ri);
-        });
-
-        // Close overlay function
-        function closeOverlay_OLD() {
-            const overlay = document.getElementById('img-overlay');
-            overlay.classList.add('hidden');
-        }
-        function closeOverlay(button) {
-            const overlay = button.closest('.overlay');
-            overlay.classList.add('hidden');
-        }
-
-        // Update slider values in real-time
-        document.querySelectorAll('.slider').forEach(slider => {
-            slider.addEventListener('input', function() {
-                // Check if the slider is of type .filterSlider
-                if (slider.classList.contains("filterSlider")) {
-                    applyFilters();
-                }
-                if (slider.classList.contains("smoothingSlider")) {
-                    applySmoothing(ri);
-                }
-                const valueDisplay = document.getElementById(this.id + '-value');
-                if (valueDisplay) {
-                    valueDisplay.textContent = this.value;
-                }
-            });
-        });
-
-        // Process image function
-        function processImage() {
-            const button = document.querySelector('.create-btn');
-            button.textContent = 'Processing...';
-            button.disabled = true;
-            
-            // Simulate processing
-            setTimeout(() => {
-                button.textContent = 'Create';
-                button.disabled = false;
-                
-                // Add a subtle success indication
-                button.style.background = 'linear-gradient(45deg, #27ae60, #2ecc71)';
-                setTimeout(() => {
-                    button.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
-                }, 1000);
-            }, 2000);
-        }
-
-    </script>
+    <script type="text/javascript" src="app.js"></script>
 </body>
 </html>

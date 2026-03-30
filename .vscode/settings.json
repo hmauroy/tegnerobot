@@ -26,5 +26,8 @@
         "**/pxt_modules": true,
         "**/.pxt": true
     },
-    "liveServer.settings.port": 5502
+    "liveServer.settings.port": 5502,
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python-envs.pythonProjects": []
 }
