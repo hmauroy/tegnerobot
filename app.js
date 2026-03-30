@@ -1538,6 +1538,7 @@ function createSvg(ri) {
         ri.svgOutputData = generateBezierCurves(ri.pathScaledDown);
         console.log('Bezier paths: '); console.log(ri.svgOutputData);
 
+        ri.createStartpoints = startpointsCheckbox.checked;
         drawCenterLine(ri, false);
 
         smoothedCanvas.width  = imgSrc.width;
@@ -1579,7 +1580,14 @@ imgSource.onload = function() {
 };
 
 // Bezier centerline controls
-btnUpdateCenterline.addEventListener("click", () => { drawPotraceSvgPath(); });
+btnUpdateCenterline.addEventListener("click", () => {
+    ri.createStartpoints = startpointsCheckbox.checked;
+    if (document.getElementById("mauroyLab_detection").checked) {
+        drawPotraceSvgPath();
+    } else {
+        drawCenterLine(ri, false);
+    }
+});
 btnApplySmoothing.addEventListener("click",   () => { applySmoothing(ri); });
 
 minDistanceElement.addEventListener('input', () => {
