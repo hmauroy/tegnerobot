@@ -1557,7 +1557,10 @@ function createSvg(ri) {
 
         canvasSvgWindow.width  = inverted.cols;
         canvasSvgWindow.height = inverted.rows;
-        showOverlay("img-overlay-svg-window", "svgWindow");
+        document.getElementById("img-overlay-svg-window").classList.add("hidden");
+        const svgOut = document.getElementById("svgOutput");
+        svgOut.innerHTML = "";
+        svgOut.appendChild(canvasSvgWindow);
         drawBezierCurves(JSON.parse(ri.svgOutputData), canvasSvgWindow, "black", scaleFactorZS);
 
         let rows = Math.ceil(ri.svgOutputData.length * 25);
