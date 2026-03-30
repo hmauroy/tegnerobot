@@ -12,12 +12,12 @@
 // === GLOBALS & DOM REFERENCES ===
 
 // --- From image_to_svg.js ---
-const imgSource   = document.getElementById("img-src");
+const imgSource = document.getElementById("img-src");
 const fileInputEl = document.getElementById("fileInput");
-const canvas          = document.getElementById("canvas");
+const canvas = document.getElementById("canvas");
 const canvasSvgWindow = document.getElementById("canvas-svg-window");
 const ctx1 = canvas.getContext("2d", [{ willReadFrequently: true }]);
-const svgOutput   = document.getElementById("svgOutput");
+const svgOutput = document.getElementById("svgOutput");
 
 let beziers = [];           // Center line beziers stored here.
 let src, gray, medianBlurred, thresholded, grayScaled, edgeScaled;
@@ -26,18 +26,18 @@ let firstRun = true;
 let imgData;
 
 // --- From bezier_to_centerline.js ---
-const imgSrc      = document.getElementById("img-src");   // same element as imgSource
-const ctx         = document.getElementById("centerLineCanvas").getContext("2d");
-const smoothedCanvas   = document.getElementById("smoothedCanvas");
-const centerlineCheckbox     = document.getElementById("centerlineCheckbox");
-const startpointsCheckbox    = document.getElementById("startpointsCheckbox");
+const imgSrc = document.getElementById("img-src");   // same element as imgSource
+const ctx = document.getElementById("centerLineCanvas").getContext("2d");
+const smoothedCanvas = document.getElementById("smoothedCanvas");
+const centerlineCheckbox = document.getElementById("centerlineCheckbox");
+const startpointsCheckbox = document.getElementById("startpointsCheckbox");
 const centerLineSeparationEl = document.getElementById("centerLineSeparation");
 const btnUpdateCenterline = document.getElementById("btnUpdateCenterline");
-const btnApplySmoothing   = document.getElementById("btnApplySmoothing");
-const enableSmoothingElement     = document.getElementById('enableSmoothing');
-const minDistanceElement         = document.getElementById('minDistance');
-const angleThresholdElement      = document.getElementById('angleThreshold');
-const douglasEpsilonElement      = document.getElementById('douglasEpsilon');
+const btnApplySmoothing = document.getElementById("btnApplySmoothing");
+const enableSmoothingElement = document.getElementById('enableSmoothing');
+const minDistanceElement = document.getElementById('minDistance');
+const angleThresholdElement = document.getElementById('angleThreshold');
+const douglasEpsilonElement = document.getElementById('douglasEpsilon');
 const movingAverageWindowElement = document.getElementById('movingAverageWindow');
 const compressionInfoEl = document.getElementById('compressionInfo');
 
@@ -78,7 +78,7 @@ const ri = {
 };
 
 // Catch OpenCV runtime errors.
-window.addEventListener('error', function(event) {
+window.addEventListener('error', function (event) {
     alert("OpenCV error occurred. Please refresh page.");
 });
 
@@ -114,11 +114,11 @@ let Module = {
 };
 
 function readImageFromSource() {
-    gray          = new cv.Mat();
+    gray = new cv.Mat();
     medianBlurred = new cv.Mat();
-    thresholded   = new cv.Mat();
-    grayScaled    = new cv.Mat();
-    edgeScaled    = new cv.Mat();
+    thresholded = new cv.Mat();
+    grayScaled = new cv.Mat();
+    edgeScaled = new cv.Mat();
     src = readImageHighDef("img-src", false);
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
     return [src, gray];
@@ -140,7 +140,7 @@ function readImageHighDef(imageId, highDef = false) {
                 tempCanvas.height = img.naturalHeight * scaleY;
             }
         } else {
-            tempCanvas.width  = img.naturalWidth;
+            tempCanvas.width = img.naturalWidth;
             tempCanvas.height = img.naturalHeight;
         }
         let tempCtx = tempCanvas.getContext('2d');
@@ -155,11 +155,11 @@ function readImageHighDef(imageId, highDef = false) {
 
 function resizeImage(opencvImage, width, height) {
     let blurred = new cv.Mat();
-    let dst     = new cv.Mat();
-    let scaleX  = width  / opencvImage.cols;
-    let scaleY  = height / opencvImage.rows;
-    let scale   = Math.min(scaleX, scaleY);
-    let sigma      = 1.0 / scale;
+    let dst = new cv.Mat();
+    let scaleX = width / opencvImage.cols;
+    let scaleY = height / opencvImage.rows;
+    let scale = Math.min(scaleX, scaleY);
+    let sigma = 1.0 / scale;
     let kernelSize = 5;
     console.log("Resize using kernel size " + kernelSize);
     let ksize = new cv.Size(kernelSize, kernelSize);
@@ -173,29 +173,29 @@ function resizeImage(opencvImage, width, height) {
 // Slider configurations per detection mode.
 const filterSliderConfigs = {
     'mauroy-lab': {
-        blur:   { label: 'Blur factor',      min: 1, max: 99,  value: 3,   step: 1 },
-        thresh: { label: 'Threshold factor', min: 2, max: 99,  value: 2,   step: 1 },
+        blur: { label: 'Blur factor', min: 1, max: 99, value: 3, step: 1 },
+        thresh: { label: 'Threshold factor', min: 2, max: 99, value: 2, step: 1 },
     },
     'zhang-suen': {
-        blur:   { label: 'Lower threshold',  min: 1, max: 255, value: 50,  step: 1 },
-        thresh: { label: 'Upper threshold',  min: 1, max: 255, value: 180, step: 1 },
+        blur: { label: 'Lower threshold', min: 1, max: 255, value: 50, step: 1 },
+        thresh: { label: 'Upper threshold', min: 1, max: 255, value: 180, step: 1 },
     },
 };
 
 function updateFilterSliders() {
     const mode = document.querySelector('input[name="processMethod"]:checked').value;
-    const cfg  = filterSliderConfigs[mode];
-    const blurSlider   = document.getElementById("rngBlur");
+    const cfg = filterSliderConfigs[mode];
+    const blurSlider = document.getElementById("rngBlur");
     const threshSlider = document.getElementById("rngThresh");
-    blurSlider.min   = cfg.blur.min;
-    blurSlider.max   = cfg.blur.max;
-    blurSlider.step  = cfg.blur.step;
+    blurSlider.min = cfg.blur.min;
+    blurSlider.max = cfg.blur.max;
+    blurSlider.step = cfg.blur.step;
     blurSlider.value = cfg.blur.value;
-    threshSlider.min   = cfg.thresh.min;
-    threshSlider.max   = cfg.thresh.max;
-    threshSlider.step  = cfg.thresh.step;
+    threshSlider.min = cfg.thresh.min;
+    threshSlider.max = cfg.thresh.max;
+    threshSlider.step = cfg.thresh.step;
     threshSlider.value = cfg.thresh.value;
-    document.getElementById("rngBlur-value").textContent   = cfg.blur.value;
+    document.getElementById("rngBlur-value").textContent = cfg.blur.value;
     document.getElementById("rngThresh-value").textContent = cfg.thresh.value;
     // Update visible labels
     const labels = document.querySelectorAll('.slider-label span:first-child');
@@ -210,19 +210,19 @@ function updateFilterSliders() {
 function applyFilters() {
     [src, gray] = readImageFromSource();
     document.getElementById("svgOutput").innerHTML = "";
-    let val1       = parseFloat(document.getElementById("rngBlur").value);
-    let val2       = parseFloat(document.getElementById("rngThresh").value);
+    let val1 = parseFloat(document.getElementById("rngBlur").value);
+    let val2 = parseFloat(document.getElementById("rngThresh").value);
     let turd_factor = document.getElementById("rngTurdsize").value;
-    let img         = document.getElementById("img-src");
+    let img = document.getElementById("img-src");
 
-    ri.width  = gray.cols;
+    ri.width = gray.cols;
     ri.height = gray.rows;
 
     let turd_value = parseInt(Math.round(turd_factor * ri.width * 0.01));
     if (turd_value <= 1) turd_value = 1;
 
     medianBlurred = new cv.Mat();
-    thresholded   = new cv.Mat();
+    thresholded = new cv.Mat();
 
     const useMauroy = document.getElementById("mauroyLab_detection").checked;
     let lineDrawingMode = document.getElementById("lineDrawingMode");
@@ -257,7 +257,7 @@ function applyFilters() {
 }
 
 function opencv2image(opencvData, ctx = ctx1) {
-    canvas.width  = imgSource.width;
+    canvas.width = imgSource.width;
     canvas.height = imgSource.height;
     imgData = ctx.createImageData(canvas.width, canvas.height);
     for (let i = 0, j = 0; i < opencvData.data.length; i++, j += 4) {
@@ -274,7 +274,7 @@ function arrayMinMax(arr) {
 }
 
 function matToBinaryArray(mat) {
-    const data   = mat.data;
+    const data = mat.data;
     const binary = new Array(data.length);
     for (let i = 0; i < data.length; i++) {
         binary[i] = data[i] > 0 ? 1 : 0;
@@ -313,10 +313,10 @@ function zhangSuenThinning(binary, width, height) {
 
 function getNeighbors(data, x, y, width) {
     return [
-        data[(y - 1) * width + x],       data[(y - 1) * width + (x + 1)],
-        data[y       * width + (x + 1)], data[(y + 1) * width + (x + 1)],
-        data[(y + 1) * width + x],       data[(y + 1) * width + (x - 1)],
-        data[y       * width + (x - 1)], data[(y - 1) * width + (x - 1)]
+        data[(y - 1) * width + x], data[(y - 1) * width + (x + 1)],
+        data[y * width + (x + 1)], data[(y + 1) * width + (x + 1)],
+        data[(y + 1) * width + x], data[(y + 1) * width + (x - 1)],
+        data[y * width + (x - 1)], data[(y - 1) * width + (x - 1)]
     ];
 }
 
@@ -337,7 +337,7 @@ function shouldDelete1(data, x, y, width) {
 
 function shouldDelete2(data, x, y, width) {
     const n = getNeighbors(data, x, y, width);
-    const [p1,, p3,, p5,, p7] = n;
+    const [p1, , p3, , p5, , p7] = n;
     const bn = countBlackNeighbors(n), t = countTransitions(n);
     return (bn >= 2 && bn <= 6 && t === 1 && (p1 * p3 * p7) === 0 && (p1 * p5 * p7) === 0);
 }
@@ -391,7 +391,7 @@ function createSingleCurveFromPath(points) {
 
 function tracePaths(binaryData, width, height) {
     const visited = new Array(width * height).fill(false);
-    const paths   = [];
+    const paths = [];
 
     function neighborCount(x, y) {
         let c = 0;
@@ -433,7 +433,7 @@ function traceSinglePathContinuous(binaryData, visited, startX, startY, width, h
     let current = { x: startX, y: startY };
     let prevDir = null;
 
-    function idx(x, y)      { return y * width + x; }
+    function idx(x, y) { return y * width + x; }
     function inBounds(x, y) { return x >= 0 && y >= 0 && x < width && y < height; }
 
     function unvisitedNeighbors(x, y) {
@@ -547,7 +547,7 @@ function douglasPeucker(points, epsilon) {
         if (dist > maxDist) { maxDist = dist; index = i; }
     }
     if (maxDist > epsilon) {
-        const left  = douglasPeucker(points.slice(0, index + 1), epsilon);
+        const left = douglasPeucker(points.slice(0, index + 1), epsilon);
         const right = douglasPeucker(points.slice(index), epsilon);
         return [...left.slice(0, -1), ...right];
     }
@@ -558,15 +558,15 @@ function pointToLineDistance(point, a, b) {
     const A = point.x - a.x, B = point.y - a.y, C = b.x - a.x, D = b.y - a.y;
     const dot = A * C + B * D, lenSq = C * C + D * D;
     if (lenSq === 0) return Math.sqrt(A * A + B * B);
-    const t  = dot / lenSq;
+    const t = dot / lenSq;
     const xx = a.x + Math.max(0, Math.min(1, t)) * C;
     const yy = a.y + Math.max(0, Math.min(1, t)) * D;
     return Math.sqrt((point.x - xx) * (point.x - xx) + (point.y - yy) * (point.y - yy));
 }
 
 // Curve helpers
-function getCurveStartPoint(curve) { return curve.type === 'polyline' ? curve.points[0]                        : { x: 0, y: 0 }; }
-function getCurveEndPoint(curve)   { return curve.type === 'polyline' ? curve.points[curve.points.length - 1] : { x: 0, y: 0 }; }
+function getCurveStartPoint(curve) { return curve.type === 'polyline' ? curve.points[0] : { x: 0, y: 0 }; }
+function getCurveEndPoint(curve) { return curve.type === 'polyline' ? curve.points[curve.points.length - 1] : { x: 0, y: 0 }; }
 function distance(a, b) { return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)); }
 function reverseCurve(curve) { return curve.type === 'polyline' ? { ...curve, points: [...curve.points].reverse() } : curve; }
 
@@ -593,7 +593,7 @@ function optimizeDrawingOrder(curves) {
 
 function mergeCloseCurves4(curves, tolerance = 2) {
     if (curves.length === 0) return curves;
-    let merged   = [...curves];
+    let merged = [...curves];
     let didMerge = true;
 
     function getCurveBounds(curve) {
@@ -620,8 +620,8 @@ function mergeCloseCurves4(curves, tolerance = 2) {
             for (let j = i + 1; j < merged.length; j++) {
                 if (!couldBeClose(currentBounds, bounds[j])) continue;
                 const ob = bounds[j];
-                const dES = distance(currentBounds.end,   ob.start);
-                const dEE = distance(currentBounds.end,   ob.end);
+                const dES = distance(currentBounds.end, ob.start);
+                const dEE = distance(currentBounds.end, ob.end);
                 const dSS = distance(currentBounds.start, ob.start);
                 const dSE = distance(currentBounds.start, ob.end);
                 let mergedCurve = null;
@@ -662,7 +662,7 @@ function removeRedundantCurves(curves, tolerance = 3) {
 }
 
 function isCurveRedundant(curve, existingCurve, tolerance) {
-    const curvePoints    = curve.points;
+    const curvePoints = curve.points;
     const existingPoints = existingCurve.points;
     if (curvePoints.length < 2) return true;
     if (curvePoints.length <= 5) return isMostPointsNearby(curvePoints, existingPoints, tolerance);
@@ -672,7 +672,7 @@ function isCurveRedundant(curve, existingCurve, tolerance) {
 
 function isMostPointsNearby(shortCurvePoints, longCurvePoints, tolerance) {
     const requiredPercentage = shortCurvePoints.length <= 3 ? 1.0 : 0.8;
-    const threshold          = Math.ceil(shortCurvePoints.length * requiredPercentage);
+    const threshold = Math.ceil(shortCurvePoints.length * requiredPercentage);
     let nearbyCount = 0;
     for (const point of shortCurvePoints) {
         if (isPointNearCurve(point, longCurvePoints, tolerance)) {
@@ -700,9 +700,9 @@ function isPointNearCurve(point, curvePoints, tolerance) {
 
 function findNearestNeighborPathImproved(points, maxDistanceThreshold = 30) {
     if (!points || points.length === 0) return [];
-    const result  = [];
+    const result = [];
     const visited = new Set();
-    let currentLine  = [];
+    let currentLine = [];
     let currentPoint = points[0];
     currentLine.push(currentPoint);
     visited.add(currentPoint);
@@ -748,7 +748,7 @@ function calcLength(line) {
  */
 function sortPathCurves(lineArrays, boundingBox) {
     const sortedCurves = [];
-    let minDist    = calcDistance([boundingBox[2], boundingBox[3]]);
+    let minDist = calcDistance([boundingBox[2], boundingBox[3]]);
     let startIndex = 0;
     let curve;
     let nextCandidate = 0;
@@ -756,19 +756,19 @@ function sortPathCurves(lineArrays, boundingBox) {
     for (let i = 0; i < lineArrays.length; i++) {
         curve = lineArrays[i];
         if (calcDistance(curve[0]) <= minDist) {
-            minDist    = calcDistance(curve[0]);
+            minDist = calcDistance(curve[0]);
             startIndex = i;
         }
     }
 
     sortedCurves.push(...lineArrays.splice(startIndex, 1));
     while (lineArrays.length > 0) {
-        curve        = sortedCurves[sortedCurves.length - 1];
-        minDist      = calcDistance([boundingBox[2], boundingBox[3]]);
+        curve = sortedCurves[sortedCurves.length - 1];
+        minDist = calcDistance([boundingBox[2], boundingBox[3]]);
         nextCandidate = 0;
         for (let i = 0; i < lineArrays.length; i++) {
             if (calcDistancePoints(curve[curve.length - 1], lineArrays[i][0]) <= minDist) {
-                minDist       = calcDistancePoints(curve[curve.length - 1], lineArrays[i][0]);
+                minDist = calcDistancePoints(curve[curve.length - 1], lineArrays[i][0]);
                 nextCandidate = i;
             }
         }
@@ -783,7 +783,7 @@ function mergeCurvesByGap(sortedCurves, maxGap) {
     if (sortedCurves.length === 0) return sortedCurves;
     const merged = [[...sortedCurves[0]]];
     for (let i = 1; i < sortedCurves.length; i++) {
-        const last      = merged[merged.length - 1];
+        const last = merged[merged.length - 1];
         const lastPoint = last[last.length - 1];
         const nextFirst = sortedCurves[i][0];
         const gap = Math.sqrt((lastPoint[0] - nextFirst[0]) ** 2 + (lastPoint[1] - nextFirst[1]) ** 2);
@@ -823,28 +823,28 @@ function generateBezierCurves(pointArrays) {
             commandArray.push("C",
                 Number((x1 + dx / 3).toFixed(1)), Number((y1 + dy / 3).toFixed(1)),
                 Number((x2 - dx / 3).toFixed(1)), Number((y2 - dy / 3).toFixed(1)),
-                Number(x2.toFixed(1)),             Number(y2.toFixed(1)));
+                Number(x2.toFixed(1)), Number(y2.toFixed(1)));
         } else {
             for (let i = 0; i < points.length - 1; i++) {
                 const [x1, y1] = points[i], [x2, y2] = points[i + 1];
                 let cp1x, cp1y, cp2x, cp2y;
                 if (i === 0) {
                     const [x3, y3] = points[i + 2] || [x2 + (x2 - x1), y2 + (y2 - y1)];
-                    cp1x = x1 + (x2 - x1) / 3;   cp1y = y1 + (y2 - y1) / 3;
-                    cp2x = x2 - (x3 - x1) / 6;   cp2y = y2 - (y3 - y1) / 6;
+                    cp1x = x1 + (x2 - x1) / 3; cp1y = y1 + (y2 - y1) / 3;
+                    cp2x = x2 - (x3 - x1) / 6; cp2y = y2 - (y3 - y1) / 6;
                 } else if (i === points.length - 2) {
                     const [x0, y0] = points[i - 1];
-                    cp1x = x1 + (x2 - x0) / 6;           cp1y = y1 + (y2 - y0) / 6;
-                    cp2x = x1 + (2 * (x2 - x1)) / 3;     cp2y = y1 + (2 * (y2 - y1)) / 3;
+                    cp1x = x1 + (x2 - x0) / 6; cp1y = y1 + (y2 - y0) / 6;
+                    cp2x = x1 + (2 * (x2 - x1)) / 3; cp2y = y1 + (2 * (y2 - y1)) / 3;
                 } else {
                     const [x0, y0] = points[i - 1], [x3, y3] = points[i + 2];
-                    cp1x = x1 + (x2 - x0) / 6;   cp1y = y1 + (y2 - y0) / 6;
-                    cp2x = x2 - (x3 - x1) / 6;   cp2y = y2 - (y3 - y1) / 6;
+                    cp1x = x1 + (x2 - x0) / 6; cp1y = y1 + (y2 - y0) / 6;
+                    cp2x = x2 - (x3 - x1) / 6; cp2y = y2 - (y3 - y1) / 6;
                 }
                 commandArray.push("C",
                     Number(cp1x.toFixed(1)), Number(cp1y.toFixed(1)),
                     Number(cp2x.toFixed(1)), Number(cp2y.toFixed(1)),
-                    Number(x2.toFixed(1)),   Number(y2.toFixed(1)));
+                    Number(x2.toFixed(1)), Number(y2.toFixed(1)));
             }
         }
         result.push(commandArray);
@@ -878,7 +878,7 @@ class PointSmoother {
             if (distance > maxDistance) { maxDistance = distance; maxIndex = i; }
         }
         if (maxDistance > epsilon) {
-            const leftPart  = this.douglasPeucker(points.slice(0, maxIndex + 1), epsilon);
+            const leftPart = this.douglasPeucker(points.slice(0, maxIndex + 1), epsilon);
             const rightPart = this.douglasPeucker(points.slice(maxIndex), epsilon);
             return leftPart.slice(0, -1).concat(rightPart);
         }
@@ -886,7 +886,7 @@ class PointSmoother {
     }
 
     static perpendicularDistance(point, lineStart, lineEnd) {
-        const [x, y]   = point;
+        const [x, y] = point;
         const [x1, y1] = lineStart;
         const [x2, y2] = lineEnd;
         const A = x - x1, B = y - y1, C = x2 - x1, D = y2 - y1;
@@ -894,9 +894,9 @@ class PointSmoother {
         if (lenSq === 0) return Math.sqrt(A * A + B * B);
         const param = dot / lenSq;
         let xx, yy;
-        if      (param < 0) { xx = x1; yy = y1; }
+        if (param < 0) { xx = x1; yy = y1; }
         else if (param > 1) { xx = x2; yy = y2; }
-        else                { xx = x1 + param * C; yy = y1 + param * D; }
+        else { xx = x1 + param * C; yy = y1 + param * D; }
         return Math.sqrt((x - xx) ** 2 + (y - yy) ** 2);
     }
 
@@ -933,7 +933,7 @@ class PointSmoother {
             const prev = points[i - 1], curr = points[i], next = points[i + 1];
             const v1 = [curr[0] - prev[0], curr[1] - prev[1]];
             const v2 = [next[0] - curr[0], next[1] - curr[1]];
-            const dot  = v1[0] * v2[0] + v1[1] * v2[1];
+            const dot = v1[0] * v2[0] + v1[1] * v2[1];
             const mag1 = Math.sqrt(v1[0] ** 2 + v1[1] ** 2);
             const mag2 = Math.sqrt(v2[0] ** 2 + v2[1] ** 2);
             if (mag1 === 0 || mag2 === 0) continue;
@@ -946,11 +946,11 @@ class PointSmoother {
 
     static smartSmooth(points, options = {}) {
         const {
-            minDistance         = 1.5,
-            angleThreshold      = 0.1,
-            douglasEpsilon      = 1.5,
+            minDistance = 1.5,
+            angleThreshold = 0.1,
+            douglasEpsilon = 1.5,
             movingAverageWindow = 3,
-            applyMovingAverage  = true
+            applyMovingAverage = true
         } = options;
         let result = [...points];
         if (applyMovingAverage && result.length > movingAverageWindow) {
@@ -980,28 +980,28 @@ function generateBezierCurvesWithSmoothing(pointArrays, smoothingOptions = {}) {
             commandArray.push("C",
                 Number((x1 + dx / 3).toFixed(1)), Number((y1 + dy / 3).toFixed(1)),
                 Number((x2 - dx / 3).toFixed(1)), Number((y2 - dy / 3).toFixed(1)),
-                Number(x2.toFixed(1)),             Number(y2.toFixed(1)));
+                Number(x2.toFixed(1)), Number(y2.toFixed(1)));
         } else {
             for (let i = 0; i < points.length - 1; i++) {
                 const [x1, y1] = points[i], [x2, y2] = points[i + 1];
                 let cp1x, cp1y, cp2x, cp2y;
                 if (i === 0) {
                     const [x3, y3] = points[i + 2] || [x2 + (x2 - x1), y2 + (y2 - y1)];
-                    cp1x = x1 + (x2 - x1) / 3;   cp1y = y1 + (y2 - y1) / 3;
-                    cp2x = x2 - (x3 - x1) / 6;   cp2y = y2 - (y3 - y1) / 6;
+                    cp1x = x1 + (x2 - x1) / 3; cp1y = y1 + (y2 - y1) / 3;
+                    cp2x = x2 - (x3 - x1) / 6; cp2y = y2 - (y3 - y1) / 6;
                 } else if (i === points.length - 2) {
                     const [x0, y0] = points[i - 1];
-                    cp1x = x1 + (x2 - x0) / 6;         cp1y = y1 + (y2 - y0) / 6;
-                    cp2x = x1 + (2 * (x2 - x1)) / 3;   cp2y = y1 + (2 * (y2 - y1)) / 3;
+                    cp1x = x1 + (x2 - x0) / 6; cp1y = y1 + (y2 - y0) / 6;
+                    cp2x = x1 + (2 * (x2 - x1)) / 3; cp2y = y1 + (2 * (y2 - y1)) / 3;
                 } else {
                     const [x0, y0] = points[i - 1], [x3, y3] = points[i + 2];
-                    cp1x = x1 + (x2 - x0) / 6;   cp1y = y1 + (y2 - y0) / 6;
-                    cp2x = x2 - (x3 - x1) / 6;   cp2y = y2 - (y3 - y1) / 6;
+                    cp1x = x1 + (x2 - x0) / 6; cp1y = y1 + (y2 - y0) / 6;
+                    cp2x = x2 - (x3 - x1) / 6; cp2y = y2 - (y3 - y1) / 6;
                 }
                 commandArray.push("C",
                     Number(cp1x.toFixed(1)), Number(cp1y.toFixed(1)),
                     Number(cp2x.toFixed(1)), Number(cp2y.toFixed(1)),
-                    Number(x2.toFixed(1)),   Number(y2.toFixed(1)));
+                    Number(x2.toFixed(1)), Number(y2.toFixed(1)));
             }
         }
         result.push(commandArray);
@@ -1010,26 +1010,28 @@ function generateBezierCurvesWithSmoothing(pointArrays, smoothingOptions = {}) {
 }
 
 function compareArraySizes(inputPointArrays, outputBezierString) {
-    const inputString  = JSON.stringify(inputPointArrays);
-    const inputSize    = inputString.length, outputSize = outputBezierString.length;
-    const compressionRatio   = outputSize / inputSize;
+    const inputString = JSON.stringify(inputPointArrays);
+    const inputSize = inputString.length, outputSize = outputBezierString.length;
+    const compressionRatio = outputSize / inputSize;
     const compressionPercent = (inputSize - outputSize) / inputSize * 100;
-    const totalInputPoints   = inputPointArrays.reduce((total, arr) => total + arr.length, 0);
-    const bezierCommands     = JSON.parse(outputBezierString);
+    const totalInputPoints = inputPointArrays.reduce((total, arr) => total + arr.length, 0);
+    const bezierCommands = JSON.parse(outputBezierString);
     const totalBezierSegments = bezierCommands.reduce((total, arr) => total + arr.filter(item => item === "C").length, 0);
     return {
-        input:      { stringSize: inputSize, totalPoints: totalInputPoints },
-        output:     { stringSize: outputSize, totalBezierSegments },
-        comparison: { compressionRatio, compressionPercent, isSmaller: outputSize < inputSize,
-                      sizeDifference: inputSize - outputSize,
-                      pointReduction: (totalInputPoints - totalBezierSegments) / totalInputPoints * 100 }
+        input: { stringSize: inputSize, totalPoints: totalInputPoints },
+        output: { stringSize: outputSize, totalBezierSegments },
+        comparison: {
+            compressionRatio, compressionPercent, isSmaller: outputSize < inputSize,
+            sizeDifference: inputSize - outputSize,
+            pointReduction: (totalInputPoints - totalBezierSegments) / totalInputPoints * 100
+        }
     };
 }
 
 function printComparison(comparison) {
     console.log("SIZE COMPARISON: ratio=" + comparison.comparison.compressionRatio.toFixed(3) +
-                ", " + comparison.comparison.compressionPercent.toFixed(1) + "% smaller, " +
-                comparison.comparison.pointReduction.toFixed(1) + "% point reduction");
+        ", " + comparison.comparison.compressionPercent.toFixed(1) + "% smaller, " +
+        comparison.comparison.pointReduction.toFixed(1) + "% point reduction");
 }
 
 
@@ -1158,7 +1160,7 @@ function scanlineFillCopilot(ctx, pathArrays, stepSize, createScanlines, createF
 function scanlineFillYaxis(ctx, pathArrays, createScanlines, createFill, createCenterLine, maxDistanceThreshold) {
     let minY = Infinity, maxY = -Infinity;
     pathArrays.forEach(points => { points.forEach(([x, y]) => { minY = Math.min(minY, y); maxY = Math.max(maxY, y); }); });
-    ctx.lineWidth   = 1;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = "green";
     let stepSize = Number(document.getElementById("scanLineSeparation").value);
     if (createFill) { ctx.strokeStyle = "darkslategrey"; stepSize = 0.1; createScanlines = false; createCenterLine = false; }
@@ -1200,7 +1202,7 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
     ctx.arc(point[0], point[1], radius, 0, 2 * Math.PI);
     ctx.fill();
     if (number !== -1) {
-        ctx.font      = "8px Arial";
+        ctx.font = "8px Arial";
         ctx.fillStyle = "white";
         ctx.fillText(number, point[0] - offsetX, point[1] + radius / 2);
     }
@@ -1218,25 +1220,25 @@ function drawStartingPoints(ri) {
 }
 
 function createClickableCircle(ri, radius, index, color) {
-    const point  = ri.sortedLines[index][0];
+    const point = ri.sortedLines[index][0];
     const circle = document.createElement('div');
-    circle.className   = 'clickable-circle flexbox-centered';
-    circle.index       = index;
-    circle.style.position    = 'absolute';
-    circle.style.left        = (point[0] - radius) + 'px';
-    circle.style.top         = (point[1] - radius) + 'px';
-    circle.style.width       = (radius * 2) + 'px';
-    circle.style.height      = (radius * 2) + 'px';
+    circle.className = 'clickable-circle flexbox-centered';
+    circle.index = index;
+    circle.style.position = 'absolute';
+    circle.style.left = (point[0] - radius) + 'px';
+    circle.style.top = (point[1] - radius) + 'px';
+    circle.style.width = (radius * 2) + 'px';
+    circle.style.height = (radius * 2) + 'px';
     circle.style.borderRadius = '50%';
-    circle.innerText         = index + 1;
-    circle.style.fontFamily  = "Arial";
-    circle.style.fontSize    = "8px";
+    circle.innerText = index + 1;
+    circle.style.fontFamily = "Arial";
+    circle.style.fontSize = "8px";
     circle.style.backgroundColor = color;
-    circle.style.border      = '1px solid ' + color;
-    circle.style.cursor      = 'pointer';
-    circle.style.zIndex      = '1000';
+    circle.style.border = '1px solid ' + color;
+    circle.style.cursor = 'pointer';
+    circle.style.zIndex = '1000';
     circle.ri = ri;
-    circle.addEventListener('click', function(e) {
+    circle.addEventListener('click', function (e) {
         e.stopPropagation();
         if (this.ri.sortedLines.length <= 1) { console.log("Can't delete the last line!"); return; }
         this.ri.sortedLines.splice(this.index, 1);
@@ -1254,7 +1256,7 @@ function clearClickableElements() {
 
 function drawCenterLine(ri, continueDrawings = true) {
     let ctx = ri.centerLineCanvas.getContext("2d");
-    ri.centerLineCanvas.width  = ri.width;
+    ri.centerLineCanvas.width = ri.width;
     ri.centerLineCanvas.height = ri.height;
     ctx.clearRect(0, 0, ri.centerLineCanvas.width, ri.centerLineCanvas.height);
     clearClickableElements();
@@ -1277,7 +1279,7 @@ function drawLines(pointsArray, canvas, lineWidth = 1) {
 function drawCurve(curve, ctx, lineWidth = 1) {
     ctx.beginPath();
     ctx.strokeStyle = getColorForElement();
-    ctx.lineWidth   = lineWidth;
+    ctx.lineWidth = lineWidth;
     ctx.moveTo(curve[0][0], curve[0][1]);
     for (let i = 1; i < curve.length; i++) ctx.lineTo(curve[i][0], curve[i][1]);
     ctx.stroke();
@@ -1304,8 +1306,8 @@ function drawBezierCurves(pathsArray, canvas, color, normFactor = 1) {
         ctx.beginPath();
         for (let i = 0; i < path.length; i++) {
             const cmd = path[i];
-            if      (cmd === "M") { ctx.moveTo(path[i + 1], path[i + 2]); i += 2; }
-            else if (cmd === "C") { ctx.bezierCurveTo(path[i+1], path[i+2], path[i+3], path[i+4], path[i+5], path[i+6]); i += 6; }
+            if (cmd === "M") { ctx.moveTo(path[i + 1], path[i + 2]); i += 2; }
+            else if (cmd === "C") { ctx.bezierCurveTo(path[i + 1], path[i + 2], path[i + 3], path[i + 4], path[i + 5], path[i + 6]); i += 6; }
             else if (cmd === "L") { ctx.lineTo(path[i + 1], path[i + 2]); i += 2; }
         }
         ctx.stroke();
@@ -1317,14 +1319,14 @@ function normalizePaths(paths, width, height) {
     paths.forEach(path => {
         for (let i = 1; i < path.length; i++) {
             if (typeof path[i] === "number" && typeof path[i + 1] === "number") {
-                minX = Math.min(minX, path[i]);   minY = Math.min(minY, path[i + 1]);
-                maxX = Math.max(maxX, path[i]);   maxY = Math.max(maxY, path[i + 1]);
+                minX = Math.min(minX, path[i]); minY = Math.min(minY, path[i + 1]);
+                maxX = Math.max(maxX, path[i]); maxY = Math.max(maxY, path[i + 1]);
             }
         }
     });
-    const scaleX = width  / (maxX - minX);
+    const scaleX = width / (maxX - minX);
     const scaleY = height / (maxY - minY);
-    const scale  = Math.min(scaleX, scaleY);
+    const scale = Math.min(scaleX, scaleY);
     return paths.map(path => {
         let newPath = [];
         for (let i = 0; i < path.length; i++) {
@@ -1342,7 +1344,7 @@ function setScaleFactorX(array) {
     const boundingBox = calcBoundingBox(array);
     const x1 = boundingBox[0], x2 = boundingBox[2];
     const y1 = boundingBox[1], y2 = boundingBox[3];
-    const svgWidth  = x2 - x1, svgHeight = y2 - y1;
+    const svgWidth = x2 - x1, svgHeight = y2 - y1;
     let scaleFactorX = ri.centerLineCanvas.width / (svgWidth * ri.paddingFactor);
     return [scaleFactorX, svgWidth, svgHeight, [x1, y1, x2, y2]];
 }
@@ -1351,7 +1353,7 @@ function setScaleFactorPointArray(array) {
     const boundingBox = calculateBoundingBoxPointArray(array);
     const x1 = boundingBox[0], x2 = boundingBox[2];
     const y1 = boundingBox[1], y2 = boundingBox[3];
-    const svgWidth  = x2 - x1, svgHeight = y2 - y1;
+    const svgWidth = x2 - x1, svgHeight = y2 - y1;
     console.log(svgWidth, svgHeight);
     let scaleFactorX = ri.centerLineCanvas.width / (svgWidth * ri.paddingFactor);
     return [scaleFactorX, svgWidth, svgHeight, [x1, y1, x2, y2]];
@@ -1359,13 +1361,13 @@ function setScaleFactorPointArray(array) {
 
 function drawPotraceSvgPath() {
     ri.pathScaledDown = [];
-    let createCenterLine        = centerlineCheckbox.checked;
-    ri.createStartpoints        = startpointsCheckbox.checked;
-    const centerLineSeparation  = Number(centerLineSeparationEl.value);
+    let createCenterLine = centerlineCheckbox.checked;
+    ri.createStartpoints = startpointsCheckbox.checked;
+    const centerLineSeparation = Number(centerLineSeparationEl.value);
 
     ri.centerLineCanvas.width = imgSrc.width;
     ri.centerLineCanvas.height = imgSrc.height;
-    smoothedCanvas.width  = imgSrc.width;
+    smoothedCanvas.width = imgSrc.width;
     smoothedCanvas.height = imgSrc.height;
     ctx.clearRect(0, 0, ri.centerLineCanvas.width, ri.centerLineCanvas.height);
 
@@ -1383,7 +1385,7 @@ function drawPotraceSvgPath() {
     function isOverCanvas(evt) {
         const rect = ri.centerLineCanvas.getBoundingClientRect();
         return evt.clientX > rect.x && evt.clientX < rect.x + rect.width &&
-               evt.clientY > rect.y && evt.clientY < rect.y + rect.height;
+            evt.clientY > rect.y && evt.clientY < rect.y + rect.height;
     }
     function getDiameter() {
         return Number(document.getElementById("pupilDiameter").value);
@@ -1391,7 +1393,7 @@ function drawPotraceSvgPath() {
     function scaleSVG(beziers) {
         let dimensions = setScaleFactorX(beziers);
         ri.scaleFactorX = dimensions[0];
-        let svgHeight   = dimensions[2];
+        let svgHeight = dimensions[2];
         let boundingBox = dimensions[3];
         let y1 = boundingBox[1];
         if (ri.scaleFactorX * (y1 + svgHeight) * ri.paddingFactor > ri.centerLineCanvas.height) {
@@ -1402,7 +1404,7 @@ function drawPotraceSvgPath() {
         }
     }
 
-    document.getElementById("btnPupilInsert").addEventListener("click", function(evt) {
+    document.getElementById("btnPupilInsert").addEventListener("click", function (evt) {
         if (isEditing) {
             isEditing = false;
             ri.centerLineCanvas.style.cursor = "default";
@@ -1424,7 +1426,7 @@ function drawPotraceSvgPath() {
     try {
         scaleSVG(beziers);
         const pathArrays = parseSvgPath(beziers, ri.scaleFactorX);
-        const midpoints  = scanlineFillCopilot(ctx, pathArrays, 2, false, false);
+        const midpoints = scanlineFillCopilot(ctx, pathArrays, 2, false, false);
         let path = [];
         if (createCenterLine) path = findNearestNeighborPathImproved(midpoints, centerLineSeparation);
         ri.sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
@@ -1475,6 +1477,64 @@ function addLineEnding(text) {
     return text;
 }
 
+function downloadSvgFile() {
+    if (!ri.sortedLines || ri.sortedLines.length === 0) {
+        alert("No SVG data to download. Please create SVG first.");
+        return;
+    }
+    const outputWidth = 640;
+    const bbox = calculateBoundingBoxPointArray(ri.sortedLines);
+    const [x1, y1, x2, y2] = bbox;
+    const scale = outputWidth / (x2 - x1);
+    const outputHeight = Math.ceil((y2 - y1) * scale);
+
+    const pathStrings = [];
+    for (const points of ri.sortedLines) {
+        if (points.length < 2) continue;
+        const s = points.map(([x, y]) => [(x - x1) * scale, (y - y1) * scale]);
+        let d = `M ${s[0][0].toFixed(1)} ${s[0][1].toFixed(1)}`;
+        if (s.length === 2) {
+            const dx = s[1][0] - s[0][0], dy = s[1][1] - s[0][1];
+            d += ` C ${(s[0][0] + dx / 3).toFixed(1)},${(s[0][1] + dy / 3).toFixed(1)} ${(s[1][0] - dx / 3).toFixed(1)},${(s[1][1] - dy / 3).toFixed(1)} ${s[1][0].toFixed(1)},${s[1][1].toFixed(1)}`;
+        } else {
+            for (let i = 0; i < s.length - 1; i++) {
+                const [ax, ay] = s[i], [bx, by] = s[i + 1];
+                let cp1x, cp1y, cp2x, cp2y;
+                if (i === 0) {
+                    const [cx, cy] = s[i + 2] || [bx + (bx - ax), by + (by - ay)];
+                    cp1x = ax + (bx - ax) / 3; cp1y = ay + (by - ay) / 3;
+                    cp2x = bx - (cx - ax) / 6; cp2y = by - (cy - ay) / 6;
+                } else if (i === s.length - 2) {
+                    const [px, py] = s[i - 1];
+                    cp1x = ax + (bx - px) / 6; cp1y = ay + (by - py) / 6;
+                    cp2x = ax + 2 * (bx - ax) / 3; cp2y = ay + 2 * (by - ay) / 3;
+                } else {
+                    const [px, py] = s[i - 1], [nx, ny] = s[i + 2];
+                    cp1x = ax + (bx - px) / 6; cp1y = ay + (by - py) / 6;
+                    cp2x = bx - (nx - ax) / 6; cp2y = by - (ny - ay) / 6;
+                }
+                d += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}`;
+            }
+        }
+        pathStrings.push(`  <path d="${d}" fill="none" stroke="black" stroke-width="1"/>`);
+    }
+
+    const svgContent = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${outputWidth}" height="${outputHeight}" viewBox="0 0 ${outputWidth} ${outputHeight}">`,
+        ...pathStrings,
+        '</svg>'
+    ].join('\n');
+
+    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'drawing.svg';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 function clearSvgWindow() {
     document.getElementById("svgOutput").innerHTML = "";
     Potrace.clear();
@@ -1491,7 +1551,7 @@ function createSvg(ri) {
     let url = canvas.toDataURL();
 
     if (mauroyLab_detection.checked) {
-        Potrace.img.src    = url;
+        Potrace.img.src = url;
         PotraceBG8.img.src = url;
         firstRun = false;
         let turd_factor = document.getElementById("rngTurdsize").value * 2;
@@ -1499,9 +1559,9 @@ function createSvg(ri) {
         Potrace.setParameter(potraceParams);
         PotraceBG8.setParameter(potraceParams);
         let drawingWidth = document.getElementById("rngDrawingWidth").value;
-        let scaleFactor  = drawingWidth / canvas.width;
+        let scaleFactor = drawingWidth / canvas.width;
         const fillPath = document.getElementById("chkFillPath");
-        Potrace.process(function() {
+        Potrace.process(function () {
             let svg = fillPath.checked ? Potrace.getSVG(1) : Potrace.getSVG(1, "curve");
             c("Potrace SVG: "); c(svg);
             document.getElementById("svgOutput").innerHTML = svg;
@@ -1528,22 +1588,32 @@ function createSvg(ri) {
             cv.threshold(thresholded, inverted, 128, 255, cv.THRESH_BINARY_INV);
             c("Canny Edge detected imagedata:"); c(inverted.data);
         }
-        const binaryData  = matToBinaryArray(inverted);
+        // Cap processing resolution so results are consistent across display sizes.
+        const ZS_PROCESSING_WIDTH = 512;
+        if (inverted.cols > ZS_PROCESSING_WIDTH) {
+            const zsScale = ZS_PROCESSING_WIDTH / inverted.cols;
+            const dsize = new cv.Size(ZS_PROCESSING_WIDTH, Math.round(inverted.rows * zsScale));
+            const resized = new cv.Mat();
+            cv.resize(inverted, resized, dsize, 0, 0, cv.INTER_NEAREST);
+            inverted.delete();
+            inverted = resized;
+        }
+        const binaryData = matToBinaryArray(inverted);
         console.log("Inverted cols,rows:"); console.log(inverted.cols, inverted.rows);
         const thinnedData = zhangSuenThinning(binaryData, inverted.cols, inverted.rows);
         console.log("thinnedData:", thinnedData.length);
 
-        const curves      = vectorizeSkeleton(thinnedData, inverted.cols, inverted.rows, true, true);
+        const curves = vectorizeSkeleton(thinnedData, inverted.cols, inverted.rows, true, true);
         const pointArrays = curvesToPointArrays(curves);
         ri.rawPointArrays = [...pointArrays];
         const centerLineSeparation = Number(centerLineSeparationEl.value);
-        const sorted   = sortPathCurves([...ri.rawPointArrays], calculateBoundingBoxPointArray(ri.rawPointArrays));
+        const sorted = sortPathCurves([...ri.rawPointArrays], calculateBoundingBoxPointArray(ri.rawPointArrays));
         ri.sortedLines = mergeCurvesByGap(sorted, centerLineSeparation);
 
         let dimensions = setScaleFactorPointArray(ri.sortedLines);
-        ri.scaleFactorX  = dimensions[0];
-        let svgWidth     = dimensions[1];
-        let svgHeight    = dimensions[2];
+        ri.scaleFactorX = dimensions[0];
+        let svgWidth = dimensions[1];
+        let svgHeight = dimensions[2];
         console.log("zhang suen scaleFactorX:"); console.log(dimensions);
 
         let robotWidth = parseFloat(document.getElementById("rngDrawingWidth").value);
@@ -1565,11 +1635,11 @@ function createSvg(ri) {
         ri.createStartpoints = startpointsCheckbox.checked;
         drawCenterLine(ri, false);
 
-        smoothedCanvas.width  = imgSrc.width;
+        smoothedCanvas.width = imgSrc.width;
         smoothedCanvas.height = imgSrc.height;
         drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black");
 
-        canvasSvgWindow.width  = inverted.cols;
+        canvasSvgWindow.width = inverted.cols;
         canvasSvgWindow.height = inverted.rows;
         const svgOut = document.getElementById("svgOutput");
         svgOut.innerHTML = "";
@@ -1595,7 +1665,7 @@ fileInputEl.addEventListener("change", (e) => {
 }, false);
 
 // Reload OpenCV processing when a new image loads.
-imgSource.onload = function() {
+imgSource.onload = function () {
     if (moduleInitialized) {
         clearSvgWindow();
         [src, gray] = readImageFromSource();
@@ -1610,12 +1680,12 @@ btnUpdateCenterline.addEventListener("click", () => {
         drawPotraceSvgPath();
     } else {
         const centerLineSeparation = Number(centerLineSeparationEl.value);
-        const sorted   = sortPathCurves([...ri.rawPointArrays], calculateBoundingBoxPointArray(ri.rawPointArrays));
+        const sorted = sortPathCurves([...ri.rawPointArrays], calculateBoundingBoxPointArray(ri.rawPointArrays));
         ri.sortedLines = mergeCurvesByGap(sorted, centerLineSeparation);
         drawCenterLine(ri, false);
     }
 });
-btnApplySmoothing.addEventListener("click",   () => { applySmoothing(ri); });
+btnApplySmoothing.addEventListener("click", () => { applySmoothing(ri); });
 
 startpointsCheckbox.addEventListener("change", () => {
     ri.createStartpoints = startpointsCheckbox.checked;
@@ -1643,6 +1713,7 @@ enableSmoothingElement.addEventListener('change', () => {
 });
 
 document.getElementById("btnCopy").addEventListener("click", () => { copySVG(); });
+document.getElementById("btnDownloadSvg").addEventListener("click", () => { downloadSvgFile(); });
 
 // Main "Create SVG" button
 document.getElementById("btnCreateSvg").addEventListener("click", () => { createSvg(ri); });
@@ -1654,8 +1725,8 @@ document.querySelectorAll('input[name="processMethod"]').forEach(radio => {
 
 // Sliders: update displayed value and trigger filters/smoothing.
 document.querySelectorAll('.slider').forEach(slider => {
-    slider.addEventListener('input', function() {
-        if (slider.classList.contains("filterSlider"))   applyFilters();
+    slider.addEventListener('input', function () {
+        if (slider.classList.contains("filterSlider")) applyFilters();
         if (slider.classList.contains("smoothingSlider")) applySmoothing(ri);
         const valueDisplay = document.getElementById(this.id + '-value');
         if (valueDisplay) valueDisplay.textContent = this.value;
@@ -1672,11 +1743,11 @@ function updateMouseFollowerPosition(evt) {
     if (follower) {
         const diameter = Number(document.getElementById("pupilDiameter").value);
         const rect = document.getElementById("centerLineCanvas").getBoundingClientRect();
-        follower.style.width  = diameter + "px";
+        follower.style.width = diameter + "px";
         follower.style.height = diameter + "px";
         let x = rect.x + evt.offsetX - diameter / 2;
         let y = rect.y + evt.offsetY - diameter / 2;
-        follower.style.top  = y + "px";
+        follower.style.top = y + "px";
         follower.style.left = x + "px";
     }
 }

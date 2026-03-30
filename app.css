@@ -364,7 +364,9 @@ h1 {
     .panel {
         width: 90vw;
         height: 90vw;
-        background-color: var(--mauroy-grey-medium);
+    }
+    .control-group {
+        height: unset;
     }
     .panels-grid {
         gap: 3vh;
