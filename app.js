@@ -30,6 +30,7 @@ const imgSrc      = document.getElementById("img-src");   // same element as img
 const ctx         = document.getElementById("centerLineCanvas").getContext("2d");
 const smoothedCanvas   = document.getElementById("smoothedCanvas");
 const centerlineCheckbox     = document.getElementById("centerlineCheckbox");
+const startpointsCheckbox    = document.getElementById("startpointsCheckbox");
 const centerLineSeparationEl = document.getElementById("centerLineSeparation");
 const btnUpdateCenterline = document.getElementById("btnUpdateCenterline");
 const btnApplySmoothing   = document.getElementById("btnApplySmoothing");
@@ -1335,7 +1336,7 @@ function setScaleFactorPointArray(array) {
 function drawPotraceSvgPath() {
     ri.pathScaledDown = [];
     let createCenterLine        = centerlineCheckbox.checked;
-    ri.createStartpoints        = false;
+    ri.createStartpoints        = startpointsCheckbox.checked;
     const centerLineSeparation  = Number(centerLineSeparationEl.value);
 
     ri.centerLineCanvas.width = imgSrc.width;
