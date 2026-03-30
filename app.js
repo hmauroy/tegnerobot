@@ -1569,15 +1569,9 @@ function createSvg(ri) {
         const thinnedData = zhangSuenThinning(binaryData, inverted.cols, inverted.rows);
         console.log("thinnedData:", thinnedData.length);
 
-        let localCtx = canvasSvgWindow.getContext("2d", [{ willReadFrequently: true }]);
-        localCtx.clearRect(0, 0, inverted.cols, inverted.rows);
-        canvasSvgWindow.width  = inverted.cols;
-        canvasSvgWindow.height = inverted.rows;
-        showOverlay("img-overlay-svg-window", "svgWindow");
-
         const curves      = vectorizeSkeleton(thinnedData, inverted.cols, inverted.rows, true, true);
         const pointArrays = curvesToPointArrays(curves);
-        ri.sortedLines    = sortPathCurves(pointArrays, calculateBoundingBoxPointArray(pointArrays), localCtx);
+        ri.sortedLines    = sortPathCurves(pointArrays, calculateBoundingBoxPointArray(pointArrays));
         drawCenterLine(ri, false);
 
         let dimensions = setScaleFactorPointArray(ri.sortedLines);
@@ -1601,7 +1595,6 @@ function createSvg(ri) {
 
         ri.svgOutputData = generateBezierCurves(ri.pathScaledDown);
         console.log('Bezier paths: '); console.log(ri.svgOutputData);
-        drawBezierCurves(JSON.parse(ri.svgOutputData), canvasSvgWindow, "black", scaleFactorZS);
 
         let rows = Math.ceil(ri.svgOutputData.length * 25);
         ri.svgTextOutput.rows = rows;
