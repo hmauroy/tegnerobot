@@ -192,12 +192,23 @@ function showResizedImage(thinnedData, origWidth, origHeight) {
 function applyFilters() {
     [src, gray] = readImageFromSource();
     document.getElementById("svgOutput").innerHTML = "";
-    let threshold_lower = parseFloat(document.getElementById("rngBlur").value);
-    let threshold_upper = parseFloat(document.getElementById("rngThresh").value);
-    let turd_factor     = document.getElementById("rngTurdsize").value;
+    let blur_factor      = parseFloat(document.getElementById("rngBlur").value);
+    let threshold_factor = parseFloat(document.getElementById("rngThresh").value);
+    let turd_factor      = document.getElementById("rngTurdsize").value;
+    let img              = document.getElementById("img-src");
 
     ri.width  = gray.cols;
     ri.height = gray.rows;
+
+    // Normalize blur kernel to image width; must be odd and >= 3
+    let blur_value = parseInt(Math.round(blur_factor * ri.width * 0.002));
+    if (blur_value % 2 === 0) blur_value -= 1;
+    if (blur_value < 3) blur_value = 3;
+
+    // Normalize adaptive threshold block size to image width; must be odd and >= 3
+    let thresh_value = parseInt(Math.round(threshold_factor * ri.width * 0.005));
+    if (thresh_value % 2 === 0) thresh_value -= 1;
+    if (thresh_value < 3) thresh_value = 3;
 
     let turd_value = parseInt(Math.round(turd_factor * ri.width * 0.01));
     if (turd_value <= 1) turd_value = 1;
@@ -206,19 +217,15 @@ function applyFilters() {
     thresholded   = new cv.Mat();
 
     let lineDrawingMode = document.getElementById("lineDrawingMode");
-    let img = document.getElementById("img-src");
     if (lineDrawingMode.checked) {
         console.log("No edge detection if line drawing.");
         edgeScaled = resizeImage(gray, img.width, img.height);
         opencv2image(edgeScaled);
         showOverlay("img-overlay", "img-window");
     } else {
-        let blurred = new cv.Mat();
-        cv.medianBlur(gray, blurred, 7);
-        cv.Canny(blurred, thresholded, threshold_lower, threshold_upper);
-        cv.bitwise_not(thresholded, thresholded);
+        cv.medianBlur(gray, medianBlurred, blur_value);
+        cv.adaptiveThreshold(medianBlurred, thresholded, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, thresh_value, 2);
         showOverlay("img-overlay", "img-window");
-        edgeScaled = new cv.Mat();
         edgeScaled = resizeImage(thresholded, img.width, img.height);
         opencv2image(edgeScaled);
     }
