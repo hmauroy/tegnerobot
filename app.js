@@ -1456,21 +1456,26 @@ function drawPotraceSvgPath() {
         scaleSVG(beziers);
         const pathArrays = parseSvgPath(beziers, ri.scaleFactorX);
         const midpoints = scanlineFillCopilot(ctx, pathArrays, 2, false, false);
-        const estimatedSteps = midpoints.length * midpoints.length;
+        const n = midpoints.length;
+        const estimatedSteps = n * n;
         const statusEl = document.getElementById('centerlineStatus');
-        if (estimatedSteps > 25e6) {
-            statusEl.textContent = `${midpoints.length} midpoints (~${(estimatedSteps / 1e6).toFixed(0)}M steps) — very slow! Increase centerline separation.`;
+        // n² is fixed by the image; warn before the expensive call if it looks too large.
+        if (estimatedSteps > 150e6) {
+            statusEl.textContent = `${n} midpoints (~${(estimatedSteps / 1e6).toFixed(0)}M steps) — very slow! Increase centerline separation.`;
             statusEl.style.color = '#e61c7d';
-            if (!confirm(`${midpoints.length} midpoints detected (~${(estimatedSteps / 1e6).toFixed(0)}M computation steps).\nThis may freeze the browser for a long time.\nIncrease "Center line separation" to reduce complexity.\n\nProceed anyway?`)) return;
-        } else if (estimatedSteps > 4e6) {
-            statusEl.textContent = `${midpoints.length} midpoints (~${(estimatedSteps / 1e6).toFixed(1)}M steps) — may be slow.`;
+            if (!confirm(`${n} midpoints detected (~${(estimatedSteps / 1e6).toFixed(0)}M computation steps).\nThis may freeze the browser.\nIncrease "Center line separation" to reduce complexity.\n\nProceed anyway?`)) return;
+        } else if (estimatedSteps > 75e6) {
+            statusEl.textContent = `${n} midpoints (~${(estimatedSteps / 1e6).toFixed(0)}M steps) — may be slow.`;
             statusEl.style.color = 'orange';
         } else {
-            statusEl.textContent = `${midpoints.length} midpoints — OK`;
+            statusEl.textContent = `${n} midpoints — OK`;
             statusEl.style.color = 'lightgreen';
         }
         let path = [];
         if (createCenterLine) path = findNearestNeighborPathImproved(midpoints, centerLineSeparation);
+        // Update status with actual path count — this number depends on separation and changes when the slider moves.
+        const m = path.length;
+        statusEl.textContent += `  →  ${m} paths`;
         ri.sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
         drawCenterLine(ri);
     } catch (error) {
