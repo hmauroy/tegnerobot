@@ -1488,6 +1488,17 @@ function scaleSvgOutputToRobot(ri) {
 }
 
 function applySmoothing(ri) {
+    // Always rebuild pathScaledDown from the current ri.sortedLines so that any
+    // curve deletions (start-point clicks) are reflected before smoothing runs.
+    // Convert pixel-space sortedLines → mm space using the robotWidth slider.
+    const bbox = calculateBoundingBoxPointArray(ri.sortedLines);
+    const svgWidth = (bbox[2] - bbox[0]) || 1;
+    const robotWidth = parseFloat(document.getElementById("rngDrawingWidth").value);
+    const sf = svgWidth / robotWidth;
+    ri.pathScaledDown = ri.sortedLines.map(curve =>
+        curve.map(([x, y]) => [x / sf, y / sf])
+    );
+
     ri.svgOutputData = generateBezierCurvesWithSmoothing(ri.pathScaledDown, smoothingSettings);
     // Compute smoothed paths locally (mm space) for file-size estimate — do NOT overwrite ri.sortedLines,
     // which must stay as the original sorted pixel-space lines for centerline redraw and start-point display.
