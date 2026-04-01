@@ -1456,6 +1456,19 @@ function drawPotraceSvgPath() {
         scaleSVG(beziers);
         const pathArrays = parseSvgPath(beziers, ri.scaleFactorX);
         const midpoints = scanlineFillCopilot(ctx, pathArrays, 2, false, false);
+        const estimatedSteps = midpoints.length * midpoints.length;
+        const statusEl = document.getElementById('centerlineStatus');
+        if (estimatedSteps > 25e6) {
+            statusEl.textContent = `${midpoints.length} midpoints (~${(estimatedSteps / 1e6).toFixed(0)}M steps) — very slow! Increase centerline separation.`;
+            statusEl.style.color = '#e61c7d';
+            if (!confirm(`${midpoints.length} midpoints detected (~${(estimatedSteps / 1e6).toFixed(0)}M computation steps).\nThis may freeze the browser for a long time.\nIncrease "Center line separation" to reduce complexity.\n\nProceed anyway?`)) return;
+        } else if (estimatedSteps > 4e6) {
+            statusEl.textContent = `${midpoints.length} midpoints (~${(estimatedSteps / 1e6).toFixed(1)}M steps) — may be slow.`;
+            statusEl.style.color = 'orange';
+        } else {
+            statusEl.textContent = `${midpoints.length} midpoints — OK`;
+            statusEl.style.color = 'lightgreen';
+        }
         let path = [];
         if (createCenterLine) path = findNearestNeighborPathImproved(midpoints, centerLineSeparation);
         ri.sortedLines = sortPathCurves(path, calcBoundingBox(path), ctx);
