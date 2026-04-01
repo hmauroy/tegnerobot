@@ -1489,13 +1489,11 @@ function scaleSvgOutputToRobot(ri) {
 
 function applySmoothing(ri) {
     ri.svgOutputData = generateBezierCurvesWithSmoothing(ri.pathScaledDown, smoothingSettings);
-    // Reflect smoothed point reduction in ri.sortedLines so buildSvgContent sees fewer points.
-    ri.sortedLines = ri.pathScaledDown.map(path => {
-        const pts = smoothingSettings.enableSmoothing
-            ? PointSmoother.smartSmooth(path, smoothingSettings)
-            : path;
-        return pts.map(([x, y]) => [x * ri.scaleFactorX, y * ri.scaleFactorX]);
-    });
+    // Compute smoothed paths locally (mm space) for file-size estimate — do NOT overwrite ri.sortedLines,
+    // which must stay as the original sorted pixel-space lines for centerline redraw and start-point display.
+    const smoothedPaths = ri.pathScaledDown.map(path =>
+        smoothingSettings.enableSmoothing ? PointSmoother.smartSmooth(path, smoothingSettings) : path
+    );
     const comparison = compareArraySizes(ri.pathScaledDown, ri.svgOutputData);
     printComparison(comparison);
     compressionInfoEl.innerText = "Bezier compression: " + comparison.comparison.compressionPercent.toFixed(1) + " %";
@@ -1505,7 +1503,7 @@ function applySmoothing(ri) {
     ri.svgTextOutput.rows = rows;
     ri.svgTextOutput.cols = 50;
     ri.svgTextOutput.value = ri.svgOutputData;
-    updateSvgFileSize();
+    updateSvgFileSize(smoothedPaths);
 }
 
 function addLineEnding(text) {
@@ -1514,15 +1512,16 @@ function addLineEnding(text) {
     return text;
 }
 
-function buildSvgContent() {
+function buildSvgContent(pointArrays = null) {
+    const pts = pointArrays || ri.sortedLines;
     const outputWidth = 640;
-    const bbox = calculateBoundingBoxPointArray(ri.sortedLines);
+    const bbox = calculateBoundingBoxPointArray(pts);
     const [x1, y1, x2, y2] = bbox;
     const scale = outputWidth / (x2 - x1);
     const outputHeight = Math.ceil((y2 - y1) * scale);
 
     const pathStrings = [];
-    for (const points of ri.sortedLines) {
+    for (const points of pts) {
         if (points.length < 2) continue;
         const s = points.map(([x, y]) => [(x - x1) * scale, (y - y1) * scale]);
         let d = `M ${s[0][0].toFixed(1)} ${s[0][1].toFixed(1)}`;
@@ -1560,9 +1559,10 @@ function buildSvgContent() {
     ].join('\n');
 }
 
-function updateSvgFileSize() {
-    if (!ri.sortedLines || ri.sortedLines.length === 0) return;
-    const blob = new Blob([buildSvgContent()], { type: 'image/svg+xml' });
+function updateSvgFileSize(pointArrays = null) {
+    const pts = pointArrays || ri.sortedLines;
+    if (!pts || pts.length === 0) return;
+    const blob = new Blob([buildSvgContent(pts)], { type: 'image/svg+xml' });
     document.getElementById("svgFileSize").textContent = `${(blob.size / 1024).toFixed(1)} kB`;
 }
 
