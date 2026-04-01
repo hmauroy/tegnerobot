@@ -1208,25 +1208,25 @@ function drawSinglePoint(point, radius, ctx, color = "black", number = -1) {
     }
 }
 
-function drawStartingPoints(ri) {
+function drawStartingPoints(ri, dispScale, offsetX, offsetY) {
     if (!ri.sortedLines || ri.sortedLines.length === 0) return;
     clearClickableElements();
     for (let i = 1; i < ri.sortedLines.length; i++) {
         if (ri.sortedLines[i] && ri.sortedLines[i].length > 0)
-            createClickableCircle(ri, 6, i, "black");
+            createClickableCircle(ri, 6, i, "black", dispScale, offsetX, offsetY);
     }
     if (ri.sortedLines[0] && ri.sortedLines[0].length > 0)
-        createClickableCircle(ri, 6, 0, "red");
+        createClickableCircle(ri, 6, 0, "red", dispScale, offsetX, offsetY);
 }
 
-function createClickableCircle(ri, radius, index, color) {
+function createClickableCircle(ri, radius, index, color, dispScale, offsetX, offsetY) {
     const point = ri.sortedLines[index][0];
     const circle = document.createElement('div');
     circle.className = 'clickable-circle flexbox-centered';
     circle.index = index;
     circle.style.position = 'absolute';
-    circle.style.left = (point[0] - radius) + 'px';
-    circle.style.top = (point[1] - radius) + 'px';
+    circle.style.left = ((point[0] - offsetX) * dispScale - radius) + 'px';
+    circle.style.top  = ((point[1] - offsetY) * dispScale - radius) + 'px';
     circle.style.width = (radius * 2) + 'px';
     circle.style.height = (radius * 2) + 'px';
     circle.style.borderRadius = '50%';
@@ -1255,18 +1255,29 @@ function clearClickableElements() {
 }
 
 function drawCenterLine(ri, continueDrawings = true) {
-    let ctx = ri.centerLineCanvas.getContext("2d");
-    ri.centerLineCanvas.width = ri.width;
-    ri.centerLineCanvas.height = ri.height;
+    const panel = document.getElementById('canvas-centerLine');
+    ri.centerLineCanvas.width  = panel.clientWidth;
+    ri.centerLineCanvas.height = panel.clientHeight;
+    const ctx = ri.centerLineCanvas.getContext("2d");
     ctx.clearRect(0, 0, ri.centerLineCanvas.width, ri.centerLineCanvas.height);
     clearClickableElements();
-    drawLines(ri.sortedLines, ri.centerLineCanvas, 3);
-    if (ri.createStartpoints === true) drawStartingPoints(ri);
+
+    if (ri.sortedLines && ri.sortedLines.length > 0) {
+        const bbox = calculateBoundingBoxPointArray(ri.sortedLines);
+        const [x1, y1, x2, y2] = bbox;
+        const dataW = x2 - x1 || 1, dataH = y2 - y1 || 1;
+        const dispScale = Math.min(ri.centerLineCanvas.width / dataW, ri.centerLineCanvas.height / dataH);
+        const scaledLines = ri.sortedLines.map(c => c.map(([x, y]) => [(x - x1) * dispScale, (y - y1) * dispScale]));
+        drawLines(scaledLines, ri.centerLineCanvas, 3);
+        if (ri.createStartpoints === true) drawStartingPoints(ri, dispScale, x1, y1);
+    }
+
     if (continueDrawings) {
         scaleSvgOutputToRobot(ri);
     } else {
         console.log("DrawCenterline stops here.");
     }
+    updateSvgFileSize();
 }
 
 function drawLines(pointsArray, canvas, lineWidth = 1) {
@@ -1316,21 +1327,36 @@ function drawBezierCurves(pathsArray, canvas, color, normFactor = 1) {
 
 function normalizePaths(paths, width, height) {
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    function expandX(x) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); }
+    function expandY(y) { minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
     paths.forEach(path => {
-        for (let i = 1; i < path.length; i++) {
-            if (typeof path[i] === "number" && typeof path[i + 1] === "number") {
-                minX = Math.min(minX, path[i]); minY = Math.min(minY, path[i + 1]);
-                maxX = Math.max(maxX, path[i]); maxY = Math.max(maxY, path[i + 1]);
-            }
+        let i = 0;
+        while (i < path.length) {
+            const cmd = path[i];
+            if (cmd === "M" || cmd === "L") {
+                expandX(path[i+1]); expandY(path[i+2]); i += 3;
+            } else if (cmd === "C") {
+                expandX(path[i+1]); expandY(path[i+2]);
+                expandX(path[i+3]); expandY(path[i+4]);
+                expandX(path[i+5]); expandY(path[i+6]); i += 7;
+            } else { i++; }
         }
     });
-    const scaleX = width / (maxX - minX);
-    const scaleY = height / (maxY - minY);
-    const scale = Math.min(scaleX, scaleY);
+    const dataW = (maxX - minX) || 1, dataH = (maxY - minY) || 1;
+    const scale = Math.min(width / dataW, height / dataH);
     return paths.map(path => {
         let newPath = [];
-        for (let i = 0; i < path.length; i++) {
-            newPath.push(typeof path[i] === "string" ? path[i] : (path[i] - minX) * scale);
+        let i = 0;
+        while (i < path.length) {
+            const cmd = path[i];
+            if (cmd === "M" || cmd === "L") {
+                newPath.push(cmd, (path[i+1] - minX) * scale, (path[i+2] - minY) * scale); i += 3;
+            } else if (cmd === "C") {
+                newPath.push(cmd,
+                    (path[i+1] - minX) * scale, (path[i+2] - minY) * scale,
+                    (path[i+3] - minX) * scale, (path[i+4] - minY) * scale,
+                    (path[i+5] - minX) * scale, (path[i+6] - minY) * scale); i += 7;
+            } else { newPath.push(cmd); i++; }
         }
         return newPath;
     });
@@ -1339,6 +1365,7 @@ function normalizePaths(paths, width, height) {
 
 // === SVG OUTPUT & ROBOT SCALING ===
 // (from bezier_to_centerline.js and image_to_svg.js)
+
 
 function setScaleFactorX(array) {
     const boundingBox = calcBoundingBox(array);
@@ -1365,10 +1392,12 @@ function drawPotraceSvgPath() {
     ri.createStartpoints = startpointsCheckbox.checked;
     const centerLineSeparation = Number(centerLineSeparationEl.value);
 
-    ri.centerLineCanvas.width = imgSrc.width;
-    ri.centerLineCanvas.height = imgSrc.height;
-    smoothedCanvas.width = imgSrc.width;
-    smoothedCanvas.height = imgSrc.height;
+    const centerLinePanel = document.getElementById('canvas-centerLine');
+    ri.centerLineCanvas.width  = centerLinePanel.clientWidth;
+    ri.centerLineCanvas.height = centerLinePanel.clientHeight;
+    const outputPanel2 = document.getElementById('outputWindow');
+    smoothedCanvas.width  = outputPanel2.clientWidth;
+    smoothedCanvas.height = outputPanel2.clientHeight;
     ctx.clearRect(0, 0, ri.centerLineCanvas.width, ri.centerLineCanvas.height);
 
     let isEditing = false;
@@ -1460,6 +1489,13 @@ function scaleSvgOutputToRobot(ri) {
 
 function applySmoothing(ri) {
     ri.svgOutputData = generateBezierCurvesWithSmoothing(ri.pathScaledDown, smoothingSettings);
+    // Reflect smoothed point reduction in ri.sortedLines so buildSvgContent sees fewer points.
+    ri.sortedLines = ri.pathScaledDown.map(path => {
+        const pts = smoothingSettings.enableSmoothing
+            ? PointSmoother.smartSmooth(path, smoothingSettings)
+            : path;
+        return pts.map(([x, y]) => [x * ri.scaleFactorX, y * ri.scaleFactorX]);
+    });
     const comparison = compareArraySizes(ri.pathScaledDown, ri.svgOutputData);
     printComparison(comparison);
     compressionInfoEl.innerText = "Bezier compression: " + comparison.comparison.compressionPercent.toFixed(1) + " %";
@@ -1469,6 +1505,7 @@ function applySmoothing(ri) {
     ri.svgTextOutput.rows = rows;
     ri.svgTextOutput.cols = 50;
     ri.svgTextOutput.value = ri.svgOutputData;
+    updateSvgFileSize();
 }
 
 function addLineEnding(text) {
@@ -1477,11 +1514,7 @@ function addLineEnding(text) {
     return text;
 }
 
-function downloadSvgFile() {
-    if (!ri.sortedLines || ri.sortedLines.length === 0) {
-        alert("No SVG data to download. Please create SVG first.");
-        return;
-    }
+function buildSvgContent() {
     const outputWidth = 640;
     const bbox = calculateBoundingBoxPointArray(ri.sortedLines);
     const [x1, y1, x2, y2] = bbox;
@@ -1519,14 +1552,28 @@ function downloadSvgFile() {
         pathStrings.push(`  <path d="${d}" fill="none" stroke="black" stroke-width="1"/>`);
     }
 
-    const svgContent = [
+    return [
         '<?xml version="1.0" encoding="UTF-8"?>',
         `<svg xmlns="http://www.w3.org/2000/svg" width="${outputWidth}" height="${outputHeight}" viewBox="0 0 ${outputWidth} ${outputHeight}">`,
         ...pathStrings,
         '</svg>'
     ].join('\n');
+}
 
+function updateSvgFileSize() {
+    if (!ri.sortedLines || ri.sortedLines.length === 0) return;
+    const blob = new Blob([buildSvgContent()], { type: 'image/svg+xml' });
+    document.getElementById("svgFileSize").textContent = `${(blob.size / 1024).toFixed(1)} kB`;
+}
+
+function downloadSvgFile() {
+    if (!ri.sortedLines || ri.sortedLines.length === 0) {
+        alert("No SVG data to download. Please create SVG first.");
+        return;
+    }
+    const svgContent = buildSvgContent();
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+    document.getElementById("svgFileSize").textContent = `${(blob.size / 1024).toFixed(1)} kB`;
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -1588,8 +1635,8 @@ function createSvg(ri) {
             cv.threshold(thresholded, inverted, 128, 255, cv.THRESH_BINARY_INV);
             c("Canny Edge detected imagedata:"); c(inverted.data);
         }
-        // Cap processing resolution so results are consistent across display sizes.
-        const ZS_PROCESSING_WIDTH = 512;
+        // Process at the displayed image size, capped at 1024px for performance.
+        const ZS_PROCESSING_WIDTH = Math.min(imgSrc.width, 1024);
         if (inverted.cols > ZS_PROCESSING_WIDTH) {
             const zsScale = ZS_PROCESSING_WIDTH / inverted.cols;
             const dsize = new cv.Size(ZS_PROCESSING_WIDTH, Math.round(inverted.rows * zsScale));
@@ -1598,6 +1645,9 @@ function createSvg(ri) {
             inverted.delete();
             inverted = resized;
         }
+        // Sync ri dimensions to actual processing size so all canvases size correctly.
+        ri.width  = inverted.cols;
+        ri.height = inverted.rows;
         const binaryData = matToBinaryArray(inverted);
         console.log("Inverted cols,rows:"); console.log(inverted.cols, inverted.rows);
         const thinnedData = zhangSuenThinning(binaryData, inverted.cols, inverted.rows);
@@ -1635,12 +1685,14 @@ function createSvg(ri) {
         ri.createStartpoints = startpointsCheckbox.checked;
         drawCenterLine(ri, false);
 
-        smoothedCanvas.width = imgSrc.width;
-        smoothedCanvas.height = imgSrc.height;
+        const outputPanel = document.getElementById('outputWindow');
+        smoothedCanvas.width  = outputPanel.clientWidth;
+        smoothedCanvas.height = outputPanel.clientHeight;
         drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black");
 
-        canvasSvgWindow.width = inverted.cols;
-        canvasSvgWindow.height = inverted.rows;
+        const svgPanel = document.getElementById('svgWindow');
+        canvasSvgWindow.width  = svgPanel.clientWidth;
+        canvasSvgWindow.height = svgPanel.clientHeight;
         const svgOut = document.getElementById("svgOutput");
         svgOut.innerHTML = "";
         svgOut.appendChild(canvasSvgWindow);
