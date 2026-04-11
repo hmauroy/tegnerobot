@@ -34,7 +34,7 @@ const startpointsCheckbox = document.getElementById("startpointsCheckbox");
 const centerLineSeparationEl = document.getElementById("centerLineSeparation");
 const btnUpdateCenterline = document.getElementById("btnUpdateCenterline");
 const btnApplySmoothing = document.getElementById("btnApplySmoothing");
-const enableSmoothingElement = document.getElementById('enableSmoothing');
+const smoothedStartpointsCheckbox = document.getElementById('smoothedStartpointsCheckbox');
 const minDistanceElement = document.getElementById('minDistance');
 const angleThresholdElement = document.getElementById('angleThreshold');
 const douglasEpsilonElement = document.getElementById('douglasEpsilon');
@@ -1254,6 +1254,58 @@ function clearClickableElements() {
     container.querySelectorAll('.clickable-circle').forEach(circle => circle.remove());
 }
 
+function clearSmoothedClickableElements() {
+    const container = document.getElementById('outputWindow');
+    container.querySelectorAll('.clickable-circle').forEach(circle => circle.remove());
+}
+
+function drawSmoothedStartPoints(ri) {
+    if (!ri.sortedLines || ri.sortedLines.length === 0) return;
+    clearSmoothedClickableElements();
+    const bbox = calculateBoundingBoxPointArray(ri.sortedLines);
+    const [x1, y1, x2, y2] = bbox;
+    const dataW = x2 - x1 || 1, dataH = y2 - y1 || 1;
+    const panel = document.getElementById('outputWindow');
+    const dispScale = Math.min(panel.clientWidth / dataW, panel.clientHeight / dataH);
+    for (let i = 1; i < ri.sortedLines.length; i++) {
+        if (ri.sortedLines[i] && ri.sortedLines[i].length > 0)
+            createSmoothedClickableCircle(ri, 6, i, "black", dispScale, x1, y1);
+    }
+    if (ri.sortedLines[0] && ri.sortedLines[0].length > 0)
+        createSmoothedClickableCircle(ri, 6, 0, "red", dispScale, x1, y1);
+}
+
+function createSmoothedClickableCircle(ri, radius, index, color, dispScale, offsetX, offsetY) {
+    const point = ri.sortedLines[index][0];
+    const circle = document.createElement('div');
+    circle.className = 'clickable-circle flexbox-centered';
+    circle.index = index;
+    circle.style.position = 'absolute';
+    circle.style.left = ((point[0] - offsetX) * dispScale - radius) + 'px';
+    circle.style.top  = ((point[1] - offsetY) * dispScale - radius) + 'px';
+    circle.style.width = (radius * 2) + 'px';
+    circle.style.height = (radius * 2) + 'px';
+    circle.style.borderRadius = '50%';
+    circle.innerText = index + 1;
+    circle.style.fontFamily = "Arial";
+    circle.style.fontSize = "8px";
+    circle.style.backgroundColor = color;
+    circle.style.border = '1px solid ' + color;
+    circle.style.cursor = 'pointer';
+    circle.style.zIndex = '1000';
+    circle.ri = ri;
+    circle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (this.ri.sortedLines.length <= 1) { console.log("Can't delete the last line!"); return; }
+        this.ri.sortedLines.splice(this.index, 1);
+        this.ri.pathScaledDown.splice(this.index, 1);
+        this.remove();
+        drawCenterLine(this.ri, false);
+        applySmoothing(this.ri);
+    });
+    document.getElementById('outputWindow').appendChild(circle);
+}
+
 function drawCenterLine(ri, continueDrawings = true) {
     const panel = document.getElementById('canvas-centerLine');
     ri.centerLineCanvas.width  = panel.clientWidth;
@@ -1497,7 +1549,8 @@ function scaleSvgOutputToRobot(ri) {
     ri.svgOutputData = generateBezierCurves(ri.pathScaledDown);
     console.log("ri.svgOutputData: ");
     console.log(JSON.stringify(ri.svgOutputData));
-    drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black");
+    ri.parsedBezierPaths = JSON.parse(ri.svgOutputData);
+    drawBezierCurves(ri.parsedBezierPaths, smoothedCanvas, "black");
     let rows = Math.ceil(ri.svgOutputData.length * 25);
     ri.svgTextOutput.rows = rows;
     ri.svgTextOutput.cols = 50;
@@ -1509,6 +1562,7 @@ function applySmoothing(ri) {
     // Always rebuild pathScaledDown from the current ri.sortedLines so that any
     // curve deletions (start-point clicks) are reflected before smoothing runs.
     // Convert pixel-space sortedLines → mm space using the robotWidth slider.
+    clearSmoothedClickableElements();
     const bbox = calculateBoundingBoxPointArray(ri.sortedLines);
     const svgWidth = (bbox[2] - bbox[0]) || 1;
     const robotWidth = parseFloat(document.getElementById("rngDrawingWidth").value);
@@ -1521,18 +1575,21 @@ function applySmoothing(ri) {
     // Compute smoothed paths locally (mm space) for file-size estimate — do NOT overwrite ri.sortedLines,
     // which must stay as the original sorted pixel-space lines for centerline redraw and start-point display.
     const smoothedPaths = ri.pathScaledDown.map(path =>
-        smoothingSettings.enableSmoothing ? PointSmoother.smartSmooth(path, smoothingSettings) : path
+        PointSmoother.smartSmooth(path, smoothingSettings)
     );
     const comparison = compareArraySizes(ri.pathScaledDown, ri.svgOutputData);
     printComparison(comparison);
-    compressionInfoEl.innerText = "Bezier compression: " + comparison.comparison.compressionPercent.toFixed(1) + " %";
-    drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black");
+    const lineCount = ri.sortedLines.length;
+    compressionInfoEl.innerText = "Bezier compression: " + comparison.comparison.compressionPercent.toFixed(1) + " %  |  " + lineCount + " lines";
+    ri.parsedBezierPaths = JSON.parse(ri.svgOutputData);
+    drawBezierCurves(ri.parsedBezierPaths, smoothedCanvas, "black");
     ri.svgOutputData = addLineEnding(ri.svgOutputData);
     let rows = Math.ceil(ri.svgOutputData.length * 25);
     ri.svgTextOutput.rows = rows;
     ri.svgTextOutput.cols = 50;
     ri.svgTextOutput.value = ri.svgOutputData;
     updateSvgFileSize(smoothedPaths);
+    if (smoothedStartpointsCheckbox.checked) drawSmoothedStartPoints(ri);
 }
 
 function addLineEnding(text) {
@@ -1595,12 +1652,62 @@ function updateSvgFileSize(pointArrays = null) {
     document.getElementById("svgFileSize").textContent = `${(blob.size / 1024).toFixed(1)} kB`;
 }
 
+function buildSvgFromBezierPaths(pathsArray) {
+    const outputWidth = 640;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    pathsArray.forEach(path => {
+        let i = 0;
+        while (i < path.length) {
+            const cmd = path[i];
+            if (cmd === "M" || cmd === "L") {
+                minX = Math.min(minX, path[i+1]); maxX = Math.max(maxX, path[i+1]);
+                minY = Math.min(minY, path[i+2]); maxY = Math.max(maxY, path[i+2]);
+                i += 3;
+            } else if (cmd === "C") {
+                for (let j = 1; j <= 6; j += 2) {
+                    minX = Math.min(minX, path[i+j]); maxX = Math.max(maxX, path[i+j]);
+                    minY = Math.min(minY, path[i+j+1]); maxY = Math.max(maxY, path[i+j+1]);
+                }
+                i += 7;
+            } else { i++; }
+        }
+    });
+    const dataW = (maxX - minX) || 1, dataH = (maxY - minY) || 1;
+    const scale = outputWidth / dataW;
+    const outputHeight = Math.ceil(dataH * scale);
+    const pathStrings = pathsArray.map(path => {
+        let d = '', i = 0;
+        while (i < path.length) {
+            const cmd = path[i];
+            if (cmd === "M") {
+                d += `M ${((path[i+1]-minX)*scale).toFixed(2)},${((path[i+2]-minY)*scale).toFixed(2)} `;
+                i += 3;
+            } else if (cmd === "L") {
+                d += `L ${((path[i+1]-minX)*scale).toFixed(2)},${((path[i+2]-minY)*scale).toFixed(2)} `;
+                i += 3;
+            } else if (cmd === "C") {
+                d += `C ${((path[i+1]-minX)*scale).toFixed(2)},${((path[i+2]-minY)*scale).toFixed(2)} ` +
+                     `${((path[i+3]-minX)*scale).toFixed(2)},${((path[i+4]-minY)*scale).toFixed(2)} ` +
+                     `${((path[i+5]-minX)*scale).toFixed(2)},${((path[i+6]-minY)*scale).toFixed(2)} `;
+                i += 7;
+            } else { i++; }
+        }
+        return `  <path d="${d.trim()}" fill="none" stroke="black" stroke-width="1"/>`;
+    });
+    return [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${outputWidth}" height="${outputHeight}" viewBox="0 0 ${outputWidth} ${outputHeight}">`,
+        ...pathStrings,
+        '</svg>'
+    ].join('\n');
+}
+
 function downloadSvgFile() {
     if (!ri.sortedLines || ri.sortedLines.length === 0) {
         alert("No SVG data to download. Please create SVG first.");
         return;
     }
-    const svgContent = buildSvgContent();
+    const svgContent = ri.parsedBezierPaths ? buildSvgFromBezierPaths(ri.parsedBezierPaths) : buildSvgContent();
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
     document.getElementById("svgFileSize").textContent = `${(blob.size / 1024).toFixed(1)} kB`;
     const url = URL.createObjectURL(blob);
@@ -1717,7 +1824,8 @@ function createSvg(ri) {
         const outputPanel = document.getElementById('outputWindow');
         smoothedCanvas.width  = outputPanel.clientWidth;
         smoothedCanvas.height = outputPanel.clientHeight;
-        drawBezierCurves(JSON.parse(ri.svgOutputData), smoothedCanvas, "black");
+        ri.parsedBezierPaths = JSON.parse(ri.svgOutputData);
+        drawBezierCurves(ri.parsedBezierPaths, smoothedCanvas, "black");
 
         const svgPanel = document.getElementById('svgWindow');
         canvasSvgWindow.width  = svgPanel.clientWidth;
@@ -1789,8 +1897,12 @@ movingAverageWindowElement.addEventListener('input', () => {
     smoothingSettings.movingAverageWindow = parseInt(movingAverageWindowElement.value);
     d("movingAverageWindow-value").innerText = smoothingSettings.movingAverageWindow;
 });
-enableSmoothingElement.addEventListener('change', () => {
-    smoothingSettings.enableSmoothing = enableSmoothingElement.checked;
+smoothedStartpointsCheckbox.addEventListener('change', () => {
+    if (smoothedStartpointsCheckbox.checked) {
+        drawSmoothedStartPoints(ri);
+    } else {
+        clearSmoothedClickableElements();
+    }
 });
 
 document.getElementById("btnCopy").addEventListener("click", () => { copySVG(); });
@@ -1850,3 +1962,27 @@ function copySVG() {
 }
 
 function d(id) { return document.getElementById(id); }
+
+// Redraw on window resize
+function redrawOnResize() {
+    if (ri.sortedLines && ri.sortedLines.length > 0) {
+        drawCenterLine(ri, false);
+    }
+    if (ri.parsedBezierPaths) {
+        const outputPanel = document.getElementById('outputWindow');
+        const w = outputPanel.clientWidth;
+        const h = outputPanel.clientHeight;
+        smoothedCanvas.width  = w;
+        smoothedCanvas.height = h;
+        smoothedCanvas.style.width  = w + "px";
+        smoothedCanvas.style.height = h + "px";
+        drawBezierCurves(ri.parsedBezierPaths, smoothedCanvas, "black");
+    }
+}
+let resizeTimerFast, resizeTimerFinal;
+window.addEventListener("resize", () => {
+    clearTimeout(resizeTimerFast);
+    clearTimeout(resizeTimerFinal);
+    resizeTimerFast  = setTimeout(redrawOnResize, 100);
+    resizeTimerFinal = setTimeout(redrawOnResize, 500);
+});

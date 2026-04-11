@@ -11,15 +11,10 @@
     <script src="potrace.js"></script>
     <!-- potrace repo: https://github.com/kilobtye/potrace/blob/master/potrace.js-->
     <style>
-        #opencv-status {
-            display: block;
-            color: var(--mauroy-grey-light);
-        }
-        
+
     </style>
 </head>
 <body>
-    <p id="opencv-status" class="crt-font">OpenCV.js is loading...</p>
     <div><input type="file" id="fileInput" name="file" /></div>    
     <div class="container">
         <div class="panels-grid">
@@ -170,8 +165,8 @@
                     <button class="create-btn" id="btnApplySmoothing">Apply smoothing</button>
                 </div>
                 <div class="checkbox-container">
-                    <input type="checkbox" id="enableSmoothing" class="checkbox">
-                    <label for="enableSmoothing" class="checkbox-label">Enable smoothing</label>
+                    <input type="checkbox" id="smoothedStartpointsCheckbox" class="checkbox">
+                    <label for="smoothedStartpointsCheckbox" class="checkbox-label">Mark start points</label>
                 </div>
                 <div class="slider-container">
                     <div class="slider-label">
@@ -202,7 +197,7 @@
                         <span>movingAverageWindow</span>
                         <span id="movingAverageWindow-value">3</span>
                     </div>
-                    <input type="range" min="2" max="10" value="3" class="slider" id="movingAverageWindow">
+                    <input type="range" min="3" max="11" value="3" step="2" class="slider" id="movingAverageWindow">
                 </div>
                 <p id="compressionInfo"></p>
                 
@@ -220,7 +215,14 @@
 
     <div id="mouse-follower"></div>
 
-    <script async src="opencv.js" type="text/javascript"></script>
+    <script>
+        var opencvLoadTimeout = setTimeout(function() {
+            alert("OpenCV failed to load. Please refresh the page.");
+        }, 1000);
+    </script>
+    <script async src="opencv.js" type="text/javascript"
+        onload="cv.onRuntimeInitialized = function() { clearTimeout(opencvLoadTimeout); }; if (typeof cv.Mat !== 'undefined') clearTimeout(opencvLoadTimeout);"
+        onerror="clearTimeout(opencvLoadTimeout); alert('OpenCV failed to load. Please refresh the page.');"></script>
     <!--script async src="https://docs.opencv.org/4.5.0/opencv.js" type="text/javascript"></script-->
     <script type="text/javascript" src="app.js"></script>
 </body>

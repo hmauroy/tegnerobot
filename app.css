@@ -118,6 +118,7 @@ h1 {
 #outputWindow{
     order: 6;
     overflow: hidden;
+    position: relative;
 }
 #output-options{
     order: 7;
