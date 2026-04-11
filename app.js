@@ -1646,9 +1646,11 @@ function buildSvgContent(pointArrays = null) {
 }
 
 function updateSvgFileSize(pointArrays = null) {
-    const pts = pointArrays || ri.sortedLines;
-    if (!pts || pts.length === 0) return;
-    const blob = new Blob([buildSvgContent(pts)], { type: 'image/svg+xml' });
+    const svgContent = ri.parsedBezierPaths
+        ? buildSvgFromBezierPaths(ri.parsedBezierPaths)
+        : buildSvgContent(pointArrays || ri.sortedLines);
+    if (!svgContent) return;
+    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
     document.getElementById("svgFileSize").textContent = `${(blob.size / 1024).toFixed(1)} kB`;
 }
 
@@ -1977,6 +1979,7 @@ function redrawOnResize() {
         smoothedCanvas.style.width  = w + "px";
         smoothedCanvas.style.height = h + "px";
         drawBezierCurves(ri.parsedBezierPaths, smoothedCanvas, "black");
+        updateSvgFileSize();
     }
 }
 let resizeTimerFast, resizeTimerFinal;
