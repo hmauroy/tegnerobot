@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lithophane Studio</title>
+  <link rel="stylesheet" href="app.css">
+  <style>
+    /* ── Container: centered, max-width (overrides app.css 100vw) ──────── */
+    .container {
+      max-width: 1280px;
+    }
+
+    h1 .accent {
+      color: var(--mauroy-pink);
+      font-weight: 600;
+    }
+
+    #by_claude {
+      font-size: 60%;
+      font-family: 'Times New Roman', Times, serif;
+      color: #ffa245;
+      font-weight: 300;
+    }
+
+    /* ── Upload zone — centered below heading, above the image grid ─────── */
+    .upload-zone {
+      align-self: center;
+      width: min(560px, 100%);
+      margin-bottom: 1.2rem;
+      border: 2px dashed rgba(230, 28, 125, 0.4);
+      border-radius: 10px;
+      padding: 20px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s, transform 0.15s;
+      position: relative;
+      background: rgba(33, 37, 41, 0.4);
+    }
+
+    .upload-zone:hover,
+    .upload-zone.drag {
+      border-color: var(--mauroy-pink);
+      background: rgba(230, 28, 125, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .upload-zone input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      font-size: 24px;
+      margin-bottom: 6px;
+      color: var(--mauroy-pink);
+    }
+
+    .upload-zone p {
+      color: var(--mauroy-grey-light);
+      font-size: 0.85em;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .upload-zone p strong {
+      color: var(--mauroy-pink);
+      font-weight: 600;
+    }
+
+    .upload-zone #fileInput::file-selector-button {
+      display: none;
+    }
+
+    /* ── CSS Grid layout ────────────────────────────────────────────────────
+       Desktop (4 columns):
+         gray   gray   output output   ← images side by side
+         tone   smooth thick  export   ← controls below
+
+       Mobile (1 column, reordered via grid-template-areas):
+         gray → tone → smooth → output → thick → export
+    ─────────────────────────────────────────────────────────────────────── */
+    .litho-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-areas:
+        "gray   gray   output output"
+        "tone   smooth thick  export";
+      gap: 1.2rem;
+    }
+
+    #panel-gray   { grid-area: gray; }
+    #panel-output { grid-area: output; }
+    #panel-tone   { grid-area: tone; }
+    #panel-smooth { grid-area: smooth; }
+    #panel-thick  { grid-area: thick; }
+    #panel-export { grid-area: export; }
+
+    /* Reset app.css's fixed panel sizing for grid children */
+    .litho-grid .panel {
+      width: auto;
+      margin-bottom: 0;
+    }
+
+    /* Canvas panels need an explicit height so the flex column fills properly */
+    #panel-gray,
+    #panel-output {
+      height: min(420px, 28vw);
+    }
+
+    /* ── Mobile layout ──────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .container {
+        padding: 16px;
+      }
+
+      .litho-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "gray"
+          "tone"
+          "smooth"
+          "output"
+          "thick"
+          "export";
+        gap: 1rem;
+      }
+
+      /* app.css sets panel height: 90vw on mobile — override for canvas panels */
+      #panel-gray,
+      #panel-output {
+        height: min(360px, 75vw);
+      }
+
+      .control-group {
+        padding: 16px;
+      }
+    }
+
+    /* ── Section labels ─────────────────────────────────────────────────── */
+    .section-label {
+      font-size: 0.72em;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mauroy-grey-light);
+      opacity: 0.6;
+      margin-top: 20px;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(230, 28, 125, 0.2);
+      font-weight: 600;
+    }
+
+    .panel > .section-label:first-child {
+      margin-top: 0;
+    }
+
+    /* ── Param controls ─────────────────────────────────────────────────── */
+    .param-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .param {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .param-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .param-name {
+      color: var(--mauroy-grey-light);
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .param-value {
+      color: var(--mauroy-pink);
+      font-size: 0.85em;
+      font-weight: 600;
+      min-width: 80px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .param-hint {
+      color: var(--mauroy-grey-light);
+      opacity: 0.55;
+      font-size: 0.72em;
+      line-height: 1.5;
+    }
+
+    /* ── Pill toggle (Invert) ───────────────────────────────────────────── */
+    .toggle {
+      width: 40px;
+      height: 20px;
+      border-radius: 12px;
+      background: var(--mauroy-grey-darker);
+      border: 1px solid rgba(230, 28, 125, 0.3);
+      cursor: pointer;
+      padding: 0;
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.25s, border-color 0.25s;
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--mauroy-grey-light);
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    .toggle[data-on="true"] {
+      background: linear-gradient(45deg, var(--mauroy-pink), var(--mauroy-pink-darker));
+      border-color: var(--mauroy-pink);
+    }
+
+    .toggle[data-on="true"] .toggle-thumb {
+      transform: translateX(20px);
+      background: white;
+    }
+
+    /* ── Reset button ───────────────────────────────────────────────────── */
+    .reset-btn {
+      background: transparent;
+      border: 1px solid rgba(230, 28, 125, 0.4);
+      color: var(--mauroy-grey-light);
+      padding: 9px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      font-size: 0.8em;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      transition: all 0.25s ease;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .reset-btn:hover {
+      border-color: var(--mauroy-pink);
+      color: var(--mauroy-pink);
+      transform: translateY(-1px);
+    }
+
+    /* ── Download STL button ────────────────────────────────────────────── */
+    .panel .create-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 11px 20px;
+      font-size: 1em;
+    }
+
+    .panel .create-btn:disabled {
+      background: var(--mauroy-grey-medium);
+      color: var(--mauroy-grey-light);
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .panel .create-btn:disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .export-info {
+      color: var(--mauroy-grey-light);
+      opacity: 0.7;
+      font-size: 0.78em;
+      margin-top: 8px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .export-info.success {
+      color: #5fbf8f;
+      opacity: 1;
+    }
+
+    /* ── Canvas panel internal layout ───────────────────────────────────── */
+    .canvas-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .canvas-label {
+      padding: 10px 18px;
+      font-size: 0.72em;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--mauroy-grey-light);
+      opacity: 0.7;
+      border-bottom: 1px solid rgba(230, 28, 125, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      font-weight: 600;
+      background: rgba(24, 26, 29, 0.4);
+    }
+
+    .canvas-label .badge {
+      background: rgba(230, 28, 125, 0.15);
+      border: 1px solid rgba(230, 28, 125, 0.4);
+      border-radius: 3px;
+      padding: 2px 8px;
+      font-size: 0.95em;
+      color: var(--mauroy-pink);
+      letter-spacing: 0.05em;
+      text-transform: none;
+      opacity: 1;
+    }
+
+    /* Checkered transparency backdrop */
+    .canvas-wrapper {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background:
+        repeating-conic-gradient(rgba(33, 37, 41, 0.95) 0% 25%,
+          rgba(24, 26, 29, 0.95) 0% 50%) 0 0 / 22px 22px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    canvas {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      image-rendering: pixelated;
+      box-shadow:
+        0 0 0 1px rgba(230, 28, 125, 0.2),
+        0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--mauroy-grey-light);
+      opacity: 0.4;
+      font-size: 0.9em;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+    }
+
+    .empty-state .big {
+      font-size: 42px;
+      opacity: 0.5;
+      color: var(--mauroy-pink);
+    }
+
+    /* ── Status bar — inside the output canvas panel ────────────────────── */
+    .statusbar {
+      padding: 8px 16px;
+      border-top: 1px solid rgba(230, 28, 125, 0.25);
+      display: flex;
+      gap: 14px;
+      font-size: 0.72em;
+      color: var(--mauroy-grey-light);
+      opacity: 0.85;
+      flex-shrink: 0;
+      background: rgba(24, 26, 29, 0.6);
+      flex-wrap: wrap;
+    }
+
+    .statusbar span {
+      display: flex;
+      gap: 5px;
+    }
+
+    .statusbar strong {
+      color: var(--mauroy-pink);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Processing spinner ─────────────────────────────────────────────── */
+    .processing {
+      position: absolute;
+      inset: 0;
+      background: rgba(24, 26, 29, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .processing.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid rgba(230, 28, 125, 0.2);
+      border-top-color: var(--mauroy-pink);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>Lithophane <span class="accent">Studio</span> &nbsp;<span id="by_claude">by Claude</span></h1>
+
+    <!-- Upload zone — centered, spans full width above the image grid -->
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="fileInput" accept="image/*">
+      <div class="upload-icon">⬡</div>
+      <p><strong>Click or drag</strong> an image &nbsp;·&nbsp; PNG · JPG · WEBP · GIF</p>
+    </div>
+
+    <div class="litho-grid">
+
+      <!-- Greyscale input canvas (desktop: left; mobile: 1st) -->
+      <div class="panel canvas-panel" id="panel-gray">
+        <div class="canvas-label">
+          <span>Greyscale input</span>
+          <span class="badge" id="badge-size">—</span>
+        </div>
+        <div class="canvas-wrapper">
+          <div class="empty-state" id="emptyLeft">
+            <div class="big">◫</div>
+            <div>Upload an image to begin</div>
+          </div>
+          <canvas id="canvasGray" style="display:none"></canvas>
+        </div>
+      </div>
+
+      <!-- Height-map output canvas (desktop: right; mobile: 4th) -->
+      <div class="panel canvas-panel" id="panel-output">
+        <div class="canvas-label">
+          <span>Height-map output</span>
+          <span class="badge">pre-mesh</span>
+        </div>
+        <div class="canvas-wrapper">
+          <div class="processing" id="spinner">
+            <div class="spinner"></div>
+          </div>
+          <div class="empty-state" id="emptyRight">
+            <div class="big">◪</div>
+            <div>Waiting for image</div>
+          </div>
+          <canvas id="canvasLitho" style="display:none"></canvas>
+        </div>
+        <div class="statusbar">
+          <span>Gamma <strong id="st-gamma">—</strong></span>
+          <span>Min <strong id="st-min">—</strong></span>
+          <span>Max <strong id="st-max">—</strong></span>
+          <span>Blur σ <strong id="st-blur">—</strong></span>
+          <span>Range <strong id="st-range">—</strong></span>
+        </div>
+      </div>
+
+      <!-- Tone controls (desktop: col 1 below; mobile: 2nd) -->
+      <div class="panel control-group" id="panel-tone">
+        <div class="section-label">Tone</div>
+        <div class="param-group">
+
+          <div class="param">
+            <div class="param-header">
+              <span class="param-name">Gamma</span>
+              <span class="param-value" id="val-gamma">1.00</span>
+            </div>
+            <input type="range" id="gamma" class="slider" min="0.2" max="3.0" step="0.05" value="1.0">
+            <p class="param-hint">Corrects non-linear light transmission through material.</p>
+          </div>
+
+          <div class="param">
+            <div class="param-header">
+              <span class="param-name">Invert</span>
+              <button type="button" class="toggle" id="invertToggle" data-on="false">
+                <span class="toggle-thumb"></span>
+              </button>
+            </div>
+            <p class="param-hint">Swap thick/thin — use if backlit result looks reversed.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Smoothing controls (desktop: col 2 below; mobile: 3rd) -->
+      <div class="panel control-group" id="panel-smooth">
+        <div class="section-label">Smoothing</div>
+        <div class="param-group">
+
+          <div class="param">
+            <div class="param-header">
+              <span class="param-name">Blur radius (px)</span>
+              <span class="param-value" id="val-blur">1.0</span>
+            </div>
+            <input type="range" id="blur" class="slider" min="0" max="6" step="0.5" value="1.0">
+            <p class="param-hint">Gaussian blur on height map. Reduces layer artifacts.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Thickness controls (desktop: col 3 below; mobile: 5th) -->
+      <div class="panel control-group" id="panel-thick">
+        <div class="section-label">Thickness</div>
+        <div class="param-group">
+
+          <div class="param">
+            <div class="param-header">
+              <span class="param-name">Min (mm)</span>
+              <span class="param-value" id="val-min">0.5</span>
+            </div>
+            <input type="range" id="minThick" class="slider" min="0.1" max="2.0" step="0.1" value="0.5">
+            <p class="param-hint">Thinnest point — transmits the most light (highlights).</p>
+          </div>
+
+          <div class="param">
+            <div class="param-header">
+              <span class="param-name">Max (mm)</span>
+              <span class="param-value" id="val-max">3.0</span>
+            </div>
+            <input type="range" id="maxThick" class="slider" min="1.0" max="8.0" step="0.1" value="3.0">
+            <p class="param-hint">Thickest point — blocks light (shadows).</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Export controls (desktop: col 4 below; mobile: 6th) -->
+      <div class="panel control-group" id="panel-export">
+        <div class="section-label">Export</div>
+        <div class="param-group">
+
+          <div class="param">
+            <div class="param-header">
+              <span class="param-name">Width (mm)</span>
+              <span class="param-value" id="val-width">100</span>
+            </div>
+            <input type="range" id="physWidth" class="slider" min="40" max="300" step="5" value="100">
+            <p class="param-hint">Physical width of printed lithophane. Height auto-scales.</p>
+          </div>
+
+          <div class="param">
+            <div class="param-header">
+              <span class="param-name">Resolution</span>
+              <span class="param-value" id="val-res">100%</span>
+            </div>
+            <input type="range" id="resolution" class="slider" min="25" max="100" step="5" value="100">
+            <p class="param-hint">Mesh density. Lower = faster export, smaller file.</p>
+          </div>
+
+        </div>
+
+        <button class="reset-btn" id="resetBtn">↺ Reset defaults</button>
+
+        <button class="create-btn" id="exportBtn" disabled>
+          <span id="exportLabel">⬇ Download STL</span>
+        </button>
+        <p class="export-info" id="exportInfo">Upload an image first</p>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── State ──────────────────────────────────────────────────────────────
+    let sourceImageData = null; // raw grayscale pixel array [0..1] Float32Array
+
+    const defaults = { gamma: 1.0, minThick: 0.5, maxThick: 3.0, blur: 1.0, physWidth: 100, resolution: 100 };
+    const defaultInvert = false;
+
+    const params = () => ({
+      gamma: parseFloat(document.getElementById('gamma').value),
+      invert: document.getElementById('invertToggle').dataset.on === 'true' ? 1 : 0,
+      minThick: parseFloat(document.getElementById('minThick').value),
+      maxThick: parseFloat(document.getElementById('maxThick').value),
+      blur: parseFloat(document.getElementById('blur').value),
+    });
+
+    // ── Slider wiring ──────────────────────────────────────────────────────
+    function updateSliderTrack(el) {
+      const min = parseFloat(el.min), max = parseFloat(el.max), val = parseFloat(el.value);
+      const pct = ((val - min) / (max - min)) * 100;
+      el.style.setProperty('--pct', pct + '%');
+    }
+
+    const sliders = ['gamma', 'minThick', 'maxThick', 'blur', 'physWidth', 'resolution'];
+    const displayFn = {
+      gamma: v => `${parseFloat(v).toFixed(2)} / 3.00`,
+      minThick: v => `${parseFloat(v).toFixed(1)} / 2.0 mm`,
+      maxThick: v => `${parseFloat(v).toFixed(1)} / 8.0 mm`,
+      blur: v => `${parseFloat(v).toFixed(1)} / 6.0 px`,
+      physWidth: v => `${parseInt(v)} / 300 mm`,
+      resolution: v => `${parseInt(v)} / 100 %`,
+    };
+
+    // Maps slider IDs to their value-display element IDs.
+    // (HTML uses short suffixes for legacy reasons.)
+    const valElIdFor = {
+      gamma: 'val-gamma',
+      minThick: 'val-min',
+      maxThick: 'val-max',
+      blur: 'val-blur',
+      physWidth: 'val-width',
+      resolution: 'val-res',
+    };
+
+    sliders.forEach(id => {
+      const el = document.getElementById(id);
+      const valEl = document.getElementById(valElIdFor[id]);
+      updateSliderTrack(el);
+      // Initialize displayed value on page load
+      valEl.textContent = displayFn[id](el.value);
+      el.addEventListener('input', () => {
+        valEl.textContent = displayFn[id](el.value);
+        updateSliderTrack(el);
+        // Only re-render preview for params that affect height map
+        if (sourceImageData && !['physWidth', 'resolution'].includes(id)) requestRender();
+        // Resume live predictions after a successful export
+        document.getElementById('exportInfo').classList.remove('success');
+        if (sourceImageData) updatePrediction();
+      });
+    });
+
+    // ── Invert toggle ──────────────────────────────────────────────────────
+    const invertToggle = document.getElementById('invertToggle');
+    invertToggle.addEventListener('click', () => {
+      const next = invertToggle.dataset.on !== 'true';
+      invertToggle.dataset.on = next ? 'true' : 'false';
+      if (sourceImageData) requestRender();
+    });
+
+    // ── File size prediction ───────────────────────────────────────────────
+    // Binary STL format is fully deterministic:
+    //   total bytes = 84 (header + triangle count) + triangles × 50
+    // Triangle count from mesh topology:
+    //   top + bottom = 2 × 2 × (ew-1) × (eh-1) = 4 × (ew-1) × (eh-1)
+    //   side walls   = 4 × (ew-1) + 4 × (eh-1)  (two tris per edge segment)
+
+    function predictMesh() {
+      if (!sourceImageData) return null;
+      const { width: w, height: h } = sourceImageData;
+      const resolution = parseFloat(document.getElementById('resolution').value) / 100;
+      const physWidth = parseFloat(document.getElementById('physWidth').value);
+
+      const ew = Math.max(2, Math.round(w * resolution));
+      const eh = Math.max(2, Math.round(h * resolution));
+      const triangles = 4 * (ew - 1) * (eh - 1) + 4 * (ew - 1) + 4 * (eh - 1);
+      const bytes = 84 + triangles * 50;
+      const physHeight = (physWidth / (w - 1)) * (h - 1);
+
+      return { ew, eh, triangles, bytes, physWidth, physHeight };
+    }
+
+    function formatBytes(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+      return (b / 1024 / 1024).toFixed(2) + ' MB';
+    }
+
+    function updatePrediction() {
+      const info = document.getElementById('exportInfo');
+      if (info.classList.contains('success')) return; // don't overwrite success message
+      const m = predictMesh();
+      if (!m) return;
+      info.textContent = `≈ ${m.triangles.toLocaleString()} triangles · ${formatBytes(m.bytes)} · ${m.physWidth.toFixed(0)}×${m.physHeight.toFixed(0)} mm`;
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      Object.entries(defaults).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        el.value = val;
+        const valEl = document.getElementById(valElIdFor[id]);
+        valEl.textContent = displayFn[id](val);
+        updateSliderTrack(el);
+      });
+      invertToggle.dataset.on = defaultInvert ? 'true' : 'false';
+      if (sourceImageData) requestRender();
+    });
+
+    // ── Image upload ───────────────────────────────────────────────────────
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+
+    fileInput.addEventListener('change', e => { if (e.target.files[0]) loadImage(e.target.files[0]); });
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('drag');
+      if (e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]);
+    });
+
+    function loadImage(file) {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const w = img.naturalWidth, h = img.naturalHeight;
+        // Draw to offscreen canvas to extract pixel data
+        const off = document.createElement('canvas');
+        off.width = w; off.height = h;
+        const ctx = off.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const raw = ctx.getImageData(0, 0, w, h);
+        URL.revokeObjectURL(url);
+
+        // Convert to grayscale float [0..1] using luminance weights
+        sourceImageData = { width: w, height: h, data: new Float32Array(w * h) };
+        for (let i = 0; i < w * h; i++) {
+          const r = raw.data[i * 4] / 255;
+          const g = raw.data[i * 4 + 1] / 255;
+          const b = raw.data[i * 4 + 2] / 255;
+          sourceImageData.data[i] = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        }
+
+        drawGrayscale();
+        document.getElementById('badge-size').textContent = `${w} × ${h}`;
+        document.getElementById('exportBtn').disabled = false;
+        document.getElementById('exportInfo').classList.remove('success');
+        updatePrediction();
+        requestRender();
+      };
+      img.src = url;
+    }
+
+    // ── Draw grayscale preview ─────────────────────────────────────────────
+    function drawGrayscale() {
+      const { width: w, height: h, data } = sourceImageData;
+      const canvas = document.getElementById('canvasGray');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      const id = ctx.createImageData(w, h);
+      for (let i = 0; i < w * h; i++) {
+        const v = Math.round(data[i] * 255);
+        id.data[i * 4] = v;
+        id.data[i * 4 + 1] = v;
+        id.data[i * 4 + 2] = v;
+        id.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(id, 0, 0);
+      document.getElementById('canvasGray').style.display = 'block';
+      document.getElementById('emptyLeft').style.display = 'none';
+    }
+
+    // ── Gaussian blur (separable, 1D kernel) ───────────────────────────────
+    function gaussianKernel(sigma) {
+      if (sigma <= 0) return null;
+      const radius = Math.ceil(sigma * 3);
+      const size = 2 * radius + 1;
+      const k = new Float32Array(size);
+      let sum = 0;
+      for (let i = 0; i < size; i++) {
+        const x = i - radius;
+        k[i] = Math.exp(-(x * x) / (2 * sigma * sigma));
+        sum += k[i];
+      }
+      for (let i = 0; i < size; i++) k[i] /= sum;
+      return { k, radius };
+    }
+
+    function blurPass(src, dst, w, h, kernel, horizontal) {
+      const { k, radius } = kernel;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          let acc = 0;
+          for (let d = -radius; d <= radius; d++) {
+            const nx = horizontal ? Math.max(0, Math.min(w - 1, x + d)) : x;
+            const ny = horizontal ? y : Math.max(0, Math.min(h - 1, y + d));
+            acc += src[ny * w + nx] * k[d + radius];
+          }
+          dst[y * w + x] = acc;
+        }
+      }
+    }
+
+    function gaussianBlur(data, w, h, sigma) {
+      const kern = gaussianKernel(sigma);
+      if (!kern) return data.slice();
+      const tmp = new Float32Array(w * h);
+      const out = new Float32Array(w * h);
+      blurPass(data, tmp, w, h, kern, true);   // horizontal
+      blurPass(tmp, out, w, h, kern, false);   // vertical
+      return out;
+    }
+
+    // ── Core lithophane algorithm ──────────────────────────────────────────
+    function computeHeightMap(gray, w, h, p) {
+      const { gamma, invert, minThick, maxThick, blur } = p;
+
+      // 1. Gamma correction on luminance
+      const gamma_d = new Float32Array(w * h);
+      for (let i = 0; i < w * h; i++) {
+        gamma_d[i] = Math.pow(gray[i], gamma);
+      }
+
+      // 2. Gaussian blur on gamma-corrected image
+      const blurred = blur > 0 ? gaussianBlur(gamma_d, w, h, blur) : gamma_d.slice();
+
+      // 3. Map brightness → thickness (dark = thick, light = thin) then invert if needed
+      const range = maxThick - minThick;
+      const hmap = new Float32Array(w * h);
+      for (let i = 0; i < w * h; i++) {
+        let lum = Math.max(0, Math.min(1, blurred[i]));
+        if (invert) lum = 1 - lum;
+        // light pixel → minThick, dark pixel → maxThick
+        hmap[i] = maxThick - lum * range;
+      }
+
+      return hmap;
+    }
+
+    // ── Render pipeline ────────────────────────────────────────────────────
+    let renderScheduled = false;
+    function requestRender() {
+      if (renderScheduled) return;
+      renderScheduled = true;
+      requestAnimationFrame(() => {
+        renderScheduled = false;
+        render();
+      });
+    }
+
+    function render() {
+      if (!sourceImageData) return;
+      const p = params();
+      const { width: w, height: h, data } = sourceImageData;
+
+      document.getElementById('spinner').classList.add('active');
+
+      // Use setTimeout so spinner paints before heavy work blocks
+      setTimeout(() => {
+        const hmap = computeHeightMap(data, w, h, p);
+
+        // Normalize height map to [0..1] for display
+        let mn = Infinity, mx = -Infinity;
+        for (let i = 0; i < hmap.length; i++) {
+          if (hmap[i] < mn) mn = hmap[i];
+          if (hmap[i] > mx) mx = hmap[i];
+        }
+        const rng = mx - mn || 1;
+
+        const canvas = document.getElementById('canvasLitho');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        const id = ctx.createImageData(w, h);
+        for (let i = 0; i < w * h; i++) {
+          // Visualise: thin (minThick) → white (255), thick (maxThick) → black (0)
+          const norm = (hmap[i] - mn) / rng;
+          // hmap[i]=maxThick → bright? No: high thickness = dark in preview
+          // maxThick maps to high hmap value → we want that dark
+          const v = Math.round((1 - norm) * 255);
+          id.data[i * 4] = v;
+          id.data[i * 4 + 1] = v;
+          id.data[i * 4 + 2] = v;
+          id.data[i * 4 + 3] = 255;
+        }
+        ctx.putImageData(id, 0, 0);
+        canvas.style.display = 'block';
+        document.getElementById('emptyRight').style.display = 'none';
+
+        // Update statusbar
+        document.getElementById('st-gamma').textContent = p.gamma.toFixed(2);
+        document.getElementById('st-min').textContent = p.minThick.toFixed(1) + 'mm';
+        document.getElementById('st-max').textContent = p.maxThick.toFixed(1) + 'mm';
+        document.getElementById('st-blur').textContent = p.blur.toFixed(1) + 'px';
+        document.getElementById('st-range').textContent = `${mn.toFixed(2)}–${mx.toFixed(2)} mm`;
+
+        document.getElementById('spinner').classList.remove('active');
+      }, 20);
+    }
+
+    // ── Mesh generation ────────────────────────────────────────────────────
+    //
+    // Builds a closed, watertight triangle mesh from the height map.
+    // Coordinate system:
+    //   X = horizontal (image columns)
+    //   Y = vertical (image rows, flipped so image-top maps to +Y)
+    //   Z = thickness (height map values)
+    //
+    // Mesh consists of:
+    //   • Top surface: 2 triangles per pixel-quad (relief side)
+    //   • Bottom surface: flat plane at Z = 0 (back side, faces -Z)
+    //   • Four side walls connecting top and bottom edges
+    //
+    // Total triangles ≈ 4 × (w-1) × (h-1) + 4 × (w + h - 2)
+
+    function buildMesh(hmap, w, h, physWidth) {
+      // Pixel pitch in mm (preserve aspect ratio)
+      const pitch = physWidth / (w - 1);
+      const physHeight = pitch * (h - 1);
+
+      // Vertex helper: returns a {x, y, z} position for image pixel (i, j)
+      // Image rows go top-down; flip Y so the image displays right-side-up in mesh viewers
+      const topVertex = (i, j) => ({
+        x: i * pitch,
+        y: (h - 1 - j) * pitch,
+        z: hmap[j * w + i],
+      });
+      const bottomVertex = (i, j) => ({
+        x: i * pitch,
+        y: (h - 1 - j) * pitch,
+        z: 0,
+      });
+
+      const triangles = [];
+
+      // ─ Top surface (relief) ─────────────────────────────────
+      // For each pixel quad (i,j)→(i+1,j+1), emit two triangles with outward normal +Z
+      for (let j = 0; j < h - 1; j++) {
+        for (let i = 0; i < w - 1; i++) {
+          const v00 = topVertex(i, j);
+          const v10 = topVertex(i + 1, j);
+          const v01 = topVertex(i, j + 1);
+          const v11 = topVertex(i + 1, j + 1);
+          // Triangle 1: v00, v11, v10  (CCW from above)
+          triangles.push([v00, v11, v10]);
+          // Triangle 2: v00, v01, v11
+          triangles.push([v00, v01, v11]);
+        }
+      }
+
+      // ─ Bottom surface (flat) ────────────────────────────────
+      // Same quads, but at Z=0 and reversed winding so normals point -Z
+      for (let j = 0; j < h - 1; j++) {
+        for (let i = 0; i < w - 1; i++) {
+          const v00 = bottomVertex(i, j);
+          const v10 = bottomVertex(i + 1, j);
+          const v01 = bottomVertex(i, j + 1);
+          const v11 = bottomVertex(i + 1, j + 1);
+          triangles.push([v00, v10, v11]);
+          triangles.push([v00, v11, v01]);
+        }
+      }
+
+      // ─ Side walls ───────────────────────────────────────────
+      // Walk the four edges of the image and stitch top↔bottom with quads
+      // Edge: top row (j = 0)  → faces +Y in mesh space (since j=0 maps to y = (h-1)*pitch)
+      for (let i = 0; i < w - 1; i++) {
+        const t0 = topVertex(i, 0);
+        const t1 = topVertex(i + 1, 0);
+        const b0 = bottomVertex(i, 0);
+        const b1 = bottomVertex(i + 1, 0);
+        triangles.push([t0, b0, b1]);
+        triangles.push([t0, b1, t1]);
+      }
+      // Edge: bottom row (j = h-1) → faces -Y
+      for (let i = 0; i < w - 1; i++) {
+        const t0 = topVertex(i, h - 1);
+        const t1 = topVertex(i + 1, h - 1);
+        const b0 = bottomVertex(i, h - 1);
+        const b1 = bottomVertex(i + 1, h - 1);
+        triangles.push([t0, b1, b0]);
+        triangles.push([t0, t1, b1]);
+      }
+      // Edge: left column (i = 0) → faces -X
+      for (let j = 0; j < h - 1; j++) {
+        const t0 = topVertex(0, j);
+        const t1 = topVertex(0, j + 1);
+        const b0 = bottomVertex(0, j);
+        const b1 = bottomVertex(0, j + 1);
+        triangles.push([t0, b1, b0]);
+        triangles.push([t0, t1, b1]);
+      }
+      // Edge: right column (i = w-1) → faces +X
+      for (let j = 0; j < h - 1; j++) {
+        const t0 = topVertex(w - 1, j);
+        const t1 = topVertex(w - 1, j + 1);
+        const b0 = bottomVertex(w - 1, j);
+        const b1 = bottomVertex(w - 1, j + 1);
+        triangles.push([t0, b0, b1]);
+        triangles.push([t0, b1, t1]);
+      }
+
+      return { triangles, physWidth, physHeight };
+    }
+
+    // ── Binary STL writer ──────────────────────────────────────────────────
+    // Format: 80-byte header + uint32 triangle count + 50 bytes per triangle
+    // Each triangle: 3×float32 normal + 3×(3×float32) vertices + uint16 attr (=0)
+
+    function buildSTL(triangles) {
+      const triCount = triangles.length;
+      const bufSize = 84 + triCount * 50;
+      const buf = new ArrayBuffer(bufSize);
+      const view = new DataView(buf);
+
+      // Header (80 bytes) — write a small ASCII signature, rest zero
+      const header = 'Lithophane Studio - binary STL';
+      for (let i = 0; i < header.length && i < 80; i++) {
+        view.setUint8(i, header.charCodeAt(i));
+      }
+
+      view.setUint32(80, triCount, true);
+
+      let offset = 84;
+      for (let t = 0; t < triCount; t++) {
+        const [a, b, c] = triangles[t];
+
+        // Compute face normal via cross product (b-a) × (c-a), normalized
+        const ux = b.x - a.x, uy = b.y - a.y, uz = b.z - a.z;
+        const vx = c.x - a.x, vy = c.y - a.y, vz = c.z - a.z;
+        let nx = uy * vz - uz * vy;
+        let ny = uz * vx - ux * vz;
+        let nz = ux * vy - uy * vx;
+        const len = Math.hypot(nx, ny, nz) || 1;
+        nx /= len; ny /= len; nz /= len;
+
+        view.setFloat32(offset, nx, true);
+        view.setFloat32(offset + 4, ny, true);
+        view.setFloat32(offset + 8, nz, true);
+        view.setFloat32(offset + 12, a.x, true);
+        view.setFloat32(offset + 16, a.y, true);
+        view.setFloat32(offset + 20, a.z, true);
+        view.setFloat32(offset + 24, b.x, true);
+        view.setFloat32(offset + 28, b.y, true);
+        view.setFloat32(offset + 32, b.z, true);
+        view.setFloat32(offset + 36, c.x, true);
+        view.setFloat32(offset + 40, c.y, true);
+        view.setFloat32(offset + 44, c.z, true);
+        view.setUint16(offset + 48, 0, true);
+        offset += 50;
+      }
+
+      return buf;
+    }
+
+    // ── Downsample height map for export ───────────────────────────────────
+    // Uses bilinear sampling on the height map at the target resolution.
+    function resampleHeightMap(hmap, w, h, scale) {
+      if (scale >= 0.999) return { data: hmap, width: w, height: h };
+      const newW = Math.max(2, Math.round(w * scale));
+      const newH = Math.max(2, Math.round(h * scale));
+      const out = new Float32Array(newW * newH);
+      for (let j = 0; j < newH; j++) {
+        const sy = (j / (newH - 1)) * (h - 1);
+        const y0 = Math.floor(sy), y1 = Math.min(h - 1, y0 + 1);
+        const fy = sy - y0;
+        for (let i = 0; i < newW; i++) {
+          const sx = (i / (newW - 1)) * (w - 1);
+          const x0 = Math.floor(sx), x1 = Math.min(w - 1, x0 + 1);
+          const fx = sx - x0;
+          const a = hmap[y0 * w + x0];
+          const b = hmap[y0 * w + x1];
+          const c = hmap[y1 * w + x0];
+          const d = hmap[y1 * w + x1];
+          out[j * newW + i] = (1 - fx) * (1 - fy) * a + fx * (1 - fy) * b
+            + (1 - fx) * fy * c + fx * fy * d;
+        }
+      }
+      return { data: out, width: newW, height: newH };
+    }
+
+    // ── Export handler ─────────────────────────────────────────────────────
+    document.getElementById('exportBtn').addEventListener('click', async () => {
+      if (!sourceImageData) return;
+
+      const btn = document.getElementById('exportBtn');
+      const label = document.getElementById('exportLabel');
+      const info = document.getElementById('exportInfo');
+
+      btn.disabled = true;
+      label.textContent = 'Generating mesh…';
+      info.classList.remove('success');
+      info.textContent = '';
+
+      // Yield to UI so spinner can paint
+      await new Promise(r => setTimeout(r, 30));
+
+      try {
+        const p = params();
+        const physWidth = parseFloat(document.getElementById('physWidth').value);
+        const resolution = parseFloat(document.getElementById('resolution').value) / 100;
+        const { width: w, height: h, data } = sourceImageData;
+
+        // 1. Compute full-resolution height map with current parameters
+        const hmapFull = computeHeightMap(data, w, h, p);
+
+        // 2. Resample for export (bilinear)
+        const { data: hmap, width: ew, height: eh } = resampleHeightMap(hmapFull, w, h, resolution);
+
+        label.textContent = 'Building triangles…';
+        await new Promise(r => setTimeout(r, 20));
+
+        // 3. Build mesh
+        const mesh = buildMesh(hmap, ew, eh, physWidth);
+
+        label.textContent = 'Writing STL…';
+        await new Promise(r => setTimeout(r, 20));
+
+        // 4. Encode binary STL
+        const buf = buildSTL(mesh.triangles);
+
+        // 5. Trigger download
+        const blob = new Blob([buf], { type: 'model/stl' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'lithophane.stl';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+        const sizeMB = (buf.byteLength / 1024 / 1024).toFixed(2);
+        info.textContent = `✓ ${mesh.triangles.length.toLocaleString()} triangles · ${sizeMB} MB · ${physWidth.toFixed(0)}×${mesh.physHeight.toFixed(0)} mm`;
+        info.classList.add('success');
+      } catch (e) {
+        console.error(e);
+        info.textContent = '✗ Error: ' + e.message;
+      } finally {
+        label.textContent = '⬇ Download STL';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+
+</html>

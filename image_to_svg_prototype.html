@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" href="https://hmauroy.github.io/8bitHenrik.png" />
@@ -14,8 +15,9 @@
 
     </style>
 </head>
+
 <body>
-    <div><input type="file" id="fileInput" name="file" /></div>    
+    <div><input type="file" id="fileInput" name="file" /></div>
     <div class="container">
         <div class="panels-grid">
             <div class="panel white" id="img-window">
@@ -28,7 +30,7 @@
                     <button class="close-button" onclick="closeOverlay(this)" aria-label="Close overlay">
                         ×
                     </button>
-                    <canvas id="canvas"></canvas>  
+                    <canvas id="canvas"></canvas>
                 </div>
             </div>
 
@@ -88,11 +90,12 @@
 
                     <div class="radio-group">
                         <div>
-                            <input type="radio" id="mauroyLab_detection" name="processMethod" value="mauroy-lab" checked/>
+                            <input type="radio" id="mauroyLab_detection" name="processMethod" value="mauroy-lab"
+                                checked />
                             <label for="mauroyLab_detection">mauroyLab line detection</label>
                         </div>
                         <div>
-                            <input type="radio" id="zhang_suen_detection" name="processMethod" value="zhang-suen"/>
+                            <input type="radio" id="zhang_suen_detection" name="processMethod" value="zhang-suen" />
                             <label for="zhang_suen_detection">Zhang-suen line detection</label>
                         </div>
                     </div>
@@ -106,17 +109,17 @@
                 <!-- I am invisible-->
             </div>
 
-            
+
 
             <div class="panel white" id="canvas-centerLine">
-                <canvas id="centerLineCanvas"></canvas>     
+                <canvas id="centerLineCanvas"></canvas>
             </div>
 
             <div class="panel white" id="outputWindow">
                 <canvas id="smoothedCanvas"></canvas>
             </div>
-            
-        
+
+
             <div class="panel control-group" id="output-options">
                 <h3>Output Options</h3>
                 <div class="checkbox-buttons">
@@ -137,7 +140,7 @@
                     </div>
 
                 </div>
-                
+
 
                 <div class="slider-container">
                     <div class="slider-label">
@@ -200,7 +203,7 @@
                     <input type="range" min="3" max="11" value="3" step="2" class="slider" id="movingAverageWindow">
                 </div>
                 <p id="compressionInfo"></p>
-                
+
 
             </div>
         </div>
@@ -209,14 +212,14 @@
             <button class="create-btn" id="btnDownloadSvg">Download SVG</button>
             <span id="svgFileSize" style="margin-left:12px; color:var(--mauroy-grey-light); font-size:0.95em;"></span>
         </div>
-        
+
         <textarea id="svgTextOutput" rows="5" cols="50"></textarea>
     </div>
 
     <div id="mouse-follower"></div>
 
     <script>
-        var opencvLoadTimeout = setTimeout(function() {
+        var opencvLoadTimeout = setTimeout(function () {
             alert("OpenCV failed to load. Please refresh the page.");
         }, 1000);
     </script>
@@ -226,4 +229,5 @@
     <!--script async src="https://docs.opencv.org/4.5.0/opencv.js" type="text/javascript"></script-->
     <script type="text/javascript" src="app.js"></script>
 </body>
+
 </html>
