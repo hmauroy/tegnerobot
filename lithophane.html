@@ -31,7 +31,7 @@
       margin-bottom: 1.2rem;
       border: 2px dashed rgba(230, 28, 125, 0.4);
       border-radius: 10px;
-      padding: 20px 14px;
+      padding: 12px 14px;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.25s, background 0.25s, transform 0.15s;
@@ -108,7 +108,7 @@
     /* Canvas panels need an explicit height so the flex column fills properly */
     #panel-gray,
     #panel-output {
-      height: min(420px, 28vw);
+      height: min(500px, 36vw);
     }
 
     /* ── Mobile layout ──────────────────────────────────────────────────── */
@@ -132,7 +132,7 @@
       /* app.css sets panel height: 90vw on mobile — override for canvas panels */
       #panel-gray,
       #panel-output {
-        height: min(360px, 75vw);
+        height: min(440px, 82vw);
       }
 
       .control-group {
@@ -337,7 +337,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 8px;
       background:
         repeating-conic-gradient(rgba(33, 37, 41, 0.95) 0% 25%,
           rgba(24, 26, 29, 0.95) 0% 50%) 0 0 / 22px 22px;

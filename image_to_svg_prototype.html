@@ -12,13 +12,97 @@
     <script src="potrace.js"></script>
     <!-- potrace repo: https://github.com/kilobtye/potrace/blob/master/potrace.js-->
     <style>
+        /* ── Checkered background for image/canvas panels ──────────────── */
+        #img-window,
+        #svgWindow,
+        #canvas-centerLine,
+        #outputWindow {
+            background:
+                repeating-conic-gradient(rgba(33, 37, 41, 0.95) 0% 25%,
+                    rgba(24, 26, 29, 0.95) 0% 50%) 0 0 / 22px 22px;
+        }
 
+        /* Disabled button state */
+        .create-btn:disabled {
+            background: var(--mauroy-grey-medium);
+            border: 1px solid var(--mauroy-grey-light);
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .create-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Panels turn white once content has been drawn into them */
+        #svgWindow[data-filled],
+        #canvas-centerLine[data-filled],
+        #outputWindow[data-filled] {
+            background: white;
+        }
+
+        /* ── Upload / drag-drop zone ─────────────────────────────────── */
+        .upload-zone {
+            align-self: center;
+            width: min(560px, 100%);
+            margin-bottom: 1.2rem;
+            border: 2px dashed rgba(230, 28, 125, 0.4);
+            border-radius: 10px;
+            padding: 12px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.25s, transform 0.15s;
+            position: relative;
+            background: rgba(33, 37, 41, 0.4);
+        }
+
+        .upload-zone:hover,
+        .upload-zone.drag {
+            border-color: var(--mauroy-pink);
+            background: rgba(230, 28, 125, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .upload-zone input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+            color: var(--mauroy-pink);
+        }
+
+        .upload-zone p {
+            color: var(--mauroy-grey-light);
+            font-size: 0.85em;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .upload-zone p strong {
+            color: var(--mauroy-pink);
+            font-weight: 600;
+        }
+
+        .upload-zone #fileInput::file-selector-button {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
-    <div><input type="file" id="fileInput" name="file" /></div>
     <div class="container">
+        <div class="upload-zone" id="dropZone">
+            <input type="file" id="fileInput" accept="image/*">
+            <div class="upload-icon">⬡</div>
+            <p><strong>Click or drag</strong> an image &nbsp;·&nbsp; PNG · JPG · WEBP · GIF</p>
+        </div>
         <div class="panels-grid">
             <div class="panel white" id="img-window">
                 <div id="img-padding">
@@ -135,8 +219,8 @@
                     </div>
 
                     <div id="buttons-group">
-                        <button class="create-btn" id="btnUpdateCenterline">Update centerline</button>
-                        <button class="create-btn" id="btnPupilInsert">Draw pupil</button>
+                        <button class="create-btn" id="btnUpdateCenterline" disabled>Update centerline</button>
+                        <button class="create-btn" id="btnPupilInsert" disabled>Draw pupil</button>
                     </div>
 
                 </div>
@@ -165,7 +249,7 @@
             <div class="panel control-group" id="smoothing-controls">
                 <h3>Smoothing Controls</h3>
                 <div id="buttons-group">
-                    <button class="create-btn" id="btnApplySmoothing">Apply smoothing</button>
+                    <button class="create-btn" id="btnApplySmoothing" disabled>Apply smoothing</button>
                 </div>
                 <div class="checkbox-container">
                     <input type="checkbox" id="smoothedStartpointsCheckbox" class="checkbox">
@@ -208,8 +292,8 @@
             </div>
         </div>
         <div>
-            <button class="create-btn" id="btnCopy">Copy SVG</button>
-            <button class="create-btn" id="btnDownloadSvg">Download SVG</button>
+            <button class="create-btn" id="btnCopy" disabled>Copy SVG</button>
+            <button class="create-btn" id="btnDownloadSvg" disabled>Download SVG</button>
             <span id="svgFileSize" style="margin-left:12px; color:var(--mauroy-grey-light); font-size:0.95em;"></span>
         </div>
 
@@ -228,6 +312,50 @@
         onerror="clearTimeout(opencvLoadTimeout); alert('OpenCV failed to load. Please refresh the page.');"></script>
     <!--script async src="https://docs.opencv.org/4.5.0/opencv.js" type="text/javascript"></script-->
     <script type="text/javascript" src="app.js"></script>
+    <script>
+        (function () {
+            // ── Drag-and-drop upload ───────────────────────────────────────
+            var dropZone = document.getElementById('dropZone');
+            var imgEl = document.getElementById('img-src');
+            dropZone.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                dropZone.classList.add('drag');
+            });
+            dropZone.addEventListener('dragleave', function () {
+                dropZone.classList.remove('drag');
+            });
+            dropZone.addEventListener('drop', function (e) {
+                e.preventDefault();
+                dropZone.classList.remove('drag');
+                var file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    imgEl.src = URL.createObjectURL(file);
+                }
+            });
+
+            // ── White panel background when drawing buttons are pressed ────
+            // Panels default to checkered; [data-filled] switches them to white.
+            function fill(id) {
+                document.getElementById(id).dataset.filled = '';
+            }
+
+            document.getElementById('btnCreateSvg').addEventListener('click', function () {
+                fill('svgWindow');
+                fill('canvas-centerLine');
+                fill('outputWindow');
+                ['btnUpdateCenterline', 'btnPupilInsert', 'btnApplySmoothing',
+                 'btnCopy', 'btnDownloadSvg'].forEach(function (id) {
+                    document.getElementById(id).disabled = false;
+                });
+            });
+            document.getElementById('btnUpdateCenterline').addEventListener('click', function () {
+                fill('canvas-centerLine');
+            });
+            document.getElementById('btnApplySmoothing').addEventListener('click', function () {
+                fill('outputWindow');
+            });
+        })();
+    </script>
 </body>
 
 </html>
