@@ -1,4 +1,4 @@
-## A history of a chat with Clayde Opus 4.7 using chat window.
+## A history of a chat with Claude Opus 4.7 using chat window.
 
 You said: Hi.
 Hi. Do you know the algorithm for making a lithophane picture from a greyscale image? I guess some thresholding is being used in interval for making the thickness match the grey level and then smoothing over areas.
